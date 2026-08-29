@@ -30,12 +30,18 @@ CESE-RLIM implements security best practices for authentication, authorization, 
 
 ### Role-Based Access Control (RBAC)
 
-| Role | Permissions |
-|------|-------------|
-| ADMIN | Full system access, user management, settings |
-| COORDINATOR | Resource management, approval workflows |
-| RESEARCHER | Equipment requests, profile management |
-| TECHNICIAN | Maintenance management |
+| Action | Admin | Coordinator | Researcher | Technician |
+|--------|-------|-------------|------------|------------|
+| View Users | ✓ | ✓ | — | — |
+| Create User | ✓ | — | — | — |
+| Update User | ✓ | — | — | — |
+| Change Role | ✓ | — | — | — |
+| Activate/Deactivate User | ✓ | ✓ | — | — |
+| View Researchers | ✓ | ✓ | ✓ | ✓ |
+| Create Researcher | ✓ | ✓ | — | — |
+| Update Researcher | ✓ | ✓ | — | — |
+| Edit Own Profile | ✓ | ✓ | ✓ | ✓ |
+| View Own Profile | ✓ | ✓ | ✓ | ✓ |
 
 ### Implementation
 
@@ -98,12 +104,28 @@ Security headers should be added in production:
 
 ## Audit Logging
 
-The `AuditLog` model tracks:
+The `AuditLog` model tracks important user-management actions:
 
-- User actions (CREATE, UPDATE, DELETE, LOGIN, LOGOUT)
-- Entity changes (entity type and ID)
-- IP address and user agent
-- Metadata (JSON) for additional context
+| Action | Logged | Description |
+|--------|--------|-------------|
+| CREATE user | ✓ | New user account created |
+| UPDATE user | ✓ | Profile fields changed |
+| ROLE_CHANGE | ✓ | User role modified |
+| ACTIVATE | ✓ | Account reactivated |
+| DEACTIVATE | ✓ | Account deactivated |
+| CREATE researcher | ✓ | New researcher profile created |
+| UPDATE researcher | ✓ | Researcher profile updated |
+
+Each log entry includes:
+- `userId` — Who performed the action
+- `action` — What was done
+- `entityType` — User, Researcher, etc.
+- `entityId` — ID of the affected record
+- `description` — Human-readable description
+- `metadata` — Additional context (e.g., previous/new role)
+- Timestamp via `createdAt`
+
+Passwords and password hashes are never stored in audit logs.
 
 ## Production Recommendations
 

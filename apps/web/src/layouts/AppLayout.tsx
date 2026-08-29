@@ -13,18 +13,27 @@ import {
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
+import type { LucideIcon } from 'lucide-react';
 
-const navigation = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  disabled?: boolean;
+  roles?: string[];
+}
+
+const navigation: { section: string; items: NavItem[] }[] = [
   {
     section: 'OVERVIEW',
     items: [
-      { name: 'Dashboard', href: '/', icon: LayoutDashboard, disabled: false },
+      { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     ],
   },
   {
     section: 'RESEARCH',
     items: [
-      { name: 'Researchers', href: '/researchers', icon: Users, disabled: true },
+      { name: 'Researchers', href: '/researchers', icon: Users },
       { name: 'Projects', href: '/projects', icon: FlaskConical, disabled: true },
       { name: 'Innovations', href: '/innovations', icon: Microscope, disabled: true },
     ],
@@ -35,22 +44,33 @@ const navigation = [
       { name: 'Laboratories', href: '/laboratories', icon: FlaskConical, disabled: true },
       { name: 'Equipment', href: '/equipment', icon: Wrench, disabled: true },
       { name: 'Requests', href: '/requests', icon: FileText, disabled: true },
-      { name: 'Assignments', href: '/assignments', icon: FileText, disabled: true },
-      { name: 'Maintenance', href: '/maintenance', icon: Wrench, disabled: true },
     ],
   },
   {
     section: 'SYSTEM',
     items: [
+      { name: 'Users', href: '/users', icon: Settings, roles: ['ADMIN', 'COORDINATOR'] },
       { name: 'Notifications', href: '/notifications', icon: Bell, disabled: true },
-      { name: 'Settings', href: '/settings', icon: Settings, disabled: true },
     ],
   },
 ];
 
 function Sidebar() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const visibleNav = navigation
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (item.disabled) return false;
+        if (item.roles && user) {
+          return item.roles.includes(user.role);
+        }
+        return true;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen fixed left-0 top-0 z-30">
@@ -67,7 +87,7 @@ function Sidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
-        {navigation.map((group) => (
+        {visibleNav.map((group) => (
           <div key={group.section}>
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-3">
               {group.section}
@@ -80,19 +100,13 @@ function Sidebar() {
                     key={item.name}
                     to={item.href}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      item.disabled
-                        ? 'text-slate-600 cursor-not-allowed'
-                        : isActive
+                      isActive
                         ? 'bg-blue-600/20 text-blue-400'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800'
                     }`}
-                    onClick={(e) => item.disabled && e.preventDefault()}
                   >
                     <item.icon size={18} />
                     <span>{item.name}</span>
-                    {item.disabled && (
-                      <span className="ml-auto text-xs text-slate-600">Soon</span>
-                    )}
                   </Link>
                 );
               })}
