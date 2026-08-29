@@ -1,0 +1,393 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  ADMIN
+  COORDINATOR
+  RESEARCHER
+  TECHNICIAN
+}
+
+enum LabStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+}
+
+enum EquipmentCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  RESERVED
+  IN_USE
+  UNDER_MAINTENANCE
+  DAMAGED
+  LOST
+  RETIRED
+}
+
+enum RequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ISSUED
+  IN_USE
+  RETURNED
+  CLOSED
+  CANCELLED
+}
+
+enum MaintenanceStatus {
+  REPORTED
+  DIAGNOSING
+  REPAIRING
+  TESTING
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum InnovationStage {
+  IDEA
+  PROTOTYPE
+  TESTING
+  VALIDATED
+  TRANSFERRED
+}
+
+enum InnovationStatus {
+  SUBMITTED
+  UNDER_EVALUATION
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+  REQUEST
+  MAINTENANCE
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  APPROVE
+  REJECT
+  ISSUE
+  RETURN
+  MAINTENANCE
+  OTHER
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  phone        String?
+  role         UserRole  @default(RESEARCHER)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  researcher          Researcher?
+  auditLogs           AuditLog[]
+  notifications       Notification[]
+  assignedMaintenance MaintenanceRecord[] @relation("AssignedTechnician")
+  reportedMaintenance MaintenanceRecord[] @relation("ReportedByUser")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Researcher {
+  id                  String   @id @default(uuid())
+  userId              String   @unique @map("user_id")
+  employeeOrStudentId String   @unique @map("employee_or_student_id")
+  department          String
+  academicPosition    String?  @map("academic_position")
+  bio                 String?
+  researchAreas       String?  @map("research_areas")
+  expertise           String?
+  profileImage        String?  @map("profile_image")
+  orcid               String?
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  equipmentRequests    EquipmentRequest[]
+  equipmentAssignments EquipmentAssignment[]
+  innovations          Innovation[]
+  reportedMaintenance  MaintenanceRecord[]   @relation("ReportedMaintenance")
+  maintainedEquipment  MaintenanceRecord[]   @relation("MaintenanceResearcher")
+
+  @@index([employeeOrStudentId])
+  @@index([department])
+  @@map("researchers")
+}
+
+model Laboratory {
+  id                  String    @id @default(uuid())
+  name                String
+  code                String    @unique
+  location            String
+  description         String?
+  capacity            Int?
+  responsiblePersonId String?   @map("responsible_person_id")
+  status              LabStatus @default(ACTIVE)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  equipment Equipment[]
+
+  @@index([code])
+  @@index([status])
+  @@map("laboratories")
+}
+
+model Equipment {
+  id             String             @id @default(uuid())
+  name           String
+  assetId        String             @unique @map("asset_id")
+  serialNumber   String?            @map("serial_number")
+  category       String
+  manufacturer   String?
+  model          String?
+  description    String?
+  purchaseDate   DateTime?          @map("purchase_date")
+  purchasePrice  Decimal?           @map("purchase_price") @db.Decimal(12, 2)
+  laboratoryId   String             @map("laboratory_id")
+  condition      EquipmentCondition @default(GOOD)
+  status         EquipmentStatus    @default(AVAILABLE)
+  warrantyExpiry DateTime?          @map("warranty_expiry")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  laboratory           Laboratory            @relation(fields: [laboratoryId], references: [id], onDelete: Restrict)
+  equipmentRequests    EquipmentRequest[]
+  equipmentAssignments EquipmentAssignment[]
+  maintenanceRecords   MaintenanceRecord[]
+
+  @@index([assetId])
+  @@index([serialNumber])
+  @@index([status])
+  @@index([laboratoryId])
+  @@index([category])
+  @@map("equipment")
+}
+
+model EquipmentRequest {
+  id                 String          @id @default(uuid())
+  requesterId        String          @map("requester_id")
+  equipmentId        String          @map("equipment_id")
+  researchProjectId  String?         @map("research_project_id")
+  purpose            String
+  startDate          DateTime        @map("start_date")
+  expectedReturnDate DateTime        @map("expected_return_date")
+  priority           RequestPriority @default(MEDIUM)
+  status             RequestStatus   @default(SUBMITTED)
+  reviewComment      String?         @map("review_comment")
+  reviewedById       String?         @map("reviewed_by_id")
+  reviewedAt         DateTime?       @map("reviewed_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  requester       Researcher           @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+  equipment       Equipment            @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  researchProject ResearchProject?     @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  assignment      EquipmentAssignment?
+
+  @@index([status])
+  @@index([requesterId])
+  @@index([equipmentId])
+  @@index([researchProjectId])
+  @@map("equipment_requests")
+}
+
+model EquipmentAssignment {
+  id                String    @id @default(uuid())
+  equipmentId       String    @map("equipment_id")
+  researcherId      String    @map("researcher_id")
+  researchProjectId String?   @map("research_project_id")
+  requestId         String?   @unique @map("request_id")
+  issuedById        String    @map("issued_by_id")
+  issuedAt          DateTime  @map("issued_at")
+  expectedReturnAt  DateTime  @map("expected_return_at")
+  returnedAt        DateTime? @map("returned_at")
+  receivedById      String?   @map("received_by_id")
+  conditionAtIssue  String?   @map("condition_at_issue")
+  conditionAtReturn String?   @map("condition_at_return")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  equipment       Equipment         @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  researcher      Researcher        @relation(fields: [researcherId], references: [id], onDelete: Restrict)
+  researchProject ResearchProject?  @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  request         EquipmentRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  @@index([equipmentId])
+  @@index([researcherId])
+  @@index([researchProjectId])
+  @@map("equipment_assignments")
+}
+
+model MaintenanceRecord {
+  id                      String            @id @default(uuid())
+  equipmentId             String            @map("equipment_id")
+  reportedById            String            @map("reported_by_id")
+  assignedTechnicianId    String?           @map("assigned_technician_id")
+  reportedByUserId        String?           @map("reported_by_user_id")
+  maintenanceResearcherId String?           @map("maintenance_researcher_id")
+  problemDescription      String            @map("problem_description")
+  priority                RequestPriority   @default(MEDIUM)
+  status                  MaintenanceStatus @default(REPORTED)
+  diagnosis               String?
+  actionTaken             String?           @map("action_taken")
+  reportedAt              DateTime          @default(now()) @map("reported_at")
+  startedAt               DateTime?         @map("started_at")
+  completedAt             DateTime?         @map("completed_at")
+  cost                    Decimal?          @db.Decimal(12, 2)
+  notes                   String?
+  createdAt               DateTime          @default(now()) @map("created_at")
+  updatedAt               DateTime          @updatedAt @map("updated_at")
+
+  equipment             Equipment   @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  reportedBy            Researcher  @relation("ReportedMaintenance", fields: [reportedById], references: [id], onDelete: Restrict)
+  assignedTechnician    User?       @relation("AssignedTechnician", fields: [assignedTechnicianId], references: [id], onDelete: SetNull)
+  reportedByUser        User?       @relation("ReportedByUser", fields: [reportedByUserId], references: [id], onDelete: SetNull)
+  maintenanceResearcher Researcher? @relation("MaintenanceResearcher", fields: [maintenanceResearcherId], references: [id], onDelete: SetNull)
+
+  @@index([equipmentId])
+  @@index([status])
+  @@index([assignedTechnicianId])
+  @@index([reportedByUserId])
+  @@index([maintenanceResearcherId])
+  @@map("maintenance_records")
+}
+
+model ResearchProject {
+  id            String        @id @default(uuid())
+  projectCode   String        @unique @map("project_code")
+  title         String
+  description   String?
+  projectStatus ProjectStatus @default(ACTIVE) @map("project_status")
+  startDate     DateTime?     @map("start_date")
+  endDate       DateTime?     @map("end_date")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  equipmentRequests    EquipmentRequest[]
+  equipmentAssignments EquipmentAssignment[]
+  innovations          Innovation[]
+
+  @@index([projectCode])
+  @@index([projectStatus])
+  @@map("research_projects")
+}
+
+model Innovation {
+  id                String           @id @default(uuid())
+  title             String
+  description       String?
+  category          String?
+  developmentStage  InnovationStage  @default(IDEA) @map("development_stage")
+  status            InnovationStatus @default(SUBMITTED)
+  researchProjectId String?          @map("research_project_id")
+  submittedById     String           @map("submitted_by_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  researchProject ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  submittedBy     Researcher       @relation(fields: [submittedById], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([developmentStage])
+  @@index([submittedById])
+  @@index([researchProjectId])
+  @@map("innovations")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+  readAt    DateTime?        @map("read_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String      @id @default(uuid())
+  userId      String?     @map("user_id")
+  action      AuditAction
+  entityType  String      @map("entity_type")
+  entityId    String?     @map("entity_id")
+  description String?
+  metadata    Json?
+  ipAddress   String?     @map("ip_address")
+  userAgent   String?     @map("user_agent")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
