@@ -41,7 +41,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
   {
     section: 'RESOURCES',
     items: [
-      { name: 'Laboratories', href: '/laboratories', icon: FlaskConical, disabled: true },
+      { name: 'Laboratories', href: '/laboratories', icon: FlaskConical },
       { name: 'Equipment', href: '/equipment', icon: Wrench, disabled: true },
       { name: 'Requests', href: '/requests', icon: FileText, disabled: true },
     ],

@@ -12,6 +12,8 @@ import UsersList from "./pages/users/UsersList";
 import UserDetails from "./pages/users/UserDetails";
 import ResearchersList from "./pages/researchers/ResearchersList";
 import ResearcherProfile from "./pages/researchers/ResearcherProfile";
+import LaboratoriesList from "./pages/laboratories/LaboratoriesList";
+import LaboratoryDetails from "./pages/laboratories/LaboratoryDetails";
 
 function RootComponent() {
   return <Outlet />;
@@ -79,6 +81,18 @@ const researcherProfileRoute = createRoute({
   component: ResearcherProfile,
 });
 
+const laboratoriesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/laboratories",
+  component: LaboratoriesList,
+});
+
+const laboratoryDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/laboratories/$id",
+  component: LaboratoryDetails,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -87,6 +101,8 @@ const routeTree = rootRoute.addChildren([
     userDetailsRoute,
     researchersRoute,
     researcherProfileRoute,
+    laboratoriesRoute,
+    laboratoryDetailsRoute,
   ]),
 ]);
 

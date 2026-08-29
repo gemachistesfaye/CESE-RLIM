@@ -286,11 +286,107 @@ Update own researcher profile (self-service for researchers).
 
 ### GET /laboratories
 
-Get all laboratories with equipment count.
+Get all laboratories with pagination, search, and filtering.
+
+**Headers:** `Authorization: Bearer <token>`
+**Required Role:** Any authenticated user
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | number | Page number (default: 1) |
+| `limit` | number | Items per page (default: 20) |
+| `search` | string | Search by name, code, location, description |
+| `status` | enum | Filter by status: ACTIVE, INACTIVE, UNDER_MAINTENANCE |
+| `location` | string | Filter by location (partial match) |
+
+**Response (200):**
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "name": "Power Systems Research Lab",
+      "code": "PSRL-001",
+      "location": "Block B, Room 204",
+      "description": "Dedicated to power systems research.",
+      "capacity": 25,
+      "responsiblePersonId": null,
+      "status": "ACTIVE",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "_count": { "equipment": 12 }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 8,
+    "totalPages": 1
+  }
+}
+```
 
 ### GET /laboratories/:id
 
 Get laboratory by ID with equipment list.
+
+**Required Role:** Any authenticated user
+
+**Response (200):** Returns laboratory with `equipment` array containing id, name, assetId, category, condition, status.
+
+### POST /laboratories
+
+Create a new laboratory.
+
+**Required Role:** ADMIN or COORDINATOR
+
+**Request:**
+```json
+{
+  "name": "Power Systems Research Lab",
+  "code": "PSRL-001",
+  "location": "Block B, Room 204, Engineering Faculty",
+  "description": "Dedicated to power systems and renewable energy research.",
+  "capacity": 25,
+  "responsiblePersonId": "uuid-of-user"
+}
+```
+
+**Validations:**
+- `name`: required, max 200 chars
+- `code`: required, max 50 chars, unique (auto-uppercased)
+- `location`: required, max 300 chars
+- `description`: optional, max 2000 chars
+- `capacity`: optional, positive integer
+- `responsiblePersonId`: optional, must be valid User UUID
+
+**Errors:**
+- `409 Conflict` — Code already exists
+- `404 Not Found` — Responsible person not found
+
+### PATCH /laboratories/:id
+
+Update laboratory information.
+
+**Required Role:** ADMIN or COORDINATOR
+
+All fields optional. Only provided fields are updated.
+
+### PATCH /laboratories/:id/status
+
+Change laboratory status.
+
+**Required Role:** ADMIN or COORDINATOR
+
+**Request:**
+```json
+{
+  "status": "INACTIVE"
+}
+```
+
+**Valid values:** ACTIVE, INACTIVE, UNDER_MAINTENANCE
 
 ## Equipment
 
