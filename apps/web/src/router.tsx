@@ -25,6 +25,7 @@ import MaintenanceDetails from "./pages/maintenance/MaintenanceDetails";
 import MyMaintenance from "./pages/maintenance/MyMaintenance";
 import ResearchProjectsList from "./pages/research-projects/ResearchProjectsList";
 import ResearchProjectDetails from "./pages/research-projects/ResearchProjectDetails";
+import ProjectTeamPage from "./pages/research-projects/ProjectTeamPage";
 import InnovationsList from "./pages/innovations/InnovationsList";
 import InnovationDetails from "./pages/innovations/InnovationDetails";
 
@@ -172,6 +173,12 @@ const researchProjectDetailsRoute = createRoute({
   component: ResearchProjectDetails,
 });
 
+const projectTeamRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-projects/$projectId/team",
+  component: ProjectTeamPage,
+});
+
 const innovationsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/innovations",
@@ -205,6 +212,7 @@ const routeTree = rootRoute.addChildren([
     myMaintenanceRoute,
     researchProjectsRoute,
     researchProjectDetailsRoute,
+    projectTeamRoute,
     innovationsRoute,
     innovationDetailsRoute,
   ]),

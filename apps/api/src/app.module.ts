@@ -12,6 +12,7 @@ import { EquipmentAssignmentsModule } from './equipment-assignments/equipment-as
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { ResearchProjectsModule } from './research-projects/research-projects.module';
 import { InnovationsModule } from './innovations/innovations.module';
+import { ResearchProjectMembersModule } from './research-project-members/research-project-members.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { AuditModule } from './audit/audit.module';
     MaintenanceModule,
     ResearchProjectsModule,
     InnovationsModule,
+    ResearchProjectMembersModule,
   ],
 })
 export class AppModule {}

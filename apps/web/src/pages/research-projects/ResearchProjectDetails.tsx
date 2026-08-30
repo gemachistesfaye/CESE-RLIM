@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "@tanstack/react-router";
-import { useResearchProject, useUpdateResearchProjectStatus, useProjectMembers } from "../../hooks/useResearchProjects";
+import { useResearchProject, useUpdateResearchProjectStatus } from "../../hooks/useResearchProjects";
+import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -12,6 +13,8 @@ import {
   Wrench,
   Microscope,
   Clock,
+  Users,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -26,7 +29,7 @@ const statusStyles: Record<string, string> = {
 export default function ResearchProjectDetails() {
   const { id } = useParams({ from: "/app/research-projects/$id" });
   const { data: project, isLoading, error } = useResearchProject(id);
-  const { data: members } = useProjectMembers(id);
+  const { data: teamSummary } = useProjectTeamSummary(id);
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
@@ -202,34 +205,48 @@ export default function ResearchProjectDetails() {
         </div>
 
         <div className="p-6 border-t border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Research Team</h3>
-          {members && members.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {members.map((member) => (
-                <div key={member.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 text-sm font-medium">
-                      {member.user.firstName[0]}{member.user.lastName[0]}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-900">
-                      {member.user.firstName} {member.user.lastName}
-                    </div>
-                    <div className="text-xs text-slate-500">{member.department}</div>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {member.roles.map((role) => (
-                      <span key={role} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                        {role}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Team</h3>
+            <Link
+              to="/research-projects/$projectId/team"
+              params={{ projectId: id }}
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              Manage Team
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          {teamSummary && teamSummary.totalMembers > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-slate-900">{teamSummary.totalMembers}</div>
+                <div className="text-xs text-slate-500">Total Members</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-emerald-600">{teamSummary.activeMembers}</div>
+                <div className="text-xs text-slate-500">Active</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-purple-600">{teamSummary.byRole.PRINCIPAL_INVESTIGATOR || 0}</div>
+                <div className="text-xs text-slate-500">Principal Inv.</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-blue-600">{teamSummary.byRole.RESEARCHER || 0}</div>
+                <div className="text-xs text-slate-500">Researchers</div>
+              </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-500">No team members associated with this project yet.</p>
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <Users size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No team members yet</p>
+              <Link
+                to="/research-projects/$projectId/team"
+                params={{ projectId: id }}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+              >
+                + Add team members
+              </Link>
+            </div>
           )}
         </div>
 

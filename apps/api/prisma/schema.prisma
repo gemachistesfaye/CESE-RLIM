@@ -116,6 +116,14 @@ enum AuditAction {
   OTHER
 }
 
+enum ProjectMemberRole {
+  PRINCIPAL_INVESTIGATOR
+  CO_INVESTIGATOR
+  RESEARCHER
+  RESEARCH_ASSISTANT
+  TECHNICAL_MEMBER
+}
+
 // ============================================================
 // MODELS
 // ============================================================
@@ -164,6 +172,7 @@ model Researcher {
   innovations          Innovation[]
   reportedMaintenance  MaintenanceRecord[]   @relation("ReportedMaintenance")
   maintainedEquipment  MaintenanceRecord[]   @relation("MaintenanceResearcher")
+  projectMemberships   ProjectMember[]
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -324,6 +333,7 @@ model ResearchProject {
   equipmentRequests    EquipmentRequest[]
   equipmentAssignments EquipmentAssignment[]
   innovations          Innovation[]
+  projectMembers       ProjectMember[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -350,6 +360,28 @@ model Innovation {
   @@index([submittedById])
   @@index([researchProjectId])
   @@map("innovations")
+}
+
+model ProjectMember {
+  id               String             @id @default(uuid())
+  researchProjectId String            @map("research_project_id")
+  researcherId     String             @map("researcher_id")
+  role             ProjectMemberRole  @default(RESEARCHER)
+  isActive         Boolean            @default(true) @map("is_active")
+  joinedAt         DateTime           @default(now()) @map("joined_at")
+  leftAt           DateTime?          @map("left_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  researchProject ResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  researcher      Researcher      @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+
+  @@unique([researchProjectId, researcherId])
+  @@index([researchProjectId])
+  @@index([researcherId])
+  @@index([role])
+  @@index([isActive])
+  @@map("project_members")
 }
 
 model Notification {
