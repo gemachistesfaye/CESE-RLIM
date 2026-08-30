@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "@tanstack/react-router";
 import { useResearchProject, useUpdateResearchProjectStatus } from "../../hooks/useResearchProjects";
 import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
+import { useProjectActivityStats } from "../../hooks/useProjectActivities";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -15,6 +16,7 @@ import {
   Clock,
   Users,
   ChevronRight,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -30,6 +32,7 @@ export default function ResearchProjectDetails() {
   const { id } = useParams({ from: "/app/research-projects/$id" });
   const { data: project, isLoading, error } = useResearchProject(id);
   const { data: teamSummary } = useProjectTeamSummary(id);
+  const { data: activityStats } = useProjectActivityStats(id);
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
@@ -245,6 +248,54 @@ export default function ResearchProjectDetails() {
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Add team members
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Project Activities</h3>
+            <Link
+              to="/project-activities"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              View Activities
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          {activityStats && activityStats.total > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-slate-900">{activityStats.total}</div>
+                <div className="text-xs text-slate-500">Total</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-blue-600">{activityStats.inProgress}</div>
+                <div className="text-xs text-slate-500">In Progress</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-emerald-600">{activityStats.completed}</div>
+                <div className="text-xs text-slate-500">Completed</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-red-600">{activityStats.overdue}</div>
+                <div className="text-xs text-slate-500">Overdue</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-amber-600">{activityStats.completionPercentage}%</div>
+                <div className="text-xs text-slate-500">Completion</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <ClipboardList size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No activities yet</p>
+              <Link
+                to="/project-activities"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+              >
+                + Create first activity
               </Link>
             </div>
           )}

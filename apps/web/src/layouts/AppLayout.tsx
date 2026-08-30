@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronDown,
   Search,
+  ClipboardList,
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +36,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
     items: [
       { name: 'Researchers', href: '/researchers', icon: Users },
       { name: 'Projects', href: '/research-projects', icon: FlaskConical },
+      { name: 'Activities', href: '/project-activities', icon: ClipboardList },
       { name: 'Innovations', href: '/innovations', icon: Microscope },
     ],
   },

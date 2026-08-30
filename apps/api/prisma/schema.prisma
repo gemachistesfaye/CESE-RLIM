@@ -113,7 +113,17 @@ enum AuditAction {
   ISSUE
   RETURN
   MAINTENANCE
+  STATUS_CHANGE
+  PROGRESS_UPDATE
   OTHER
+}
+
+enum ActivityStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
 }
 
 enum ProjectMemberRole {
@@ -146,6 +156,7 @@ model User {
   notifications       Notification[]
   assignedMaintenance MaintenanceRecord[] @relation("AssignedTechnician")
   reportedMaintenance MaintenanceRecord[] @relation("ReportedByUser")
+  createdActivities   ProjectActivity[]
 
   @@index([email])
   @@index([role])
@@ -334,6 +345,7 @@ model ResearchProject {
   equipmentAssignments EquipmentAssignment[]
   innovations          Innovation[]
   projectMembers       ProjectMember[]
+  projectActivities    ProjectActivity[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -373,8 +385,9 @@ model ProjectMember {
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
 
-  researchProject ResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
-  researcher      Researcher      @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  researchProject ResearchProject    @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  researcher      Researcher         @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  assignedActivities ProjectActivity[]
 
   @@unique([researchProjectId, researcherId])
   @@index([researchProjectId])
@@ -382,6 +395,36 @@ model ProjectMember {
   @@index([role])
   @@index([isActive])
   @@map("project_members")
+}
+
+model ProjectActivity {
+  id                String         @id @default(uuid())
+  researchProjectId String         @map("research_project_id")
+  assignedMemberId  String?        @map("assigned_member_id")
+  title             String
+  description       String?
+  priority          RequestPriority @default(MEDIUM)
+  status            ActivityStatus @default(TODO)
+  startDate         DateTime?      @map("start_date")
+  dueDate           DateTime?      @map("due_date")
+  completedAt       DateTime?      @map("completed_at")
+  progress          Int            @default(0)
+  notes             String?
+  createdById       String         @map("created_by_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  researchProject ResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  assignedMember  ProjectMember?  @relation(fields: [assignedMemberId], references: [id], onDelete: SetNull)
+  createdBy       User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([researchProjectId])
+  @@index([assignedMemberId])
+  @@index([createdById])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@map("project_activities")
 }
 
 model Notification {
