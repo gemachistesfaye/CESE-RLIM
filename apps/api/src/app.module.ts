@@ -7,6 +7,8 @@ import { UsersModule } from './users/users.module';
 import { ResearchersModule } from './researchers/researchers.module';
 import { LaboratoriesModule } from './laboratories/laboratories.module';
 import { EquipmentModule } from './equipment/equipment.module';
+import { EquipmentRequestsModule } from './equipment-requests/equipment-requests.module';
+import { EquipmentAssignmentsModule } from './equipment-assignments/equipment-assignments.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -20,6 +22,8 @@ import { AuditModule } from './audit/audit.module';
     ResearchersModule,
     LaboratoriesModule,
     EquipmentModule,
+    EquipmentRequestsModule,
+    EquipmentAssignmentsModule,
   ],
 })
 export class AppModule {}

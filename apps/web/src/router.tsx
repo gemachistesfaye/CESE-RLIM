@@ -16,6 +16,10 @@ import LaboratoriesList from "./pages/laboratories/LaboratoriesList";
 import LaboratoryDetails from "./pages/laboratories/LaboratoryDetails";
 import EquipmentList from "./pages/equipment/EquipmentList";
 import EquipmentDetails from "./pages/equipment/EquipmentDetails";
+import EquipmentRequestsList from "./pages/equipment-requests/EquipmentRequestsList";
+import EquipmentRequestDetails from "./pages/equipment-requests/EquipmentRequestDetails";
+import EquipmentAssignmentsList from "./pages/equipment-assignments/EquipmentAssignmentsList";
+import EquipmentAssignmentDetails from "./pages/equipment-assignments/EquipmentAssignmentDetails";
 
 function RootComponent() {
   return <Outlet />;
@@ -107,6 +111,30 @@ const equipmentDetailsRoute = createRoute({
   component: EquipmentDetails,
 });
 
+const equipmentRequestsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/equipment-requests",
+  component: EquipmentRequestsList,
+});
+
+const equipmentRequestDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/equipment-requests/$id",
+  component: EquipmentRequestDetails,
+});
+
+const equipmentAssignmentsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/equipment-assignments",
+  component: EquipmentAssignmentsList,
+});
+
+const equipmentAssignmentDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/equipment-assignments/$id",
+  component: EquipmentAssignmentDetails,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -119,6 +147,10 @@ const routeTree = rootRoute.addChildren([
     laboratoryDetailsRoute,
     equipmentRoute,
     equipmentDetailsRoute,
+    equipmentRequestsRoute,
+    equipmentRequestDetailsRoute,
+    equipmentAssignmentsRoute,
+    equipmentAssignmentDetailsRoute,
   ]),
 ]);
 
