@@ -10,6 +10,7 @@ import { EquipmentModule } from './equipment/equipment.module';
 import { EquipmentRequestsModule } from './equipment-requests/equipment-requests.module';
 import { EquipmentAssignmentsModule } from './equipment-assignments/equipment-assignments.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
+import { ResearchProjectsModule } from './research-projects/research-projects.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { AuditModule } from './audit/audit.module';
     EquipmentRequestsModule,
     EquipmentAssignmentsModule,
     MaintenanceModule,
+    ResearchProjectsModule,
   ],
 })
 export class AppModule {}
