@@ -45,6 +45,13 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Equipment', href: '/equipment', icon: Wrench },
       { name: 'Requests', href: '/equipment-requests', icon: FileText },
       { name: 'Assignments', href: '/equipment-assignments', icon: FileText },
+      { name: 'Maintenance', href: '/maintenance', icon: Wrench },
+    ],
+  },
+  {
+    section: 'MY WORK',
+    items: [
+      { name: 'My Tasks', href: '/my-maintenance', icon: Wrench },
     ],
   },
   {

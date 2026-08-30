@@ -20,6 +20,9 @@ import EquipmentRequestsList from "./pages/equipment-requests/EquipmentRequestsL
 import EquipmentRequestDetails from "./pages/equipment-requests/EquipmentRequestDetails";
 import EquipmentAssignmentsList from "./pages/equipment-assignments/EquipmentAssignmentsList";
 import EquipmentAssignmentDetails from "./pages/equipment-assignments/EquipmentAssignmentDetails";
+import MaintenanceList from "./pages/maintenance/MaintenanceList";
+import MaintenanceDetails from "./pages/maintenance/MaintenanceDetails";
+import MyMaintenance from "./pages/maintenance/MyMaintenance";
 
 function RootComponent() {
   return <Outlet />;
@@ -135,6 +138,24 @@ const equipmentAssignmentDetailsRoute = createRoute({
   component: EquipmentAssignmentDetails,
 });
 
+const maintenanceRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/maintenance",
+  component: MaintenanceList,
+});
+
+const maintenanceDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/maintenance/$id",
+  component: MaintenanceDetails,
+});
+
+const myMaintenanceRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/my-maintenance",
+  component: MyMaintenance,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -151,6 +172,9 @@ const routeTree = rootRoute.addChildren([
     equipmentRequestDetailsRoute,
     equipmentAssignmentsRoute,
     equipmentAssignmentDetailsRoute,
+    maintenanceRoute,
+    maintenanceDetailsRoute,
+    myMaintenanceRoute,
   ]),
 ]);
 
