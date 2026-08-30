@@ -115,6 +115,10 @@ enum AuditAction {
   MAINTENANCE
   STATUS_CHANGE
   PROGRESS_UPDATE
+  VERSION_UPLOAD
+  DOWNLOAD
+  ARCHIVE
+  AUTHOR_UPDATE
   OTHER
 }
 
@@ -134,6 +138,51 @@ enum ProjectMemberRole {
   TECHNICAL_MEMBER
 }
 
+enum DocumentType {
+  PROPOSAL
+  RESEARCH_PLAN
+  PROGRESS_REPORT
+  FINAL_REPORT
+  TECHNICAL_REPORT
+  DATASET
+  PRESENTATION
+  THESIS
+  MANUSCRIPT
+  PAPER
+  OTHER
+}
+
+enum DocumentStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PublicationType {
+  JOURNAL_ARTICLE
+  CONFERENCE_PAPER
+  BOOK
+  BOOK_CHAPTER
+  THESIS
+  TECHNICAL_REPORT
+  WORKING_PAPER
+  PATENT
+  OTHER
+}
+
+enum PublicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  PUBLISHED
+  REJECTED
+}
+
 // ============================================================
 // MODELS
 // ============================================================
@@ -151,12 +200,15 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  researcher          Researcher?
-  auditLogs           AuditLog[]
-  notifications       Notification[]
-  assignedMaintenance MaintenanceRecord[] @relation("AssignedTechnician")
-  reportedMaintenance MaintenanceRecord[] @relation("ReportedByUser")
-  createdActivities   ProjectActivity[]
+  researcher               Researcher?
+  auditLogs                AuditLog[]
+  notifications            Notification[]
+  assignedMaintenance      MaintenanceRecord[]       @relation("AssignedTechnician")
+  reportedMaintenance      MaintenanceRecord[]       @relation("ReportedByUser")
+  createdActivities        ProjectActivity[]
+  uploadedDocuments        ResearchDocument[]        @relation("UploadedDocuments")
+  uploadedDocumentVersions ResearchDocumentVersion[]
+  createdPublications      ResearchPublication[]     @relation("CreatedPublications")
 
   @@index([email])
   @@index([role])
@@ -184,6 +236,7 @@ model Researcher {
   reportedMaintenance  MaintenanceRecord[]   @relation("ReportedMaintenance")
   maintainedEquipment  MaintenanceRecord[]   @relation("MaintenanceResearcher")
   projectMemberships   ProjectMember[]
+  publicationAuthors   PublicationAuthor[]
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -346,6 +399,8 @@ model ResearchProject {
   innovations          Innovation[]
   projectMembers       ProjectMember[]
   projectActivities    ProjectActivity[]
+  documents            ResearchDocument[]
+  publications         ResearchPublication[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -375,18 +430,18 @@ model Innovation {
 }
 
 model ProjectMember {
-  id               String             @id @default(uuid())
+  id                String            @id @default(uuid())
   researchProjectId String            @map("research_project_id")
-  researcherId     String             @map("researcher_id")
-  role             ProjectMemberRole  @default(RESEARCHER)
-  isActive         Boolean            @default(true) @map("is_active")
-  joinedAt         DateTime           @default(now()) @map("joined_at")
-  leftAt           DateTime?          @map("left_at")
-  createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
+  researcherId      String            @map("researcher_id")
+  role              ProjectMemberRole @default(RESEARCHER)
+  isActive          Boolean           @default(true) @map("is_active")
+  joinedAt          DateTime          @default(now()) @map("joined_at")
+  leftAt            DateTime?         @map("left_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
 
-  researchProject ResearchProject    @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
-  researcher      Researcher         @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  researchProject    ResearchProject   @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  researcher         Researcher        @relation(fields: [researcherId], references: [id], onDelete: Cascade)
   assignedActivities ProjectActivity[]
 
   @@unique([researchProjectId, researcherId])
@@ -398,21 +453,21 @@ model ProjectMember {
 }
 
 model ProjectActivity {
-  id                String         @id @default(uuid())
-  researchProjectId String         @map("research_project_id")
-  assignedMemberId  String?        @map("assigned_member_id")
+  id                String          @id @default(uuid())
+  researchProjectId String          @map("research_project_id")
+  assignedMemberId  String?         @map("assigned_member_id")
   title             String
   description       String?
   priority          RequestPriority @default(MEDIUM)
-  status            ActivityStatus @default(TODO)
-  startDate         DateTime?      @map("start_date")
-  dueDate           DateTime?      @map("due_date")
-  completedAt       DateTime?      @map("completed_at")
-  progress          Int            @default(0)
+  status            ActivityStatus  @default(TODO)
+  startDate         DateTime?       @map("start_date")
+  dueDate           DateTime?       @map("due_date")
+  completedAt       DateTime?       @map("completed_at")
+  progress          Int             @default(0)
   notes             String?
-  createdById       String         @map("created_by_id")
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
+  createdById       String          @map("created_by_id")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
   researchProject ResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
   assignedMember  ProjectMember?  @relation(fields: [assignedMemberId], references: [id], onDelete: SetNull)
@@ -465,4 +520,105 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model ResearchDocument {
+  id                String         @id @default(uuid())
+  researchProjectId String?        @map("research_project_id")
+  uploadedById      String         @map("uploaded_by_id")
+  title             String
+  description       String?
+  documentType      DocumentType   @map("document_type")
+  fileName          String         @map("file_name")
+  filePath          String         @map("file_path")
+  storageKey        String         @unique @map("storage_key")
+  mimeType          String         @map("mime_type")
+  fileSize          Int            @map("file_size")
+  version           Int            @default(1)
+  status            DocumentStatus @default(DRAFT)
+  archivedAt        DateTime?      @map("archived_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  researchProject ResearchProject?          @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  uploadedBy      User                      @relation("UploadedDocuments", fields: [uploadedById], references: [id], onDelete: Restrict)
+  versions        ResearchDocumentVersion[]
+
+  @@index([researchProjectId])
+  @@index([uploadedById])
+  @@index([documentType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("research_documents")
+}
+
+model ResearchDocumentVersion {
+  id                String   @id @default(uuid())
+  documentId        String   @map("document_id")
+  versionNumber     Int      @map("version_number")
+  fileName          String   @map("file_name")
+  filePath          String   @map("file_path")
+  storageKey        String   @unique @map("storage_key")
+  mimeType          String   @map("mime_type")
+  fileSize          Int      @map("file_size")
+  uploadedById      String   @map("uploaded_by_id")
+  changeDescription String?  @map("change_description")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  document   ResearchDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy User             @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+  @@index([uploadedById])
+  @@map("research_document_versions")
+}
+
+model ResearchPublication {
+  id                String            @id @default(uuid())
+  researchProjectId String?           @map("research_project_id")
+  title             String
+  abstract          String?
+  publicationType   PublicationType   @map("publication_type")
+  journalName       String?           @map("journal_name")
+  conferenceName    String?           @map("conference_name")
+  publisher         String?
+  doi               String?           @unique
+  isbn              String?
+  publicationDate   DateTime?         @map("publication_date")
+  url               String?
+  status            PublicationStatus @default(DRAFT)
+  citationCount     Int?              @default(0) @map("citation_count")
+  createdById       String            @map("created_by_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  researchProject ResearchProject?    @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  createdBy       User                @relation("CreatedPublications", fields: [createdById], references: [id], onDelete: Restrict)
+  authors         PublicationAuthor[]
+
+  @@index([researchProjectId])
+  @@index([createdById])
+  @@index([publicationType])
+  @@index([status])
+  @@index([doi])
+  @@index([createdAt])
+  @@map("research_publications")
+}
+
+model PublicationAuthor {
+  id                    String   @id @default(uuid())
+  publicationId         String   @map("publication_id")
+  researcherId          String   @map("researcher_id")
+  authorOrder           Int      @map("author_order")
+  isCorrespondingAuthor Boolean  @default(false) @map("is_corresponding_author")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  publication ResearchPublication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  researcher  Researcher          @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+
+  @@unique([publicationId, researcherId])
+  @@index([publicationId])
+  @@index([researcherId])
+  @@map("publication_authors")
 }

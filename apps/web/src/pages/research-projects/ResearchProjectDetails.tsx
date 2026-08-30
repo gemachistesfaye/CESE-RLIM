@@ -3,6 +3,8 @@ import { useParams, Link } from "@tanstack/react-router";
 import { useResearchProject, useUpdateResearchProjectStatus } from "../../hooks/useResearchProjects";
 import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
 import { useProjectActivityStats } from "../../hooks/useProjectActivities";
+import { useResearchDocumentSummary } from "../../hooks/useResearchDocuments";
+import { useResearchPublicationSummary } from "../../hooks/useResearchPublications";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -17,6 +19,8 @@ import {
   Users,
   ChevronRight,
   ClipboardList,
+  FileText,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -33,6 +37,8 @@ export default function ResearchProjectDetails() {
   const { data: project, isLoading, error } = useResearchProject(id);
   const { data: teamSummary } = useProjectTeamSummary(id);
   const { data: activityStats } = useProjectActivityStats(id);
+  const { data: docSummary } = useResearchDocumentSummary(id);
+  const { data: pubSummary } = useResearchPublicationSummary(id);
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
@@ -296,6 +302,94 @@ export default function ResearchProjectDetails() {
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Create first activity
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Documents</h3>
+            <Link
+              to="/research-documents"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              View Documents
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          {docSummary && docSummary.total > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-slate-900">{docSummary.total}</div>
+                <div className="text-xs text-slate-500">Total</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-amber-600">{(docSummary.underReview || 0) + (docSummary.submitted || 0)}</div>
+                <div className="text-xs text-slate-500">Pending Review</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-emerald-600">{docSummary.approved || 0}</div>
+                <div className="text-xs text-slate-500">Approved</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-blue-600">{docSummary.published || 0}</div>
+                <div className="text-xs text-slate-500">Published</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <FileText size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No documents yet</p>
+              <Link
+                to="/research-documents"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+              >
+                + Upload first document
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Publications</h3>
+            <Link
+              to="/research-publications"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              View Publications
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          {pubSummary && pubSummary.total > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-slate-900">{pubSummary.total}</div>
+                <div className="text-xs text-slate-500">Total</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-amber-600">{(pubSummary.byStatus?.UNDER_REVIEW || 0) + (pubSummary.byStatus?.SUBMITTED || 0)}</div>
+                <div className="text-xs text-slate-500">Under Review</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-emerald-600">{pubSummary.byStatus?.PUBLISHED || 0}</div>
+                <div className="text-xs text-slate-500">Published</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-purple-600">{pubSummary.byStatus?.ACCEPTED || 0}</div>
+                <div className="text-xs text-slate-500">Accepted</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <BookOpen size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No publications yet</p>
+              <Link
+                to="/research-publications"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+              >
+                + Create first publication
               </Link>
             </div>
           )}

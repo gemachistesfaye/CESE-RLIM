@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Search,
   ClipboardList,
+  BookOpen,
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,6 +38,8 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Researchers', href: '/researchers', icon: Users },
       { name: 'Projects', href: '/research-projects', icon: FlaskConical },
       { name: 'Activities', href: '/project-activities', icon: ClipboardList },
+      { name: 'Documents', href: '/research-documents', icon: FileText },
+      { name: 'Publications', href: '/research-publications', icon: BookOpen },
       { name: 'Innovations', href: '/innovations', icon: Microscope },
     ],
   },

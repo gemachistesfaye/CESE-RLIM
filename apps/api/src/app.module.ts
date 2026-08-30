@@ -14,6 +14,8 @@ import { ResearchProjectsModule } from './research-projects/research-projects.mo
 import { InnovationsModule } from './innovations/innovations.module';
 import { ResearchProjectMembersModule } from './research-project-members/research-project-members.module';
 import { ProjectActivitiesModule } from './project-activities/project-activities.module';
+import { ResearchDocumentsModule } from './research-documents/research-documents.module';
+import { ResearchPublicationsModule } from './research-publications/research-publications.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -34,6 +36,8 @@ import { AuditModule } from './audit/audit.module';
     InnovationsModule,
     ResearchProjectMembersModule,
     ProjectActivitiesModule,
+    ResearchDocumentsModule,
+    ResearchPublicationsModule,
   ],
 })
 export class AppModule {}

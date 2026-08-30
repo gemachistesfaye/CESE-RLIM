@@ -2,6 +2,7 @@
 import { useParams, Link } from "@tanstack/react-router";
 import { useResearcher } from "../../hooks/useResearchers";
 import { useResearcherProjectMemberships, PROJECT_MEMBER_ROLE_LABELS } from "../../hooks/useResearchProjectMembers";
+import { useResearchPublications, PUBLICATION_TYPE_LABELS } from "../../hooks/useResearchPublications";
 import { ArrowLeft, Edit, Mail, Phone, BookOpen, GraduationCap, Building2, UserCircle, Briefcase, FileText, Loader2, FlaskConical, ChevronRight } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearcherForm from "../../components/researchers/ResearcherForm";
@@ -13,6 +14,11 @@ export default function ResearcherProfile() {
     researcherId: id,
     page: 1,
     limit: 10,
+  });
+  const { data: publications } = useResearchPublications({
+    page: 1,
+    limit: 10,
+    researcherId: id,
   });
   const { user: currentUser } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -224,6 +230,47 @@ export default function ResearcherProfile() {
                   </div>
                 ) : (
                   <p className="text-sm text-slate-500">Not a member of any projects yet.</p>
+                )}
+              </div>
+
+              <div className="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <BookOpen size={16} className="text-blue-500" />
+                  Publications
+                </h3>
+                {publications && publications.items.length > 0 ? (
+                  <div className="space-y-3">
+                    {publications.items.map((pub) => (
+                      <Link
+                        key={pub.id}
+                        to="/research-publications/$id"
+                        params={{ id: pub.id }}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <BookOpen size={16} className="text-purple-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900">{pub.title}</div>
+                            <div className="text-xs text-slate-500">{PUBLICATION_TYPE_LABELS[pub.publicationType]}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            pub.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' :
+                            pub.status === 'UNDER_REVIEW' ? 'bg-amber-100 text-amber-700' :
+                            'bg-slate-100 text-slate-700'
+                          }`}>
+                            {pub.status.replace("_", " ")}
+                          </span>
+                          <ChevronRight size={14} className="text-slate-400" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">No publications yet.</p>
                 )}
               </div>
             </div>
