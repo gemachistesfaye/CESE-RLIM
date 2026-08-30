@@ -3,7 +3,9 @@ import { useParams, Link } from "@tanstack/react-router";
 import { useResearcher } from "../../hooks/useResearchers";
 import { useResearcherProjectMemberships, PROJECT_MEMBER_ROLE_LABELS } from "../../hooks/useResearchProjectMembers";
 import { useResearchPublications, PUBLICATION_TYPE_LABELS } from "../../hooks/useResearchPublications";
-import { ArrowLeft, Edit, Mail, Phone, BookOpen, GraduationCap, Building2, UserCircle, Briefcase, FileText, Loader2, FlaskConical, ChevronRight } from "lucide-react";
+import { useGrantApplications, GRANT_APPLICATION_STATUS_LABELS } from "../../hooks/useGrantApplications";
+import { useResearchGrantsByResearcher, GRANT_STATUS_LABELS, type ResearchGrant } from "../../hooks/useResearchGrants";
+import { ArrowLeft, Edit, Mail, Phone, BookOpen, GraduationCap, Building2, UserCircle, Briefcase, FileText, Loader2, FlaskConical, ChevronRight, Award } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearcherForm from "../../components/researchers/ResearcherForm";
 
@@ -20,6 +22,12 @@ export default function ResearcherProfile() {
     limit: 10,
     researcherId: id,
   });
+  const { data: applications } = useGrantApplications({
+    page: 1,
+    limit: 10,
+    applicantId: id,
+  });
+  const { data: grants } = useResearchGrantsByResearcher(id);
   const { user: currentUser } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -273,6 +281,87 @@ export default function ResearcherProfile() {
                   <p className="text-sm text-slate-500">No publications yet.</p>
                 )}
               </div>
+
+              <div className="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <FileText size={16} className="text-blue-500" />
+                  Grant Applications
+                </h3>
+                {applications && applications.items.length > 0 ? (
+                  <div className="space-y-3">
+                    {applications.items.map((app) => (
+                      <Link
+                        key={app.id}
+                        to="/grant-applications/$id"
+                        params={{ id: app.id }}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <FileText size={16} className="text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900">{app.title}</div>
+                            <div className="text-xs text-slate-500">{app.opportunity?.organization}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            app.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
+                            app.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
+                            app.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                            'bg-slate-100 text-slate-700'
+                          }`}>
+                            {GRANT_APPLICATION_STATUS_LABELS[app.status]}
+                          </span>
+                          <ChevronRight size={14} className="text-slate-400" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">No grant applications yet.</p>
+                )}
+              </div>
+
+              {grants && grants.length > 0 && (
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Award size={16} className="text-emerald-500" />
+                    Active Grants
+                  </h3>
+                  <div className="space-y-3">
+                    {grants.map((grant: ResearchGrant) => (
+                      <Link
+                        key={grant.id}
+                        to="/research-grants/$id"
+                        params={{ id: grant.id }}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <Award size={16} className="text-emerald-600" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 font-mono">{grant.grantNumber}</div>
+                            <div className="text-xs text-slate-500">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(grant.awardedAmount)}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            grant.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
+                            grant.status === 'COMPLETED' ? 'bg-blue-100 text-blue-700' :
+                            'bg-slate-100 text-slate-700'
+                          }`}>
+                            {GRANT_STATUS_LABELS[grant.status]}
+                          </span>
+                          <ChevronRight size={14} className="text-slate-400" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

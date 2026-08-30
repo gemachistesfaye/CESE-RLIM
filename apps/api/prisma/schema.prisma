@@ -119,6 +119,8 @@ enum AuditAction {
   DOWNLOAD
   ARCHIVE
   AUTHOR_UPDATE
+  WITHDRAW
+  SPENDING_UPDATE
   OTHER
 }
 
@@ -183,6 +185,40 @@ enum PublicationStatus {
   REJECTED
 }
 
+enum FundingType {
+  INTERNAL
+  NATIONAL
+  INTERNATIONAL
+  INDUSTRY
+  NGO
+  UNIVERSITY
+  OTHER
+}
+
+enum FundingOpportunityStatus {
+  OPEN
+  CLOSED
+  UPCOMING
+  CANCELLED
+}
+
+enum GrantApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum GrantStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  SUSPENDED
+  CANCELLED
+}
+
 // ============================================================
 // MODELS
 // ============================================================
@@ -209,6 +245,8 @@ model User {
   uploadedDocuments        ResearchDocument[]        @relation("UploadedDocuments")
   uploadedDocumentVersions ResearchDocumentVersion[]
   createdPublications      ResearchPublication[]     @relation("CreatedPublications")
+  reviewedApplications     GrantApplication[]        @relation("ReviewedApplications")
+  createdGrants            ResearchGrant[]           @relation("CreatedGrants")
 
   @@index([email])
   @@index([role])
@@ -237,6 +275,8 @@ model Researcher {
   maintainedEquipment  MaintenanceRecord[]   @relation("MaintenanceResearcher")
   projectMemberships   ProjectMember[]
   publicationAuthors   PublicationAuthor[]
+  grantApplications    GrantApplication[]
+  principalGrants      ResearchGrant[]       @relation("PrincipalInvestigator")
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -401,6 +441,8 @@ model ResearchProject {
   projectActivities    ProjectActivity[]
   documents            ResearchDocument[]
   publications         ResearchPublication[]
+  grantApplications    GrantApplication[]
+  researchGrants       ResearchGrant[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -621,4 +663,90 @@ model PublicationAuthor {
   @@index([publicationId])
   @@index([researcherId])
   @@map("publication_authors")
+}
+
+model FundingOpportunity {
+  id                  String                   @id @default(uuid())
+  title               String
+  organization        String
+  description         String?
+  fundingType         FundingType              @map("funding_type")
+  minimumAmount       Decimal?                 @map("minimum_amount") @db.Decimal(14, 2)
+  maximumAmount       Decimal?                 @map("maximum_amount") @db.Decimal(14, 2)
+  applicationDeadline DateTime?                @map("application_deadline")
+  eligibilityCriteria String?                  @map("eligibility_criteria")
+  applicationUrl      String?                  @map("application_url")
+  status              FundingOpportunityStatus @default(OPEN)
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+
+  applications GrantApplication[]
+
+  @@index([status])
+  @@index([fundingType])
+  @@index([applicationDeadline])
+  @@index([createdAt])
+  @@map("funding_opportunities")
+}
+
+model GrantApplication {
+  id                String                 @id @default(uuid())
+  opportunityId     String                 @map("opportunity_id")
+  researchProjectId String?                @map("research_project_id")
+  applicantId       String                 @map("applicant_id")
+  title             String
+  requestedAmount   Decimal                @db.Decimal(14, 2)
+  proposalSummary   String                 @map("proposal_summary")
+  submittedAt       DateTime?              @map("submitted_at")
+  reviewedAt        DateTime?              @map("reviewed_at")
+  reviewedById      String?                @map("reviewed_by_id")
+  reviewComment     String?                @map("review_comment")
+  status            GrantApplicationStatus @default(DRAFT)
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+
+  opportunity     FundingOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+  researchProject ResearchProject?   @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  applicant       Researcher         @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  reviewedBy      User?              @relation("ReviewedApplications", fields: [reviewedById], references: [id], onDelete: SetNull)
+  grant           ResearchGrant?
+
+  @@index([opportunityId])
+  @@index([researchProjectId])
+  @@index([applicantId])
+  @@index([reviewedById])
+  @@index([status])
+  @@index([createdAt])
+  @@map("grant_applications")
+}
+
+model ResearchGrant {
+  id                      String      @id @default(uuid())
+  grantNumber             String      @unique @map("grant_number")
+  applicationId           String      @unique @map("application_id")
+  researchProjectId       String?     @map("research_project_id")
+  principalInvestigatorId String?     @map("principal_investigator_id")
+  createdById             String      @map("created_by_id")
+  awardedAmount           Decimal     @map("awarded_amount") @db.Decimal(14, 2)
+  startDate               DateTime    @map("start_date")
+  endDate                 DateTime    @map("end_date")
+  spentAmount             Decimal     @default(0) @map("spent_amount") @db.Decimal(14, 2)
+  status                  GrantStatus @default(ACTIVE)
+  notes                   String?
+  createdAt               DateTime    @default(now()) @map("created_at")
+  updatedAt               DateTime    @updatedAt @map("updated_at")
+
+  application           GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  researchProject       ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  principalInvestigator Researcher?      @relation("PrincipalInvestigator", fields: [principalInvestigatorId], references: [id], onDelete: SetNull)
+  createdBy             User             @relation("CreatedGrants", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([grantNumber])
+  @@index([applicationId])
+  @@index([researchProjectId])
+  @@index([principalInvestigatorId])
+  @@index([createdById])
+  @@index([status])
+  @@index([createdAt])
+  @@map("research_grants")
 }

@@ -5,6 +5,8 @@ import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
 import { useProjectActivityStats } from "../../hooks/useProjectActivities";
 import { useResearchDocumentSummary } from "../../hooks/useResearchDocuments";
 import { useResearchPublicationSummary } from "../../hooks/useResearchPublications";
+import { useGrantApplicationsByProject } from "../../hooks/useGrantApplications";
+import { useResearchGrantsByProject } from "../../hooks/useResearchGrants";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -21,6 +23,7 @@ import {
   ClipboardList,
   FileText,
   BookOpen,
+  Award,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -39,6 +42,8 @@ export default function ResearchProjectDetails() {
   const { data: activityStats } = useProjectActivityStats(id);
   const { data: docSummary } = useResearchDocumentSummary(id);
   const { data: pubSummary } = useResearchPublicationSummary(id);
+  const { data: projectApps } = useGrantApplicationsByProject(id);
+  const { data: projectGrants } = useResearchGrantsByProject(id);
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
@@ -390,6 +395,50 @@ export default function ResearchProjectDetails() {
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Create first publication
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Funding & Grants</h3>
+            <Link
+              to="/grant-applications"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              View Applications
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          {((projectApps && projectApps.length > 0) || (projectGrants && projectGrants.length > 0)) ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <FileText className="text-blue-500" size={20} />
+                  <div className="text-sm font-medium text-slate-900">Applications</div>
+                </div>
+                <div className="text-2xl font-bold text-blue-600">{projectApps?.length || 0}</div>
+                <div className="text-xs text-slate-500">Grant applications</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <Award className="text-emerald-500" size={20} />
+                  <div className="text-sm font-medium text-slate-900">Active Grants</div>
+                </div>
+                <div className="text-2xl font-bold text-emerald-600">{projectGrants?.filter((g: { status: string }) => g.status === 'ACTIVE').length || 0}</div>
+                <div className="text-xs text-slate-500">Research grants</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <Award size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No funding yet</p>
+              <Link
+                to="/grant-applications"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+              >
+                + Create grant application
               </Link>
             </div>
           )}

@@ -34,6 +34,12 @@ import ResearchDocumentsList from "./pages/research-documents/ResearchDocumentsL
 import ResearchDocumentDetails from "./pages/research-documents/ResearchDocumentDetails";
 import ResearchPublicationsList from "./pages/research-publications/ResearchPublicationsList";
 import ResearchPublicationDetails from "./pages/research-publications/ResearchPublicationDetails";
+import FundingOpportunitiesList from "./pages/funding-opportunities/FundingOpportunitiesList";
+import FundingOpportunityDetails from "./pages/funding-opportunities/FundingOpportunityDetails";
+import GrantApplicationsList from "./pages/grant-applications/GrantApplicationsList";
+import GrantApplicationDetails from "./pages/grant-applications/GrantApplicationDetails";
+import ResearchGrantsList from "./pages/research-grants/ResearchGrantsList";
+import ResearchGrantDetails from "./pages/research-grants/ResearchGrantDetails";
 
 function RootComponent() {
   return <Outlet />;
@@ -233,6 +239,42 @@ const researchPublicationDetailsRoute = createRoute({
   component: ResearchPublicationDetails,
 });
 
+const fundingOpportunitiesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/funding-opportunities",
+  component: FundingOpportunitiesList,
+});
+
+const fundingOpportunityDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/funding-opportunities/$id",
+  component: FundingOpportunityDetails,
+});
+
+const grantApplicationsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/grant-applications",
+  component: GrantApplicationsList,
+});
+
+const grantApplicationDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/grant-applications/$id",
+  component: GrantApplicationDetails,
+});
+
+const researchGrantsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-grants",
+  component: ResearchGrantsList,
+});
+
+const researchGrantDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-grants/$id",
+  component: ResearchGrantDetails,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -263,6 +305,12 @@ const routeTree = rootRoute.addChildren([
     researchDocumentDetailsRoute,
     researchPublicationsRoute,
     researchPublicationDetailsRoute,
+    fundingOpportunitiesRoute,
+    fundingOpportunityDetailsRoute,
+    grantApplicationsRoute,
+    grantApplicationDetailsRoute,
+    researchGrantsRoute,
+    researchGrantDetailsRoute,
   ]),
 ]);
 

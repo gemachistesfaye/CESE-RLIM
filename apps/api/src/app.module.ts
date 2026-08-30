@@ -16,6 +16,9 @@ import { ResearchProjectMembersModule } from './research-project-members/researc
 import { ProjectActivitiesModule } from './project-activities/project-activities.module';
 import { ResearchDocumentsModule } from './research-documents/research-documents.module';
 import { ResearchPublicationsModule } from './research-publications/research-publications.module';
+import { FundingOpportunitiesModule } from './funding-opportunities/funding-opportunities.module';
+import { GrantApplicationsModule } from './grant-applications/grant-applications.module';
+import { ResearchGrantsModule } from './research-grants/research-grants.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -38,6 +41,9 @@ import { AuditModule } from './audit/audit.module';
     ProjectActivitiesModule,
     ResearchDocumentsModule,
     ResearchPublicationsModule,
+    FundingOpportunitiesModule,
+    GrantApplicationsModule,
+    ResearchGrantsModule,
   ],
 })
 export class AppModule {}
