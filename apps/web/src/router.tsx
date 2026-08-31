@@ -45,6 +45,10 @@ import EthicsApplicationDetails from "./pages/ethics/EthicsApplicationDetails";
 import ResearchEventsList from "./pages/research-events/ResearchEventsList";
 import ResearchEventDetails from "./pages/research-events/ResearchEventDetails";
 import MyEvents from "./pages/research-events/MyEvents";
+import ResearchFinanceDashboard from "./pages/research-finance/ResearchFinanceDashboard";
+import ResearchExpensesList from "./pages/research-finance/ResearchExpensesList";
+import ResearchExpenseDetails from "./pages/research-finance/ResearchExpenseDetails";
+import BudgetManagement from "./pages/research-finance/BudgetManagement";
 
 function RootComponent() {
   return <Outlet />;
@@ -310,6 +314,30 @@ const myEventsRoute = createRoute({
   component: MyEvents,
 });
 
+const financeDashboardRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/finance",
+  component: ResearchFinanceDashboard,
+});
+
+const researchExpensesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-expenses",
+  component: ResearchExpensesList,
+});
+
+const researchExpenseDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-expenses/$id",
+  component: ResearchExpenseDetails,
+});
+
+const budgetManagementRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/budget-management",
+  component: BudgetManagement,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -351,6 +379,10 @@ const routeTree = rootRoute.addChildren([
     researchEventsRoute,
     researchEventDetailsRoute,
     myEventsRoute,
+    financeDashboardRoute,
+    researchExpensesRoute,
+    researchExpenseDetailsRoute,
+    budgetManagementRoute,
   ]),
 ]);
 

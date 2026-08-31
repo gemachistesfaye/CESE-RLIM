@@ -253,6 +253,30 @@ enum GrantStatus {
   CANCELLED
 }
 
+enum BudgetCategory {
+  PERSONNEL
+  EQUIPMENT
+  MATERIALS
+  TRAVEL
+  TRAINING
+  SOFTWARE
+  LABORATORY
+  PUBLICATION
+  CONFERENCE
+  ADMINISTRATION
+  OTHER
+}
+
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RECORDED
+  CANCELLED
+}
+
 enum EthicsApplicationStatus {
   DRAFT
   SUBMITTED
@@ -300,6 +324,8 @@ model User {
   createdGrants            ResearchGrant[]           @relation("CreatedGrants")
   assignedEthicsReviews    EthicsReviewer[]          @relation("AssignedByUser")
   createdEvents            ResearchEvent[]            @relation("CreatedEvents")
+  createdAllocations       BudgetAllocation[]         @relation("CreatedAllocations")
+  approvedExpenses         ResearchExpense[]          @relation("ApprovedExpenses")
 
   @@index([email])
   @@index([role])
@@ -335,6 +361,7 @@ model Researcher {
   ethicsReviews        EthicsReview[]        @relation("EthicsReviewReviewer")
   assignedEthicsReviews EthicsReviewer[]     @relation("AssignedReviewer")
   eventParticipations   EventParticipation[]
+  submittedExpenses     ResearchExpense[]    @relation("SubmittedExpenses")
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -503,6 +530,7 @@ model ResearchProject {
   researchGrants       ResearchGrant[]
   ethicsApplications   EthicsApplication[]
   researchEvents       ResearchEvent[]
+  expenses             ResearchExpense[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -646,6 +674,7 @@ model ResearchDocument {
   researchProject ResearchProject?          @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
   uploadedBy      User                      @relation("UploadedDocuments", fields: [uploadedById], references: [id], onDelete: Restrict)
   versions        ResearchDocumentVersion[]
+  receiptExpenses ResearchExpense[]
 
   @@index([researchProjectId])
   @@index([uploadedById])
@@ -802,6 +831,8 @@ model ResearchGrant {
   researchProject       ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
   principalInvestigator Researcher?      @relation("PrincipalInvestigator", fields: [principalInvestigatorId], references: [id], onDelete: SetNull)
   createdBy             User             @relation("CreatedGrants", fields: [createdById], references: [id], onDelete: Restrict)
+  budgetAllocations     BudgetAllocation[]
+  expenses              ResearchExpense[]
 
   @@index([grantNumber])
   @@index([applicationId])
@@ -964,4 +995,65 @@ model EventParticipation {
   @@index([status])
   @@index([registeredAt])
   @@map("event_participations")
+}
+
+model BudgetAllocation {
+  id                String         @id @default(uuid())
+  researchGrantId   String         @map("research_grant_id")
+  category          BudgetCategory
+  allocatedAmount   Decimal        @map("allocated_amount") @db.Decimal(14, 2)
+  description       String?
+  createdById       String         @map("created_by_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  researchGrant     ResearchGrant  @relation(fields: [researchGrantId], references: [id], onDelete: Cascade)
+  createdBy         User           @relation("CreatedAllocations", fields: [createdById], references: [id], onDelete: Restrict)
+  expenses          ResearchExpense[]
+
+  @@index([researchGrantId])
+  @@index([category])
+  @@index([createdById])
+  @@map("budget_allocations")
+}
+
+model ResearchExpense {
+  id                    String         @id @default(uuid())
+  expenseCode           String         @unique @map("expense_code")
+  researchGrantId       String         @map("research_grant_id")
+  researchProjectId     String?        @map("research_project_id")
+  budgetAllocationId    String?        @map("budget_allocation_id")
+  category              BudgetCategory
+  description           String
+  amount                Decimal        @db.Decimal(14, 2)
+  expenseDate           DateTime       @map("expense_date")
+  vendor                String?
+  referenceNumber       String?        @map("reference_number")
+  status                ExpenseStatus  @default(DRAFT)
+  submittedById         String         @map("submitted_by_id")
+  approvedById          String?        @map("approved_by_id")
+  approvedAt            DateTime?      @map("approved_at")
+  rejectionReason       String?        @map("rejection_reason")
+  receiptDocumentId     String?        @map("receipt_document_id")
+  notes                 String?
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+
+  researchGrant         ResearchGrant  @relation(fields: [researchGrantId], references: [id], onDelete: Restrict)
+  researchProject       ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  budgetAllocation      BudgetAllocation? @relation(fields: [budgetAllocationId], references: [id], onDelete: SetNull)
+  submittedBy           Researcher     @relation("SubmittedExpenses", fields: [submittedById], references: [id], onDelete: Restrict)
+  approvedBy            User?          @relation("ApprovedExpenses", fields: [approvedById], references: [id], onDelete: SetNull)
+  receiptDocument       ResearchDocument? @relation(fields: [receiptDocumentId], references: [id], onDelete: SetNull)
+
+  @@index([researchGrantId])
+  @@index([researchProjectId])
+  @@index([budgetAllocationId])
+  @@index([category])
+  @@index([status])
+  @@index([submittedById])
+  @@index([approvedById])
+  @@index([expenseDate])
+  @@index([createdAt])
+  @@map("research_expenses")
 }

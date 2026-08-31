@@ -16,6 +16,7 @@ import {
   Award,
   Shield,
   Calendar,
+  DollarSign,
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -54,6 +55,14 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Opportunities', href: '/funding-opportunities', icon: Target },
       { name: 'Applications', href: '/grant-applications', icon: FileText },
       { name: 'Grants', href: '/research-grants', icon: Award },
+    ],
+  },
+  {
+    section: 'FINANCE',
+    items: [
+      { name: 'Finance Dashboard', href: '/finance', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Expenses', href: '/research-expenses', icon: FileText },
+      { name: 'Budgets', href: '/budget-management', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
     ],
   },
   {

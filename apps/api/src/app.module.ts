@@ -22,6 +22,9 @@ import { ResearchGrantsModule } from './research-grants/research-grants.module';
 import { EthicsModule } from './ethics/ethics.module';
 import { ResearchEventsModule } from './research-events/research-events.module';
 import { EventParticipationsModule } from './event-participations/event-participations.module';
+import { BudgetAllocationsModule } from './budget-allocations/budget-allocations.module';
+import { ResearchExpensesModule } from './research-expenses/research-expenses.module';
+import { ResearchFinanceModule } from './research-finance/research-finance.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -50,6 +53,9 @@ import { AuditModule } from './audit/audit.module';
     EthicsModule,
     ResearchEventsModule,
     EventParticipationsModule,
+    BudgetAllocationsModule,
+    ResearchExpensesModule,
+    ResearchFinanceModule,
   ],
 })
 export class AppModule {}
