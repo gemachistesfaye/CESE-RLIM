@@ -56,6 +56,7 @@ import ResearchReportsList from "./pages/research-reports/ResearchReportsList";
 import ResearchReportDetails from "./pages/research-reports/ResearchReportDetails";
 import MyReports from "./pages/research-reports/MyReports";
 import NotificationsList from "./pages/notifications/NotificationsList";
+import GlobalSearchPage from "./pages/search/GlobalSearchPage";
 
 function RootComponent() {
   return <Outlet />;
@@ -387,6 +388,12 @@ const notificationsRoute = createRoute({
   component: NotificationsList,
 });
 
+const searchRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/search",
+  component: GlobalSearchPage,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -439,6 +446,7 @@ const routeTree = rootRoute.addChildren([
     researchReportDetailsRoute,
     myReportsRoute,
     notificationsRoute,
+    searchRoute,
   ]),
 ]);
 

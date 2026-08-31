@@ -30,6 +30,7 @@ import { ResearchReportsModule } from './research-reports/research-reports.modul
 import { DashboardModule } from './dashboard/dashboard.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditModule } from './audit/audit.module';
+import { GlobalSearchModule } from './global-search/global-search.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AuditModule } from './audit/audit.module';
     AuthModule,
     HealthModule,
     AuditModule,
+    GlobalSearchModule,
     UsersModule,
     ResearchersModule,
     LaboratoriesModule,

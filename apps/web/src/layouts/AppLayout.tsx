@@ -9,7 +9,6 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  Search,
   ClipboardList,
   BookOpen,
   Target,
@@ -28,6 +27,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUnreadNotificationCount, useNotifications, useMarkNotificationRead } from '../hooks/useNotifications';
 import { useState, useRef, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import HeaderSearch from '../components/global-search/HeaderSearch';
 
 interface NavItem {
   name: string;
@@ -268,14 +268,7 @@ function Topbar() {
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 fixed top-0 left-64 right-0 z-20">
       <div className="flex items-center gap-4 flex-1">
-        <div className="relative max-w-md w-full">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search researchers, equipment, labs..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
+        <HeaderSearch className="max-w-md w-full" />
       </div>
 
       <div className="flex items-center gap-4">
