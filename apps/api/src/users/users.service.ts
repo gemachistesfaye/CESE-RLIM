@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
@@ -32,6 +33,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -200,6 +202,15 @@ export class UsersService {
       entityId: id,
       description: `Changed role of ${user.email} from ${user.role} to ${dto.role}`,
       metadata: { previousRole: user.role, newRole: dto.role },
+    });
+
+    await this.notificationsService.create({
+      userId: id,
+      type: 'INFO',
+      title: 'Role Changed',
+      message: `Your role has been changed from ${user.role} to ${dto.role}. Please refresh your session if permissions do not update immediately.`,
+      entityType: 'User',
+      entityId: id,
     });
 
     return updated;
