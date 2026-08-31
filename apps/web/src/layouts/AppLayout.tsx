@@ -14,6 +14,7 @@ import {
   BookOpen,
   Target,
   Award,
+  Shield,
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -51,6 +52,12 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Opportunities', href: '/funding-opportunities', icon: Target },
       { name: 'Applications', href: '/grant-applications', icon: FileText },
       { name: 'Grants', href: '/research-grants', icon: Award },
+    ],
+  },
+  {
+    section: 'COMPLIANCE',
+    items: [
+      { name: 'Ethics & Approvals', href: '/ethics/applications', icon: Shield },
     ],
   },
   {

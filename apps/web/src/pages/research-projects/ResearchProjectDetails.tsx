@@ -7,6 +7,7 @@ import { useResearchDocumentSummary } from "../../hooks/useResearchDocuments";
 import { useResearchPublicationSummary } from "../../hooks/useResearchPublications";
 import { useGrantApplicationsByProject } from "../../hooks/useGrantApplications";
 import { useResearchGrantsByProject } from "../../hooks/useResearchGrants";
+import { useEthicsApplicationsByProject, ETHICS_APPLICATION_STATUS_LABELS } from "../../hooks/useEthics";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -24,6 +25,7 @@ import {
   FileText,
   BookOpen,
   Award,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -44,6 +46,7 @@ export default function ResearchProjectDetails() {
   const { data: pubSummary } = useResearchPublicationSummary(id);
   const { data: projectApps } = useGrantApplicationsByProject(id);
   const { data: projectGrants } = useResearchGrantsByProject(id);
+  const { data: projectEthicsApps } = useEthicsApplicationsByProject(id);
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
@@ -439,6 +442,63 @@ export default function ResearchProjectDetails() {
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Create grant application
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Ethics Applications</h3>
+            <Link
+              to="/ethics/applications"
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              View Applications
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+          {projectEthicsApps && projectEthicsApps.length > 0 ? (
+            <div className="space-y-2">
+              {projectEthicsApps.map((ethApp) => (
+                <Link
+                  key={ethApp.id}
+                  to="/ethics/applications/$id"
+                  params={{ id: ethApp.id }}
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Shield size={16} className="text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">{ethApp.title}</div>
+                      <div className="text-xs text-slate-500">{ethApp.applicationCode}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      ethApp.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
+                      ethApp.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
+                      ethApp.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                      'bg-slate-100 text-slate-700'
+                    }`}>
+                      {ETHICS_APPLICATION_STATUS_LABELS[ethApp.status]}
+                    </span>
+                    <ChevronRight size={14} className="text-slate-400" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <Shield size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No ethics applications yet</p>
+              <Link
+                to="/ethics/applications"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+              >
+                + Create ethics application
               </Link>
             </div>
           )}

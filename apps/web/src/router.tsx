@@ -40,6 +40,8 @@ import GrantApplicationsList from "./pages/grant-applications/GrantApplicationsL
 import GrantApplicationDetails from "./pages/grant-applications/GrantApplicationDetails";
 import ResearchGrantsList from "./pages/research-grants/ResearchGrantsList";
 import ResearchGrantDetails from "./pages/research-grants/ResearchGrantDetails";
+import EthicsApplicationsList from "./pages/ethics/EthicsApplicationsList";
+import EthicsApplicationDetails from "./pages/ethics/EthicsApplicationDetails";
 
 function RootComponent() {
   return <Outlet />;
@@ -275,6 +277,18 @@ const researchGrantDetailsRoute = createRoute({
   component: ResearchGrantDetails,
 });
 
+const ethicsApplicationsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/ethics/applications",
+  component: EthicsApplicationsList,
+});
+
+const ethicsApplicationDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/ethics/applications/$id",
+  component: EthicsApplicationDetails,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -311,6 +325,8 @@ const routeTree = rootRoute.addChildren([
     grantApplicationDetailsRoute,
     researchGrantsRoute,
     researchGrantDetailsRoute,
+    ethicsApplicationsRoute,
+    ethicsApplicationDetailsRoute,
   ]),
 ]);
 

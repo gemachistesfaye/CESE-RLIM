@@ -121,6 +121,9 @@ enum AuditAction {
   AUTHOR_UPDATE
   WITHDRAW
   SPENDING_UPDATE
+  SUBMIT
+  REQUEST_REVISION
+  ASSIGN_REVIEWER
   OTHER
 }
 
@@ -219,6 +222,23 @@ enum GrantStatus {
   CANCELLED
 }
 
+enum EthicsApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUIRED
+  RESUBMITTED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum EthicsReviewDecision {
+  APPROVE
+  REJECT
+  REQUEST_REVISION
+}
+
 // ============================================================
 // MODELS
 // ============================================================
@@ -247,6 +267,7 @@ model User {
   createdPublications      ResearchPublication[]     @relation("CreatedPublications")
   reviewedApplications     GrantApplication[]        @relation("ReviewedApplications")
   createdGrants            ResearchGrant[]           @relation("CreatedGrants")
+  assignedEthicsReviews    EthicsReviewer[]          @relation("AssignedByUser")
 
   @@index([email])
   @@index([role])
@@ -277,6 +298,10 @@ model Researcher {
   publicationAuthors   PublicationAuthor[]
   grantApplications    GrantApplication[]
   principalGrants      ResearchGrant[]       @relation("PrincipalInvestigator")
+  ethicsApplications   EthicsApplication[]   @relation("EthicsApplicant")
+  reviewedEthicsApplications EthicsApplication[] @relation("EthicsApplicationReviewer")
+  ethicsReviews        EthicsReview[]        @relation("EthicsReviewReviewer")
+  assignedEthicsReviews EthicsReviewer[]     @relation("AssignedReviewer")
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -443,6 +468,7 @@ model ResearchProject {
   publications         ResearchPublication[]
   grantApplications    GrantApplication[]
   researchGrants       ResearchGrant[]
+  ethicsApplications   EthicsApplication[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -749,4 +775,85 @@ model ResearchGrant {
   @@index([status])
   @@index([createdAt])
   @@map("research_grants")
+}
+
+model EthicsApplication {
+  id                  String                  @id @default(uuid())
+  applicationCode     String                  @unique @map("application_code")
+  researchProjectId   String                  @map("research_project_id")
+  applicantId         String                  @map("applicant_id")
+  title               String
+  researchSummary     String                  @map("research_summary")
+  methodology         String?
+  participantDetails  String?                 @map("participant_details")
+  riskAssessment      String?                 @map("risk_assessment")
+  benefitStatement    String?                 @map("benefit_statement")
+  dataProtectionPlan  String?                 @map("data_protection_plan")
+  consentProcess      String?                 @map("consent_process")
+  status              EthicsApplicationStatus @default(DRAFT)
+  submittedAt         DateTime?               @map("submitted_at")
+  reviewedAt          DateTime?               @map("reviewed_at")
+  approvedAt          DateTime?               @map("approved_at")
+  rejectedAt          DateTime?               @map("rejected_at")
+  reviewerId          String?                 @map("reviewer_id")
+  reviewComment       String?                 @map("review_comment")
+  revisionComment     String?                 @map("revision_comment")
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+
+  researchProject ResearchProject        @relation(fields: [researchProjectId], references: [id], onDelete: Restrict)
+  applicant       Researcher             @relation("EthicsApplicant", fields: [applicantId], references: [id], onDelete: Restrict)
+  reviewer        Researcher?            @relation("EthicsApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviews         EthicsReview[]
+  reviewers       EthicsReviewer[]
+
+  @@index([applicationCode])
+  @@index([researchProjectId])
+  @@index([applicantId])
+  @@index([reviewerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ethics_applications")
+}
+
+model EthicsReview {
+  id              String               @id @default(uuid())
+  applicationId   String               @map("application_id")
+  reviewerId      String               @map("reviewer_id")
+  decision        EthicsReviewDecision
+  comment         String?
+  reviewedAt      DateTime             @default(now()) @map("reviewed_at")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  application EthicsApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  reviewer    Researcher        @relation("EthicsReviewReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([applicationId])
+  @@index([reviewerId])
+  @@index([decision])
+  @@index([createdAt])
+  @@map("ethics_reviews")
+}
+
+model EthicsReviewer {
+  id            String    @id @default(uuid())
+  applicationId String    @map("application_id")
+  reviewerId    String    @map("reviewer_id")
+  assignedById  String    @map("assigned_by_id")
+  assignedAt    DateTime  @default(now()) @map("assigned_at")
+  isActive      Boolean   @default(true) @map("is_active")
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  application EthicsApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  reviewer    Researcher        @relation("AssignedReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  assignedBy  User              @relation("AssignedByUser", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@unique([applicationId, reviewerId])
+  @@index([applicationId])
+  @@index([reviewerId])
+  @@index([assignedById])
+  @@map("ethics_reviewers")
 }
