@@ -20,6 +20,7 @@ const USER_SELECT = {
   lastName: true,
   phone: true,
   role: true,
+  status: true,
   isActive: true,
   lastLoginAt: true,
   createdAt: true,
@@ -39,8 +40,9 @@ export class UsersService {
     search?: string;
     role?: string;
     isActive?: string;
+    status?: string;
   }) {
-    const { page, limit, search, role, isActive } = params;
+    const { page, limit, search, role, isActive, status } = params;
     const skip = (page - 1) * limit;
 
     const where: Prisma.UserWhereInput = {};
@@ -60,6 +62,10 @@ export class UsersService {
 
     if (isActive !== undefined && isActive !== '') {
       where.isActive = isActive === 'true';
+    }
+
+    if (status) {
+      where.status = status as any;
     }
 
     const [items, total] = await Promise.all([

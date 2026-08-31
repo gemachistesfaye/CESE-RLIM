@@ -18,6 +18,12 @@ enum UserRole {
   TECHNICIAN
 }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 enum LabStatus {
   ACTIVE
   INACTIVE
@@ -345,6 +351,7 @@ model User {
   lastName     String    @map("last_name")
   phone        String?
   role         UserRole  @default(RESEARCHER)
+  status       UserStatus @default(ACTIVE)
   isActive     Boolean   @default(true) @map("is_active")
   lastLoginAt  DateTime? @map("last_login_at")
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -371,6 +378,7 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([status])
   @@map("users")
 }
 

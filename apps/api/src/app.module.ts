@@ -33,6 +33,7 @@ import { AuditModule } from './audit/audit.module';
 import { GlobalSearchModule } from './global-search/global-search.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { AdministrationModule } from './administration/administration.module';
+import { UserManagementModule } from './user-management/user-management.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AdministrationModule } from './administration/administration.module';
     GlobalSearchModule,
     AuditLogsModule,
     AdministrationModule,
+    UserManagementModule,
     UsersModule,
     ResearchersModule,
     LaboratoriesModule,

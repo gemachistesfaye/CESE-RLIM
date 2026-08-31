@@ -43,6 +43,7 @@ export class UsersController {
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'role', required: false, enum: UserRole })
   @ApiQuery({ name: 'isActive', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async findAll(
     @Query('page') page?: string,
@@ -50,6 +51,7 @@ export class UsersController {
     @Query('search') search?: string,
     @Query('role') role?: string,
     @Query('isActive') isActive?: string,
+    @Query('status') status?: string,
   ) {
     return this.usersService.findAll({
       page: page ? parseInt(page, 10) : 1,
@@ -57,6 +59,7 @@ export class UsersController {
       search,
       role,
       isActive,
+      status,
     });
   }
 

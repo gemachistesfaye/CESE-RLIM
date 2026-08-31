@@ -63,6 +63,7 @@ import AdministrationDashboard from "./pages/administration/AdministrationDashbo
 import SystemSettings from "./pages/administration/SystemSettings";
 import RolePermissions from "./pages/administration/RolePermissions";
 import SystemInformation from "./pages/administration/SystemInformation";
+import SecurityDashboard from "./pages/user-management/SecurityDashboard";
 
 function RootComponent() {
   return <Outlet />;
@@ -436,6 +437,12 @@ const systemInformationRoute = createRoute({
   component: SystemInformation,
 });
 
+const securityDashboardRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/administration/security",
+  component: SecurityDashboard,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -495,6 +502,7 @@ const routeTree = rootRoute.addChildren([
     systemSettingsRoute,
     rolePermissionsRoute,
     systemInformationRoute,
+    securityDashboardRoute,
   ]),
 ]);
 

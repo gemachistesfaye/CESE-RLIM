@@ -18,8 +18,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (!user.isActive) {
-      throw new UnauthorizedException('Account is deactivated');
+    if (!user.isActive || (user as any).status === 'SUSPENDED') {
+      throw new UnauthorizedException('Account is deactivated or suspended');
     }
 
     const isPasswordValid = await bcrypt.compare(
