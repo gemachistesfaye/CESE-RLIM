@@ -15,6 +15,7 @@ import {
   Target,
   Award,
   Shield,
+  Calendar,
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,6 +45,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Documents', href: '/research-documents', icon: FileText },
       { name: 'Publications', href: '/research-publications', icon: BookOpen },
       { name: 'Innovations', href: '/innovations', icon: Microscope },
+      { name: 'Events', href: '/research-events', icon: Calendar },
     ],
   },
   {
@@ -74,6 +76,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'MY WORK',
     items: [
       { name: 'My Tasks', href: '/my-maintenance', icon: Wrench },
+      { name: 'My Events', href: '/my-events', icon: Calendar },
     ],
   },
   {

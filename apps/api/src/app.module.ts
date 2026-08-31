@@ -20,6 +20,8 @@ import { FundingOpportunitiesModule } from './funding-opportunities/funding-oppo
 import { GrantApplicationsModule } from './grant-applications/grant-applications.module';
 import { ResearchGrantsModule } from './research-grants/research-grants.module';
 import { EthicsModule } from './ethics/ethics.module';
+import { ResearchEventsModule } from './research-events/research-events.module';
+import { EventParticipationsModule } from './event-participations/event-participations.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -46,6 +48,8 @@ import { AuditModule } from './audit/audit.module';
     GrantApplicationsModule,
     ResearchGrantsModule,
     EthicsModule,
+    ResearchEventsModule,
+    EventParticipationsModule,
   ],
 })
 export class AppModule {}
