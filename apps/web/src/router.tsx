@@ -49,6 +49,12 @@ import ResearchFinanceDashboard from "./pages/research-finance/ResearchFinanceDa
 import ResearchExpensesList from "./pages/research-finance/ResearchExpensesList";
 import ResearchExpenseDetails from "./pages/research-finance/ResearchExpenseDetails";
 import BudgetManagement from "./pages/research-finance/BudgetManagement";
+import ResearchMilestonesList from "./pages/research-milestones/ResearchMilestonesList";
+import ResearchMilestoneDetails from "./pages/research-milestones/ResearchMilestoneDetails";
+import MyMilestones from "./pages/research-milestones/MyMilestones";
+import ResearchReportsList from "./pages/research-reports/ResearchReportsList";
+import ResearchReportDetails from "./pages/research-reports/ResearchReportDetails";
+import MyReports from "./pages/research-reports/MyReports";
 
 function RootComponent() {
   return <Outlet />;
@@ -338,6 +344,42 @@ const budgetManagementRoute = createRoute({
   component: BudgetManagement,
 });
 
+const researchMilestonesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-milestones",
+  component: ResearchMilestonesList,
+});
+
+const researchMilestoneDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-milestones/$id",
+  component: ResearchMilestoneDetails,
+});
+
+const myMilestonesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/my-milestones",
+  component: MyMilestones,
+});
+
+const researchReportsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-reports",
+  component: ResearchReportsList,
+});
+
+const researchReportDetailsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/research-reports/$id",
+  component: ResearchReportDetails,
+});
+
+const myReportsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/my-reports",
+  component: MyReports,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -383,6 +425,12 @@ const routeTree = rootRoute.addChildren([
     researchExpensesRoute,
     researchExpenseDetailsRoute,
     budgetManagementRoute,
+    researchMilestonesRoute,
+    researchMilestoneDetailsRoute,
+    myMilestonesRoute,
+    researchReportsRoute,
+    researchReportDetailsRoute,
+    myReportsRoute,
   ]),
 ]);
 

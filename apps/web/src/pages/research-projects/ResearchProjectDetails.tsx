@@ -8,6 +8,8 @@ import { useResearchPublicationSummary } from "../../hooks/useResearchPublicatio
 import { useGrantApplicationsByProject } from "../../hooks/useGrantApplications";
 import { useResearchGrantsByProject } from "../../hooks/useResearchGrants";
 import { useEthicsApplicationsByProject, ETHICS_APPLICATION_STATUS_LABELS } from "../../hooks/useEthics";
+import { useProjectMilestones, useProjectProgress } from "../../hooks/useResearchMilestones";
+import { useProjectReports } from "../../hooks/useResearchReports";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -26,6 +28,7 @@ import {
   BookOpen,
   Award,
   Shield,
+  Flag,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -47,6 +50,9 @@ export default function ResearchProjectDetails() {
   const { data: projectApps } = useGrantApplicationsByProject(id);
   const { data: projectGrants } = useResearchGrantsByProject(id);
   const { data: projectEthicsApps } = useEthicsApplicationsByProject(id);
+  const { data: projectMilestones } = useProjectMilestones(id);
+  const { data: projectProgress } = useProjectProgress(id);
+  const { data: projectReports } = useProjectReports(id);
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
@@ -500,6 +506,95 @@ export default function ResearchProjectDetails() {
               >
                 + Create ethics application
               </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Milestones & Progress</h3>
+            <Link to="/research-milestones" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View All <ChevronRight size={16} />
+            </Link>
+          </div>
+          {projectProgress ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-slate-900">{projectProgress.overallProgress}%</div>
+                <div className="text-xs text-slate-500">Overall Progress</div>
+                <div className="mt-2 bg-gray-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${projectProgress.overallProgress}%` }} /></div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-emerald-600">{projectProgress.completedMilestones}/{projectProgress.totalMilestones}</div>
+                <div className="text-xs text-slate-500">Milestones Completed</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className={`text-2xl font-bold ${projectProgress.scheduleStatus === 'ON_TRACK' ? 'text-emerald-600' : projectProgress.scheduleStatus === 'AT_RISK' ? 'text-amber-600' : 'text-red-600'}`}>{projectProgress.scheduleStatus.replace('_', ' ')}</div>
+                <div className="text-xs text-slate-500">Schedule Status</div>
+              </div>
+              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                <div className="text-2xl font-bold text-slate-900">{projectProgress.daysRemaining}</div>
+                <div className="text-xs text-slate-500">Days Remaining</div>
+              </div>
+            </div>
+          ) : null}
+          {projectMilestones && projectMilestones.length > 0 ? (
+            <div className="space-y-2">
+              {projectMilestones.slice(0, 5).map((m) => (
+                <Link key={m.id} to="/research-milestones/$id" params={{ id: m.id }} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Flag size={16} className={`${m.status === 'COMPLETED' ? 'text-emerald-500' : m.status === 'BLOCKED' ? 'text-red-500' : 'text-amber-500'}`} />
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">{m.title}</div>
+                      <div className="text-xs text-slate-500">{m.plannedDueDate ? `Due: ${new Date(m.plannedDueDate).toLocaleDateString()}` : 'No due date'}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-16"><div className="bg-gray-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${m.progress}%` }} /></div></div>
+                    <span className="text-xs text-slate-500">{m.progress}%</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <Flag size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No milestones yet</p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Reports</h3>
+            <Link to="/research-reports" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View All <ChevronRight size={16} />
+            </Link>
+          </div>
+          {projectReports && projectReports.length > 0 ? (
+            <div className="space-y-2">
+              {projectReports.slice(0, 5).map((r) => (
+                <Link key={r.id} to="/research-reports/$id" params={{ id: r.id }} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText size={16} className={`${r.status === 'APPROVED' ? 'text-emerald-500' : r.status === 'UNDER_REVIEW' ? 'text-yellow-500' : 'text-slate-400'}`} />
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">{r.title}</div>
+                      <div className="text-xs text-slate-500">{r.reportCode} | {r.reportType}</div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    r.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
+                    r.status === 'UNDER_REVIEW' ? 'bg-yellow-100 text-yellow-700' :
+                    r.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>{r.status}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+              <FileText size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm text-slate-500">No reports yet</p>
             </div>
           )}
         </div>

@@ -277,6 +277,41 @@ enum ExpenseStatus {
   CANCELLED
 }
 
+enum MilestoneStatus {
+  PLANNED
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum ScheduleStatus {
+  ON_TRACK
+  AT_RISK
+  DELAYED
+  COMPLETED
+}
+
+enum ResearchReportType {
+  PROGRESS
+  INTERIM
+  FINAL
+  TECHNICAL
+  FINANCIAL
+  ANNUAL
+}
+
+enum ResearchReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REVISION_REQUIRED
+  REJECTED
+  RESUBMITTED
+  WITHDRAWN
+}
+
 enum EthicsApplicationStatus {
   DRAFT
   SUBMITTED
@@ -326,6 +361,8 @@ model User {
   createdEvents            ResearchEvent[]            @relation("CreatedEvents")
   createdAllocations       BudgetAllocation[]         @relation("CreatedAllocations")
   approvedExpenses         ResearchExpense[]          @relation("ApprovedExpenses")
+  createdMilestones        ResearchMilestone[]        @relation("CreatedMilestones")
+  reviewedReports          ResearchReport[]           @relation("ReviewedReports")
 
   @@index([email])
   @@index([role])
@@ -362,6 +399,7 @@ model Researcher {
   assignedEthicsReviews EthicsReviewer[]     @relation("AssignedReviewer")
   eventParticipations   EventParticipation[]
   submittedExpenses     ResearchExpense[]    @relation("SubmittedExpenses")
+  submittedReports      ResearchReport[]     @relation("SubmittedReports")
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -531,6 +569,8 @@ model ResearchProject {
   ethicsApplications   EthicsApplication[]
   researchEvents       ResearchEvent[]
   expenses             ResearchExpense[]
+  milestones           ResearchMilestone[]
+  reports              ResearchReport[]
 
   @@index([projectCode])
   @@index([projectStatus])
@@ -574,6 +614,7 @@ model ProjectMember {
   researchProject    ResearchProject   @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
   researcher         Researcher        @relation(fields: [researcherId], references: [id], onDelete: Cascade)
   assignedActivities ProjectActivity[]
+  assignedMilestones ResearchMilestone[]
 
   @@unique([researchProjectId, researcherId])
   @@index([researchProjectId])
@@ -1056,4 +1097,75 @@ model ResearchExpense {
   @@index([expenseDate])
   @@index([createdAt])
   @@map("research_expenses")
+}
+
+model ResearchMilestone {
+  id                     String           @id @default(uuid())
+  researchProjectId      String           @map("research_project_id")
+  title                  String
+  description            String?
+  milestoneOrder         Int              @default(0) @map("milestone_order")
+  plannedStartDate       DateTime?        @map("planned_start_date")
+  plannedDueDate         DateTime?        @map("planned_due_date")
+  actualCompletionDate   DateTime?        @map("actual_completion_date")
+  status                 MilestoneStatus  @default(PLANNED)
+  progress               Int              @default(0)
+  responsibleMemberId    String?          @map("responsible_member_id")
+  notes                  String?
+  createdById            String           @map("created_by_id")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+
+  researchProject    ResearchProject  @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  responsibleMember  ProjectMember?   @relation(fields: [responsibleMemberId], references: [id], onDelete: SetNull)
+  createdBy          User             @relation("CreatedMilestones", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([researchProjectId])
+  @@index([status])
+  @@index([plannedDueDate])
+  @@index([responsibleMemberId])
+  @@index([createdById])
+  @@index([milestoneOrder])
+  @@map("research_milestones")
+}
+
+model ResearchReport {
+  id                     String               @id @default(uuid())
+  reportCode             String               @unique @map("report_code")
+  title                  String
+  reportType             ResearchReportType   @map("report_type")
+  researchProjectId      String               @map("research_project_id")
+  submittedById          String               @map("submitted_by_id")
+  reportingPeriodStart   DateTime?            @map("reporting_period_start")
+  reportingPeriodEnd     DateTime?            @map("reporting_period_end")
+  submittedAt            DateTime?            @map("submitted_at")
+  status                 ResearchReportStatus @default(DRAFT)
+  executiveSummary       String?              @map("executive_summary")
+  objectives             String?
+  methodology            String?
+  achievements           String?
+  challenges             String?
+  findings               String?
+  recommendations        String?
+  conclusion             String?
+  progressPercentage     Int?                 @map("progress_percentage")
+  nextPeriodPlan         String?              @map("next_period_plan")
+  reviewerId             String?              @map("reviewer_id")
+  reviewComment          String?              @map("review_comment")
+  reviewedAt             DateTime?            @map("reviewed_at")
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  researchProject   ResearchProject        @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  submittedBy       Researcher             @relation("SubmittedReports", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewer          User?                  @relation("ReviewedReports", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([reportCode])
+  @@index([researchProjectId])
+  @@index([submittedById])
+  @@index([reviewerId])
+  @@index([status])
+  @@index([reportType])
+  @@index([createdAt])
+  @@map("research_reports")
 }

@@ -17,6 +17,7 @@ import {
   Shield,
   Calendar,
   DollarSign,
+  Flag,
 } from 'lucide-react';
 import { Link, useLocation, Outlet } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,6 +44,8 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Researchers', href: '/researchers', icon: Users },
       { name: 'Projects', href: '/research-projects', icon: FlaskConical },
       { name: 'Activities', href: '/project-activities', icon: ClipboardList },
+      { name: 'Milestones', href: '/research-milestones', icon: Flag },
+      { name: 'Reports', href: '/research-reports', icon: FileText },
       { name: 'Documents', href: '/research-documents', icon: FileText },
       { name: 'Publications', href: '/research-publications', icon: BookOpen },
       { name: 'Innovations', href: '/innovations', icon: Microscope },
@@ -85,7 +88,9 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'MY WORK',
     items: [
       { name: 'My Tasks', href: '/my-maintenance', icon: Wrench },
+      { name: 'My Milestones', href: '/my-milestones', icon: Flag },
       { name: 'My Events', href: '/my-events', icon: Calendar },
+      { name: 'My Reports', href: '/my-reports', icon: FileText },
     ],
   },
   {

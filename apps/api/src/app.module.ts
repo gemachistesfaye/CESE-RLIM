@@ -25,6 +25,8 @@ import { EventParticipationsModule } from './event-participations/event-particip
 import { BudgetAllocationsModule } from './budget-allocations/budget-allocations.module';
 import { ResearchExpensesModule } from './research-expenses/research-expenses.module';
 import { ResearchFinanceModule } from './research-finance/research-finance.module';
+import { ResearchMilestonesModule } from './research-milestones/research-milestones.module';
+import { ResearchReportsModule } from './research-reports/research-reports.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -56,6 +58,8 @@ import { AuditModule } from './audit/audit.module';
     BudgetAllocationsModule,
     ResearchExpensesModule,
     ResearchFinanceModule,
+    ResearchMilestonesModule,
+    ResearchReportsModule,
   ],
 })
 export class AppModule {}

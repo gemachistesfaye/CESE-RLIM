@@ -7,7 +7,11 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
+  Flag,
 } from 'lucide-react';
+import { useMilestoneSummary } from '../hooks/useResearchMilestones';
+import { useReportSummary } from '../hooks/useResearchReports';
+import { Link } from '@tanstack/react-router';
 
 const stats = [
   {
@@ -91,6 +95,8 @@ const labStatus = [
 ];
 
 export default function Dashboard() {
+  const { data: milestoneSummary } = useMilestoneSummary();
+  const { data: reportSummary } = useReportSummary();
   return (
     <div className="space-y-6">
       <div>
@@ -117,6 +123,28 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { name: 'Milestones', value: milestoneSummary?.total || 0, change: `${milestoneSummary?.completed || 0} completed`, icon: Flag, color: 'bg-amber-500', link: '/research-milestones' },
+          { name: 'Overdue', value: milestoneSummary?.overdue || 0, change: 'Need attention', icon: AlertTriangle, color: 'bg-red-500', link: '/research-milestones' },
+          { name: 'Reports', value: reportSummary?.total || 0, change: `${reportSummary?.approved || 0} approved`, icon: FileText, color: 'bg-blue-500', link: '/research-reports' },
+          { name: 'Pending Review', value: reportSummary?.underReview || 0, change: 'Awaiting review', icon: Clock, color: 'bg-purple-500', link: '/research-reports' },
+        ].map((stat) => (
+          <Link key={stat.name} to={stat.link} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-sm transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-500">{stat.name}</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{stat.value}</p>
+                <p className="text-xs text-slate-400 mt-1">{stat.change}</p>
+              </div>
+              <div className={`${stat.color} w-11 h-11 rounded-xl flex items-center justify-center`}>
+                <stat.icon size={22} className="text-white" />
+              </div>
+            </div>
+          </Link>
         ))}
       </div>
 
