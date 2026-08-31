@@ -100,6 +100,10 @@ enum NotificationType {
   ERROR
   REQUEST
   MAINTENANCE
+  ACTION_REQUIRED
+  ASSIGNMENT
+  STATUS_CHANGE
+  DEADLINE
 }
 
 enum EventType {
@@ -655,19 +659,24 @@ model ProjectActivity {
 }
 
 model Notification {
-  id        String           @id @default(uuid())
-  userId    String           @map("user_id")
-  title     String
-  message   String
-  type      NotificationType @default(INFO)
-  isRead    Boolean          @default(false) @map("is_read")
-  createdAt DateTime         @default(now()) @map("created_at")
-  readAt    DateTime?        @map("read_at")
+  id         String           @id @default(uuid())
+  userId     String           @map("user_id")
+  title      String
+  message    String
+  type       NotificationType @default(INFO)
+  entityType String?          @map("entity_type")
+  entityId   String?          @map("entity_id")
+  isRead     Boolean          @default(false) @map("is_read")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  readAt     DateTime?        @map("read_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([isRead])
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
   @@index([createdAt])
   @@map("notifications")
 }

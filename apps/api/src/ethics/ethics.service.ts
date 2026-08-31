@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, EthicsApplicationStatus, EthicsReviewDecision, UserRole } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { AuditAction, EthicsApplicationStatus, EthicsReviewDecision, NotificationType, UserRole } from '@prisma/client';
 import { CreateEthicsApplicationDto } from './dto/create-ethics-application.dto';
 import { UpdateEthicsApplicationDto } from './dto/update-ethics-application.dto';
 import { ReviewEthicsApplicationDto } from './dto/review-ethics-application.dto';
@@ -72,6 +73,7 @@ export class EthicsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -430,6 +432,39 @@ export class EthicsService {
       metadata: { applicationCode: existing.applicationCode, previousStatus: existing.status, newStatus },
     });
 
+    if (existing.status === EthicsApplicationStatus.DRAFT) {
+      const adminCoordinatorUserIds = [
+        ...(await this.notificationsService.findUsersByRole(UserRole.ADMIN)),
+        ...(await this.notificationsService.findUsersByRole(UserRole.COORDINATOR)),
+      ];
+      await this.notificationsService.createMany(
+        adminCoordinatorUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: NotificationType.ACTION_REQUIRED,
+          title: 'Ethics Application Submitted',
+          message: application.title + ' has been submitted for review.',
+          entityType: 'EthicsApplication',
+          entityId: id,
+        })),
+      );
+    } else if (existing.status === EthicsApplicationStatus.REVISION_REQUIRED) {
+      const reviewers = await this.prisma.ethicsReviewer.findMany({
+        where: { applicationId: id, isActive: true },
+        select: { reviewer: { select: { userId: true } } },
+      });
+      const reviewerUserIds = reviewers.map((r) => r.reviewer.userId).filter(Boolean);
+      await this.notificationsService.createMany(
+        reviewerUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: NotificationType.ACTION_REQUIRED,
+          title: 'Ethics Application Resubmitted',
+          message: application.title + ' has been resubmitted after revision.',
+          entityType: 'EthicsApplication',
+          entityId: id,
+        })),
+      );
+    }
+
     return application;
   }
 
@@ -547,6 +582,26 @@ export class EthicsService {
       metadata: { applicationCode: existing.applicationCode, decision: dto.decision, previousStatus: existing.status, newStatus, comment: dto.comment },
     });
 
+    const applicantUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.applicantId);
+    await this.notificationsService.createMany(
+      applicantUserIds.map((notifUserId) => ({
+        userId: notifUserId,
+        type: dto.decision === EthicsReviewDecision.APPROVE ? NotificationType.SUCCESS
+          : dto.decision === EthicsReviewDecision.REJECT ? NotificationType.WARNING
+          : NotificationType.ACTION_REQUIRED,
+        title: dto.decision === EthicsReviewDecision.APPROVE ? 'Ethics Application Approved'
+          : dto.decision === EthicsReviewDecision.REJECT ? 'Ethics Application Rejected'
+          : 'Revision Required',
+        message: dto.decision === EthicsReviewDecision.APPROVE
+          ? 'Your application "' + existing.title + '" has been approved.'
+          : dto.decision === EthicsReviewDecision.REJECT
+          ? 'Your application "' + existing.title + '" has been rejected.'
+          : 'Your application "' + existing.title + '" requires revision.',
+        entityType: 'EthicsApplication',
+        entityId: id,
+      })),
+    );
+
     return application;
   }
 
@@ -609,6 +664,20 @@ export class EthicsService {
       description: `Assigned reviewer to ethics application ${existing.applicationCode}`,
       metadata: { applicationCode: existing.applicationCode, reviewerId: dto.reviewerId, previousStatus: existing.status },
     });
+
+    const reviewerUserIds = await this.notificationsService.findUserIdsByResearcherId(dto.reviewerId);
+    const applicantUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.applicantId);
+    const allUserIds = [...new Set([...reviewerUserIds, ...applicantUserIds])];
+    await this.notificationsService.createMany(
+      allUserIds.map((notifUserId) => ({
+        userId: notifUserId,
+        type: NotificationType.ASSIGNMENT,
+        title: 'Ethics Review Assigned',
+        message: 'You have been assigned to review "' + application.title + '".',
+        entityType: 'EthicsApplication',
+        entityId: id,
+      })),
+    );
 
     return application;
   }

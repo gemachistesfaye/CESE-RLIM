@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateInnovationDto } from './dto/create-innovation.dto';
 import { UpdateInnovationDto } from './dto/update-innovation.dto';
 import { UpdateInnovationStatusDto } from './dto/update-innovation-status.dto';
-import { AuditAction, InnovationStage, InnovationStatus, Prisma } from '@prisma/client';
+import { AuditAction, InnovationStage, InnovationStatus, Prisma, NotificationType, UserRole } from '@prisma/client';
 
 const INNOVATION_SELECT = {
   id: true,
@@ -52,6 +53,7 @@ export class InnovationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -221,6 +223,21 @@ export class InnovationsService {
       description: `Created innovation "${innovation.title}"`,
     });
 
+    const adminCoordinatorIds = [
+      ...(await this.notificationsService.findUsersByRole(UserRole.ADMIN)),
+      ...(await this.notificationsService.findUsersByRole(UserRole.COORDINATOR)),
+    ];
+    const uniqueAdminCoordinatorIds = [...new Set(adminCoordinatorIds)];
+    const innovationNotificationData = uniqueAdminCoordinatorIds.map((uid) => ({
+      userId: uid,
+      type: NotificationType.INFO as NotificationType,
+      title: 'New Innovation Submitted',
+      message: `"${innovation.title}" has been submitted for review.`,
+      entityType: 'Innovation' as string,
+      entityId: innovation.id as string,
+    }));
+    await this.notificationsService.createMany(innovationNotificationData);
+
     return innovation;
   }
 
@@ -302,6 +319,36 @@ export class InnovationsService {
       description: `Changed innovation status from ${existing.status} to ${dto.status}`,
       metadata: { from: existing.status, to: dto.status },
     });
+
+    const submitterUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.submittedById);
+    let innovNotificationType: NotificationType;
+    let innovTitle: string;
+    let innovMessage: string;
+
+    if (dto.status === InnovationStatus.APPROVED) {
+      innovNotificationType = NotificationType.SUCCESS;
+      innovTitle = 'Innovation Approved';
+      innovMessage = `Your innovation "${existing.title}" has been approved.`;
+    } else if (dto.status === InnovationStatus.REJECTED) {
+      innovNotificationType = NotificationType.WARNING;
+      innovTitle = 'Innovation Rejected';
+      innovMessage = `Your innovation "${existing.title}" has been rejected.`;
+    } else {
+      innovNotificationType = NotificationType.STATUS_CHANGE;
+      innovTitle = 'Innovation Status Updated';
+      innovMessage = `Your innovation "${existing.title}" status changed to ${dto.status}.`;
+    }
+
+    for (const uid of submitterUserIds) {
+      await this.notificationsService.create({
+        userId: uid,
+        type: innovNotificationType,
+        title: innovTitle,
+        message: innovMessage,
+        entityType: 'Innovation',
+        entityId: id,
+      });
+    }
 
     return innovation;
   }

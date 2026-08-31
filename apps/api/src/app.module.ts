@@ -28,6 +28,7 @@ import { ResearchFinanceModule } from './research-finance/research-finance.modul
 import { ResearchMilestonesModule } from './research-milestones/research-milestones.module';
 import { ResearchReportsModule } from './research-reports/research-reports.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -62,6 +63,7 @@ import { AuditModule } from './audit/audit.module';
     ResearchMilestonesModule,
     ResearchReportsModule,
     DashboardModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

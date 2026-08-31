@@ -7,11 +7,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateMaintenanceRecordDto } from './dto/create-maintenance-record.dto';
 import { UpdateMaintenanceRecordDto } from './dto/update-maintenance-record.dto';
 import { UpdateMaintenanceStatusDto } from './dto/update-maintenance-status.dto';
 import { CompleteMaintenanceDto } from './dto/complete-maintenance.dto';
-import { AuditAction, EquipmentCondition, EquipmentStatus, MaintenanceStatus, Prisma } from '@prisma/client';
+import { AuditAction, EquipmentCondition, EquipmentStatus, MaintenanceStatus, Prisma, NotificationType } from '@prisma/client';
 
 const MAINTENANCE_SELECT = {
   id: true,
@@ -83,6 +84,7 @@ export class MaintenanceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -419,6 +421,17 @@ export class MaintenanceService {
       metadata: { equipmentId: dto.equipmentId, equipmentName: equipment.name },
     });
 
+    if (dto.assignedTechnicianId) {
+      await this.notificationsService.create({
+        userId: dto.assignedTechnicianId,
+        type: NotificationType.ASSIGNMENT,
+        title: 'Maintenance Assigned',
+        message: `You have been assigned maintenance for ${equipment.name}.`,
+        entityType: 'MaintenanceRecord',
+        entityId: record.id,
+      });
+    }
+
     return record;
   }
 
@@ -515,6 +528,22 @@ export class MaintenanceService {
       metadata: { previousStatus: existing.status, newStatus: dto.status },
     });
 
+    if (existing.reportedById) {
+      const reporterUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.reportedById);
+      if (reporterUserIds.length > 0) {
+        await this.notificationsService.createMany(
+          reporterUserIds.map((userId) => ({
+            userId,
+            type: NotificationType.STATUS_CHANGE,
+            title: 'Maintenance Status Updated',
+            message: `Maintenance for ${existing.equipment.name} changed from ${existing.status} to ${dto.status}.`,
+            entityType: 'MaintenanceRecord',
+            entityId: id,
+          })),
+        );
+      }
+    }
+
     return record;
   }
 
@@ -578,6 +607,22 @@ export class MaintenanceService {
         cost: dto.cost,
       },
     });
+
+    if (existing.reportedById) {
+      const reporterUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.reportedById);
+      if (reporterUserIds.length > 0) {
+        await this.notificationsService.createMany(
+          reporterUserIds.map((userId) => ({
+            userId,
+            type: NotificationType.SUCCESS,
+            title: 'Maintenance Completed',
+            message: `Maintenance for ${existing.equipment.name} has been completed.`,
+            entityType: 'MaintenanceRecord',
+            entityId: id,
+          })),
+        );
+      }
+    }
 
     return result;
   }

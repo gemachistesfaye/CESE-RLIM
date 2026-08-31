@@ -6,10 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateResearchProjectDto } from './dto/create-research-project.dto';
 import { UpdateResearchProjectDto } from './dto/update-research-project.dto';
 import { UpdateResearchProjectStatusDto } from './dto/update-research-project-status.dto';
-import { AuditAction, ProjectStatus, Prisma } from '@prisma/client';
+import { AuditAction, ProjectStatus, Prisma, NotificationType, UserRole } from '@prisma/client';
 
 const PROJECT_SELECT = {
   id: true,
@@ -122,6 +123,7 @@ export class ResearchProjectsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -243,6 +245,19 @@ export class ResearchProjectsService {
       description: `Created research project "${project.title}"`,
     });
 
+    const adminIds = await this.notificationsService.findUsersByRole(UserRole.ADMIN);
+    const coordinatorIds = await this.notificationsService.findUsersByRole(UserRole.COORDINATOR);
+    await this.notificationsService.createMany(
+      [...adminIds, ...coordinatorIds].map((userId) => ({
+        userId,
+        type: NotificationType.INFO,
+        title: 'New Research Project',
+        message: `Research project "${project.title}" has been created.`,
+        entityType: 'ResearchProject',
+        entityId: project.id,
+      })),
+    );
+
     return project;
   }
 
@@ -310,6 +325,20 @@ export class ResearchProjectsService {
       description: `Changed project status from ${existing.projectStatus} to ${dto.status}`,
       metadata: { from: existing.projectStatus, to: dto.status },
     });
+
+    const memberUserIds = await this.notificationsService.findProjectMemberUserIds(id);
+    if (memberUserIds.length > 0) {
+      await this.notificationsService.createMany(
+        memberUserIds.map((userId) => ({
+          userId,
+          type: NotificationType.STATUS_CHANGE,
+          title: 'Project Status Changed',
+          message: `Project "${existing.title}" status changed from ${existing.projectStatus} to ${dto.status}.`,
+          entityType: 'ResearchProject',
+          entityId: id,
+        })),
+      );
+    }
 
     return project;
   }

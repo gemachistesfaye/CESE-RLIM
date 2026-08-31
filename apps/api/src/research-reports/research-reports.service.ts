@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, ResearchReportStatus, ResearchReportType, Prisma, UserRole } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { AuditAction, NotificationType, ResearchReportStatus, ResearchReportType, Prisma, UserRole } from '@prisma/client';
 import { CreateResearchReportDto } from './dto/create-research-report.dto';
 import { UpdateResearchReportDto } from './dto/update-research-report.dto';
 
@@ -62,6 +63,7 @@ export class ResearchReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -296,6 +298,59 @@ export class ResearchReportsService {
       metadata: { previousStatus: existing.status, newStatus, reportCode: existing.reportCode },
     });
 
+    if (existing.status === ResearchReportStatus.DRAFT && newStatus === ResearchReportStatus.SUBMITTED) {
+      const projectMemberUserIds = await this.notificationsService.findProjectMemberUserIds(report.researchProjectId);
+      await this.notificationsService.createMany(
+        projectMemberUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: NotificationType.INFO,
+          title: 'New Report',
+          message: report.title + ' has been submitted.',
+          entityType: 'ResearchReport',
+          entityId: id,
+        })),
+      );
+    }
+
+    if (report.reviewerId && (newStatus === ResearchReportStatus.UNDER_REVIEW)) {
+      const reviewer = await this.prisma.researcher.findUnique({ where: { userId: report.reviewerId }, select: { id: true } });
+      if (reviewer) {
+        const reviewerUserIds = await this.notificationsService.findUserIdsByResearcherId(reviewer.id);
+        await this.notificationsService.createMany(
+          reviewerUserIds.map((notifUserId) => ({
+            userId: notifUserId,
+            type: NotificationType.ACTION_REQUIRED,
+            title: 'Report Submitted',
+            message: report.title + ' has been submitted for review.',
+            entityType: 'ResearchReport',
+            entityId: id,
+          })),
+        );
+      }
+    }
+
+    if (report.submittedById && ([ResearchReportStatus.APPROVED, ResearchReportStatus.REVISION_REQUIRED, ResearchReportStatus.REJECTED] as ResearchReportStatus[]).includes(newStatus)) {
+      const authorUserIds = await this.notificationsService.findUserIdsByResearcherId(report.submittedById);
+      await this.notificationsService.createMany(
+        authorUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: newStatus === ResearchReportStatus.APPROVED ? NotificationType.SUCCESS
+            : newStatus === ResearchReportStatus.REVISION_REQUIRED ? NotificationType.ACTION_REQUIRED
+            : NotificationType.WARNING,
+          title: newStatus === ResearchReportStatus.APPROVED ? 'Report Approved'
+            : newStatus === ResearchReportStatus.REVISION_REQUIRED ? 'Report Revision Required'
+            : 'Report Rejected',
+          message: newStatus === ResearchReportStatus.APPROVED
+            ? report.title + ' has been approved.'
+            : newStatus === ResearchReportStatus.REVISION_REQUIRED
+            ? report.title + ' requires revision.'
+            : report.title + ' has been rejected.',
+          entityType: 'ResearchReport',
+          entityId: id,
+        })),
+      );
+    }
+
     return report;
   }
 
@@ -330,6 +385,33 @@ export class ResearchReportsService {
       entityId: id, description: `Submitted report for review, assigned to reviewer`,
       metadata: { reviewerId, newStatus: ResearchReportStatus.UNDER_REVIEW },
     });
+
+    const reviewerResearcher = await this.prisma.researcher.findUnique({ where: { userId: reviewerId }, select: { id: true } });
+    if (reviewerResearcher) {
+      const reviewerUserIds = await this.notificationsService.findUserIdsByResearcherId(reviewerResearcher.id);
+      await this.notificationsService.createMany(
+        reviewerUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: NotificationType.ACTION_REQUIRED,
+          title: 'Report Submitted',
+          message: updated.title + ' has been submitted for review.',
+          entityType: 'ResearchReport',
+          entityId: id,
+        })),
+      );
+    }
+
+    const projectMemberUserIds = await this.notificationsService.findProjectMemberUserIds(updated.researchProjectId);
+    await this.notificationsService.createMany(
+      projectMemberUserIds.map((notifUserId) => ({
+        userId: notifUserId,
+        type: NotificationType.INFO,
+        title: 'New Report',
+        message: updated.title + ' has been submitted.',
+        entityType: 'ResearchReport',
+        entityId: id,
+      })),
+    );
 
     return updated;
   }

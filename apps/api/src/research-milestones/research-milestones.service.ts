@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, MilestoneStatus, Prisma, UserRole } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { AuditAction, MilestoneStatus, NotificationType, Prisma, UserRole } from '@prisma/client';
 import { CreateResearchMilestoneDto } from './dto/create-research-milestone.dto';
 import { UpdateResearchMilestoneDto } from './dto/update-research-milestone.dto';
 
@@ -39,6 +40,7 @@ export class ResearchMilestonesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -278,6 +280,23 @@ export class ResearchMilestonesService {
       metadata: { researchProjectId: dto.researchProjectId, title: dto.title },
     });
 
+    if (dto.responsibleMemberId) {
+      const member = await this.prisma.projectMember.findUnique({ where: { id: dto.responsibleMemberId }, select: { researcherId: true } });
+      if (member) {
+        const memberUserIds = await this.notificationsService.findUserIdsByResearcherId(member.researcherId);
+        await this.notificationsService.createMany(
+          memberUserIds.map((notifUserId) => ({
+            userId: notifUserId,
+            type: NotificationType.ASSIGNMENT,
+            title: 'Milestone Assigned',
+            message: 'You have been assigned milestone "' + milestone.title + '".',
+            entityType: 'ResearchMilestone',
+            entityId: milestone.id,
+          })),
+        );
+      }
+    }
+
     return milestone;
   }
 
@@ -322,7 +341,7 @@ export class ResearchMilestonesService {
   }
 
   async updateStatus(id: string, newStatus: MilestoneStatus, userId: string) {
-    const existing = await this.prisma.researchMilestone.findUnique({ where: { id }, select: { id: true, status: true, title: true } });
+    const existing = await this.prisma.researchMilestone.findUnique({ where: { id }, select: { id: true, status: true, title: true, researchProjectId: true, responsibleMemberId: true } });
     if (!existing) throw new NotFoundException('Research milestone not found');
 
     const allowed = VALID_TRANSITIONS[existing.status];
@@ -345,6 +364,48 @@ export class ResearchMilestonesService {
       entityId: id, description: `Changed milestone "${existing.title}" status to ${newStatus}`,
       metadata: { previousStatus: existing.status, newStatus },
     });
+
+    const projectMemberUserIds = await this.notificationsService.findProjectMemberUserIds(existing.researchProjectId);
+    const statusNotificationMap: Record<string, { type: NotificationType; title: string; message: string }> = {
+      COMPLETED: { type: NotificationType.SUCCESS, title: 'Milestone Completed', message: 'Milestone "' + existing.title + '" has been completed.' },
+      BLOCKED: { type: NotificationType.WARNING, title: 'Milestone Blocked', message: 'Milestone "' + existing.title + '" is now blocked.' },
+      IN_PROGRESS: { type: NotificationType.STATUS_CHANGE, title: 'Milestone In Progress', message: 'Milestone "' + existing.title + '" is now in progress.' },
+    };
+    const notifConfig = statusNotificationMap[newStatus];
+    if (notifConfig) {
+      await this.notificationsService.createMany(
+        projectMemberUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: notifConfig.type,
+          title: notifConfig.title,
+          message: notifConfig.message,
+          entityType: 'ResearchMilestone',
+          entityId: id,
+        })),
+      );
+    }
+
+    if ((newStatus === MilestoneStatus.BLOCKED || newStatus === MilestoneStatus.COMPLETED) && milestone.responsibleMemberId) {
+      const member = await this.prisma.projectMember.findUnique({ where: { id: milestone.responsibleMemberId }, select: { researcherId: true } });
+      if (member) {
+        const responsibleUserIds = await this.notificationsService.findUserIdsByResearcherId(member.researcherId);
+        const alreadyNotified = new Set(projectMemberUserIds);
+        const uniqueResponsibleUserIds = responsibleUserIds.filter((uid) => !alreadyNotified.has(uid));
+        if (uniqueResponsibleUserIds.length > 0) {
+          const respNotif = statusNotificationMap[newStatus];
+          await this.notificationsService.createMany(
+            uniqueResponsibleUserIds.map((notifUserId) => ({
+              userId: notifUserId,
+              type: respNotif.type,
+              title: respNotif.title,
+              message: respNotif.message,
+              entityType: 'ResearchMilestone',
+              entityId: id,
+            })),
+          );
+        }
+      }
+    }
 
     return milestone;
   }

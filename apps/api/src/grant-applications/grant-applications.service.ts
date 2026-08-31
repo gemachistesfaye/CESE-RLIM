@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateGrantApplicationDto } from './dto/create-grant-application.dto';
 import { UpdateGrantApplicationDto } from './dto/update-grant-application.dto';
 import { ReviewGrantApplicationDto, ReviewDecision } from './dto/review-grant-application.dto';
@@ -14,6 +15,7 @@ import {
   GrantApplicationStatus,
   Prisma,
   UserRole,
+  NotificationType,
 } from '@prisma/client';
 
 const GRANT_APPLICATION_SELECT = {
@@ -104,6 +106,7 @@ export class GrantApplicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -468,6 +471,21 @@ export class GrantApplicationsService {
       },
     });
 
+    const submitAdminCoordinatorIds = [
+      ...(await this.notificationsService.findUsersByRole(UserRole.ADMIN)),
+      ...(await this.notificationsService.findUsersByRole(UserRole.COORDINATOR)),
+    ];
+    const uniqueSubmitIds = [...new Set(submitAdminCoordinatorIds)];
+    const submitNotificationData = uniqueSubmitIds.map((uid) => ({
+      userId: uid,
+      type: NotificationType.ACTION_REQUIRED as NotificationType,
+      title: 'New Grant Application',
+      message: `A grant application for "${application.title}" has been submitted.`,
+      entityType: 'GrantApplication' as string,
+      entityId: id as string,
+    }));
+    await this.notificationsService.createMany(submitNotificationData);
+
     return application;
   }
 
@@ -525,6 +543,32 @@ export class GrantApplicationsService {
       },
     });
 
+    const applicantUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.applicantId);
+    let grantNotificationType: NotificationType;
+    let grantTitle: string;
+    let grantMessage: string;
+
+    if (dto.decision === ReviewDecision.APPROVE) {
+      grantNotificationType = NotificationType.SUCCESS;
+      grantTitle = 'Grant Application Approved';
+      grantMessage = `Your application for "${existing.title}" has been approved.`;
+    } else {
+      grantNotificationType = NotificationType.WARNING;
+      grantTitle = 'Grant Application Rejected';
+      grantMessage = `Your application for "${existing.title}" has been rejected.`;
+    }
+
+    for (const uid of applicantUserIds) {
+      await this.notificationsService.create({
+        userId: uid,
+        type: grantNotificationType,
+        title: grantTitle,
+        message: grantMessage,
+        entityType: 'GrantApplication',
+        entityId: id,
+      });
+    }
+
     return application;
   }
 
@@ -574,6 +618,21 @@ export class GrantApplicationsService {
         newStatus: GrantApplicationStatus.WITHDRAWN,
       },
     });
+
+    const withdrawAdminCoordinatorIds = [
+      ...(await this.notificationsService.findUsersByRole(UserRole.ADMIN)),
+      ...(await this.notificationsService.findUsersByRole(UserRole.COORDINATOR)),
+    ];
+    const uniqueWithdrawIds = [...new Set(withdrawAdminCoordinatorIds)];
+    const withdrawNotificationData = uniqueWithdrawIds.map((uid) => ({
+      userId: uid,
+      type: NotificationType.INFO as NotificationType,
+      title: 'Grant Application Withdrawn',
+      message: `Application for "${existing.title}" has been withdrawn.`,
+      entityType: 'GrantApplication' as string,
+      entityId: id as string,
+    }));
+    await this.notificationsService.createMany(withdrawNotificationData);
 
     return application;
   }

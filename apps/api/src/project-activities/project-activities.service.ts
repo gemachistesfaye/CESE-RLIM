@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateProjectActivityDto } from './dto/create-project-activity.dto';
 import { UpdateProjectActivityDto } from './dto/update-project-activity.dto';
 import { UpdateProjectActivityStatusDto } from './dto/update-project-activity-status.dto';
@@ -16,6 +17,7 @@ import {
   RequestPriority,
   Prisma,
   UserRole,
+  NotificationType,
 } from '@prisma/client';
 
 const PROJECT_ACTIVITY_SELECT = {
@@ -93,6 +95,7 @@ export class ProjectActivitiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -486,6 +489,31 @@ export class ProjectActivitiesService {
       },
     });
 
+    if (dto.assignedMemberId) {
+      const memberUserIds = await this.notificationsService.findUserIdsByResearcherId(dto.assignedMemberId);
+      for (const uid of memberUserIds) {
+        await this.notificationsService.create({
+          userId: uid,
+          type: NotificationType.ASSIGNMENT,
+          title: 'Activity Assigned',
+          message: `You have been assigned activity "${activity.title}" in project ${activity.researchProject.title}.`,
+          entityType: 'ProjectActivity',
+          entityId: activity.id,
+        });
+      }
+    }
+
+    const projectMemberUserIds = await this.notificationsService.findProjectMemberUserIds(dto.researchProjectId);
+    const notificationData = projectMemberUserIds.map((uid) => ({
+      userId: uid,
+      type: NotificationType.INFO as NotificationType,
+      title: 'New Project Activity',
+      message: `New activity "${activity.title}" created in project ${activity.researchProject.title}.`,
+      entityType: 'ProjectActivity' as string,
+      entityId: activity.id as string,
+    }));
+    await this.notificationsService.createMany(notificationData);
+
     return activity;
   }
 
@@ -598,6 +626,17 @@ export class ProjectActivitiesService {
       },
     });
 
+    const statusMemberUserIds = await this.notificationsService.findProjectMemberUserIds(existing.researchProjectId);
+    const statusNotificationData = statusMemberUserIds.map((uid) => ({
+      userId: uid,
+      type: NotificationType.STATUS_CHANGE as NotificationType,
+      title: 'Activity Status Changed',
+      message: `Activity "${existing.title}" status changed to ${dto.status}.`,
+      entityType: 'ProjectActivity' as string,
+      entityId: id as string,
+    }));
+    await this.notificationsService.createMany(statusNotificationData);
+
     return activity;
   }
 
@@ -672,6 +711,20 @@ export class ProjectActivitiesService {
         previousStatus: existing.status,
       },
     });
+
+    if (existing.assignedMember) {
+      const cancelUserIds = await this.notificationsService.findUserIdsByResearcherId(existing.assignedMember.researcher.id);
+      for (const uid of cancelUserIds) {
+        await this.notificationsService.create({
+          userId: uid,
+          type: NotificationType.WARNING,
+          title: 'Activity Cancelled',
+          message: `Activity "${existing.title}" has been cancelled.`,
+          entityType: 'ProjectActivity',
+          entityId: id,
+        });
+      }
+    }
 
     return activity;
   }

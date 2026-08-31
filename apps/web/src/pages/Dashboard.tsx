@@ -29,8 +29,10 @@ import {
   BarChart3,
   Activity,
   Shield,
+  Bell,
 } from 'lucide-react';
 import { useDashboardOverview } from '../hooks/useDashboard';
+import { useUnreadNotificationCount } from '../hooks/useNotifications';
 import { Link } from '@tanstack/react-router';
 
 const CHART_COLORS = [
@@ -104,6 +106,7 @@ const ENTITY_LABELS: Record<string, string> = {
 
 export default function Dashboard() {
   const { data, isLoading, error } = useDashboardOverview();
+  const { data: unreadData } = useUnreadNotificationCount();
 
   const projectChartData = useMemo(() => {
     if (!data) return [];
@@ -401,6 +404,21 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+      )}
+
+      {unreadData && unreadData.count > 0 && (
+        <Link to="/notifications" className="block bg-white rounded-xl border border-slate-200 p-5 hover:shadow-sm transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-blue-500 rounded-xl flex items-center justify-center">
+              <Bell size={22} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">Notifications</p>
+              <p className="text-3xl font-bold text-slate-900 mt-1">{unreadData.count}</p>
+              <p className="text-xs text-slate-400 mt-1">unread notification{unreadData.count !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+        </Link>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

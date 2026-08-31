@@ -55,6 +55,7 @@ import MyMilestones from "./pages/research-milestones/MyMilestones";
 import ResearchReportsList from "./pages/research-reports/ResearchReportsList";
 import ResearchReportDetails from "./pages/research-reports/ResearchReportDetails";
 import MyReports from "./pages/research-reports/MyReports";
+import NotificationsList from "./pages/notifications/NotificationsList";
 
 function RootComponent() {
   return <Outlet />;
@@ -380,6 +381,12 @@ const myReportsRoute = createRoute({
   component: MyReports,
 });
 
+const notificationsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/notifications",
+  component: NotificationsList,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -431,6 +438,7 @@ const routeTree = rootRoute.addChildren([
     researchReportsRoute,
     researchReportDetailsRoute,
     myReportsRoute,
+    notificationsRoute,
   ]),
 ]);
 

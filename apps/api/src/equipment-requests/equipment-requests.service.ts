@@ -7,9 +7,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateEquipmentRequestDto } from './dto/create-equipment-request.dto';
 import { ReviewEquipmentRequestDto, ReviewAction } from './dto/review-equipment-request.dto';
-import { AuditAction, RequestStatus, EquipmentStatus, Prisma } from '@prisma/client';
+import { AuditAction, RequestStatus, EquipmentStatus, Prisma, NotificationType, UserRole } from '@prisma/client';
 
 const REQUEST_SELECT = {
   id: true,
@@ -80,6 +81,7 @@ export class EquipmentRequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -188,7 +190,10 @@ export class EquipmentRequestsService {
   async create(dto: CreateEquipmentRequestDto, userId: string) {
     const researcher = await this.prisma.researcher.findUnique({
       where: { userId },
-      select: { id: true },
+      select: {
+        id: true,
+        user: { select: { firstName: true, lastName: true } },
+      },
     });
 
     if (!researcher) {
@@ -251,6 +256,20 @@ export class EquipmentRequestsService {
       metadata: { equipmentId: dto.equipmentId, equipmentName: equipment.name },
     });
 
+    const requesterName = `${researcher.user.firstName} ${researcher.user.lastName}`;
+    const adminIds = await this.notificationsService.findUsersByRole(UserRole.ADMIN);
+    const coordinatorIds = await this.notificationsService.findUsersByRole(UserRole.COORDINATOR);
+    await this.notificationsService.createMany(
+      [...adminIds, ...coordinatorIds].map((userId) => ({
+        userId,
+        type: NotificationType.ACTION_REQUIRED,
+        title: 'New Equipment Request',
+        message: `${requesterName} submitted a request for ${equipment.name}.`,
+        entityType: 'EquipmentRequest',
+        entityId: request.id,
+      })),
+    );
+
     return request;
   }
 
@@ -310,6 +329,22 @@ export class EquipmentRequestsService {
       },
     });
 
+    const requesterUserIds = await this.notificationsService.findUserIdsByResearcherId(request.requesterId);
+    if (requesterUserIds.length > 0) {
+      await this.notificationsService.createMany(
+        requesterUserIds.map((userId) => ({
+          userId,
+          type: dto.action === ReviewAction.APPROVE ? NotificationType.SUCCESS : NotificationType.WARNING,
+          title: dto.action === ReviewAction.APPROVE ? 'Equipment Request Approved' : 'Equipment Request Rejected',
+          message: dto.action === ReviewAction.APPROVE
+            ? `Your request for ${request.equipment.name} has been approved.`
+            : `Your request for ${request.equipment.name} has been rejected.`,
+          entityType: 'EquipmentRequest',
+          entityId: id,
+        })),
+      );
+    }
+
     return updated;
   }
 
@@ -354,6 +389,19 @@ export class EquipmentRequestsService {
       description: `Cancelled equipment request`,
       metadata: { previousStatus: request.status, newStatus: 'CANCELLED' },
     });
+
+    const adminIds = await this.notificationsService.findUsersByRole(UserRole.ADMIN);
+    const coordinatorIds = await this.notificationsService.findUsersByRole(UserRole.COORDINATOR);
+    await this.notificationsService.createMany(
+      [...adminIds, ...coordinatorIds].map((userId) => ({
+        userId,
+        type: NotificationType.INFO,
+        title: 'Equipment Request Cancelled',
+        message: 'A equipment request has been cancelled.',
+        entityType: 'EquipmentRequest',
+        entityId: id,
+      })),
+    );
 
     return updated;
   }

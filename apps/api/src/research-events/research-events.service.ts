@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, EventStatus, EventType, ParticipationStatus, UserRole } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { AuditAction, EventStatus, EventType, NotificationType, ParticipationStatus, UserRole } from '@prisma/client';
 import { CreateResearchEventDto } from './dto/create-research-event.dto';
 import { UpdateResearchEventDto } from './dto/update-research-event.dto';
 
@@ -66,6 +67,7 @@ export class ResearchEventsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -417,6 +419,38 @@ export class ResearchEventsService {
       description: `Changed research event ${existing.eventCode} status to ${newStatus}`,
       metadata: { eventCode: existing.eventCode, previousStatus: existing.status, newStatus },
     });
+
+    if (newStatus === EventStatus.PUBLISHED) {
+      const researcherUserIds = await this.notificationsService.findUsersByRole(UserRole.RESEARCHER);
+      await this.notificationsService.createMany(
+        researcherUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: NotificationType.INFO,
+          title: 'New Research Event',
+          message: event.title + ' has been published.',
+          entityType: 'ResearchEvent',
+          entityId: id,
+        })),
+      );
+    } else if (newStatus === EventStatus.CANCELLED || newStatus === EventStatus.COMPLETED) {
+      const participations = await this.prisma.eventParticipation.findMany({
+        where: { eventId: id },
+        select: { researcher: { select: { userId: true } } },
+      });
+      const participantUserIds = participations.map((p) => p.researcher.userId).filter(Boolean);
+      await this.notificationsService.createMany(
+        participantUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: newStatus === EventStatus.CANCELLED ? NotificationType.WARNING : NotificationType.SUCCESS,
+          title: newStatus === EventStatus.CANCELLED ? 'Event Cancelled' : 'Event Completed',
+          message: newStatus === EventStatus.CANCELLED
+            ? event.title + ' has been cancelled.'
+            : event.title + ' has been completed.',
+          entityType: 'ResearchEvent',
+          entityId: id,
+        })),
+      );
+    }
 
     return event;
   }

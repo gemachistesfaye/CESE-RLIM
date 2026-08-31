@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateResearchPublicationDto } from './dto/create-research-publication.dto';
 import { UpdateResearchPublicationDto } from './dto/update-research-publication.dto';
 import { UpdatePublicationStatusDto } from './dto/update-publication-status.dto';
@@ -16,6 +17,7 @@ import {
   PublicationType,
   Prisma,
   UserRole,
+  NotificationType,
 } from '@prisma/client';
 
 const PUBLICATION_SELECT = {
@@ -95,6 +97,7 @@ export class ResearchPublicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -493,6 +496,45 @@ export class ResearchPublicationsService {
         newStatus: dto.status,
       },
     });
+
+    const authorRecords = await this.prisma.publicationAuthor.findMany({
+      where: { publicationId: id },
+      select: { researcher: { select: { userId: true } } },
+    });
+    const authorUserIds = authorRecords
+      .map((a) => a.researcher?.userId)
+      .filter(Boolean) as string[];
+    const uniqueAuthorUserIds = [...new Set(authorUserIds)];
+
+    let pubNotificationType: NotificationType;
+    let pubTitle: string;
+    let pubMessage: string;
+
+    if (dto.status === PublicationStatus.ACCEPTED) {
+      pubNotificationType = NotificationType.SUCCESS;
+      pubTitle = 'Publication Accepted';
+      pubMessage = `"${existing.title}" has been accepted.`;
+    } else if (dto.status === PublicationStatus.REJECTED) {
+      pubNotificationType = NotificationType.WARNING;
+      pubTitle = 'Publication Rejected';
+      pubMessage = `"${existing.title}" has been rejected.`;
+    } else if (dto.status === PublicationStatus.PUBLISHED) {
+      pubNotificationType = NotificationType.SUCCESS;
+      pubTitle = 'Publication Published';
+      pubMessage = `"${existing.title}" has been published.`;
+    } else {
+      return publication;
+    }
+
+    const pubNotificationData = uniqueAuthorUserIds.map((uid) => ({
+      userId: uid,
+      type: pubNotificationType as NotificationType,
+      title: pubTitle as string,
+      message: pubMessage as string,
+      entityType: 'ResearchPublication' as string,
+      entityId: id as string,
+    }));
+    await this.notificationsService.createMany(pubNotificationData);
 
     return publication;
   }

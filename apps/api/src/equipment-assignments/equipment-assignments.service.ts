@@ -7,9 +7,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateEquipmentAssignmentDto } from './dto/create-equipment-assignment.dto';
 import { ReturnEquipmentAssignmentDto } from './dto/return-equipment-assignment.dto';
-import { AuditAction, EquipmentStatus, Prisma } from '@prisma/client';
+import { AuditAction, EquipmentStatus, Prisma, NotificationType } from '@prisma/client';
 
 const ASSIGNMENT_SELECT = {
   id: true,
@@ -80,6 +81,7 @@ export class EquipmentAssignmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -292,6 +294,20 @@ export class EquipmentAssignmentsService {
         requesterName,
       },
     });
+
+    const requesterUserIds = await this.notificationsService.findUserIdsByResearcherId(request.requesterId);
+    if (requesterUserIds.length > 0) {
+      await this.notificationsService.createMany(
+        requesterUserIds.map((userId) => ({
+          userId,
+          type: NotificationType.SUCCESS,
+          title: 'Equipment Assigned',
+          message: `${equipment.name} (${equipment.assetId}) has been assigned to you.`,
+          entityType: 'EquipmentAssignment',
+          entityId: result.id,
+        })),
+      );
+    }
 
     return result;
   }

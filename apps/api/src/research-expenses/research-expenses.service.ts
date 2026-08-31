@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { AuditAction, ExpenseStatus, BudgetCategory, Prisma, UserRole } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { AuditAction, ExpenseStatus, BudgetCategory, NotificationType, Prisma, UserRole } from '@prisma/client';
 import { CreateResearchExpenseDto } from './dto/create-research-expense.dto';
 import { UpdateResearchExpenseDto } from './dto/update-research-expense.dto';
 
@@ -49,6 +50,7 @@ export class ResearchExpensesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(params: {
@@ -424,6 +426,21 @@ export class ResearchExpensesService {
       metadata: { expenseCode: expense.expenseCode, amount: existing.amount.toString() },
     });
 
+    const adminCoordinatorUserIds = [
+      ...(await this.notificationsService.findUsersByRole(UserRole.ADMIN)),
+      ...(await this.notificationsService.findUsersByRole(UserRole.COORDINATOR)),
+    ];
+    await this.notificationsService.createMany(
+      adminCoordinatorUserIds.map((userId) => ({
+        userId,
+        type: NotificationType.ACTION_REQUIRED,
+        title: 'Expense Submitted',
+        message: `An expense of ${existing.amount} for "${expense.expenseCode}" has been submitted for review.`,
+        entityType: 'ResearchExpense',
+        entityId: id,
+      })),
+    );
+
     return expense;
   }
 
@@ -495,7 +512,22 @@ export class ResearchExpensesService {
       metadata: { expenseCode: existing.expenseCode, amount: existing.amount.toString(), status, rejectionReason },
     });
 
-    return this.findById(id);
+    const fullExpense = await this.findById(id);
+    const submitterUserIds = await this.notificationsService.findUserIdsByResearcherId(fullExpense.submittedBy.id);
+    await this.notificationsService.createMany(
+      submitterUserIds.map((notifUserId) => ({
+        userId: notifUserId,
+        type: status === ExpenseStatus.APPROVED ? NotificationType.SUCCESS : NotificationType.WARNING,
+        title: status === ExpenseStatus.APPROVED ? 'Expense Approved' : 'Expense Rejected',
+        message: status === ExpenseStatus.APPROVED
+          ? `Your expense "${fullExpense.description}" has been approved.`
+          : `Your expense "${fullExpense.description}" has been rejected.`,
+        entityType: 'ResearchExpense',
+        entityId: id,
+      })),
+    );
+
+    return fullExpense;
   }
 
   async updateStatus(id: string, newStatus: ExpenseStatus, userId: string) {
@@ -527,6 +559,21 @@ export class ResearchExpensesService {
       description: `Changed expense ${existing.expenseCode} status to ${newStatus}`,
       metadata: { expenseCode: existing.expenseCode, previousStatus: existing.status, newStatus },
     });
+
+    if (newStatus === ExpenseStatus.RECORDED) {
+      const fullExpense = await this.findById(id);
+      const submitterUserIds = await this.notificationsService.findUserIdsByResearcherId(fullExpense.submittedBy.id);
+      await this.notificationsService.createMany(
+        submitterUserIds.map((notifUserId) => ({
+          userId: notifUserId,
+          type: NotificationType.SUCCESS,
+          title: 'Expense Recorded',
+          message: `Your expense "${fullExpense.description}" has been recorded.`,
+          entityType: 'ResearchExpense',
+          entityId: id,
+        })),
+      );
+    }
 
     return expense;
   }
