@@ -59,6 +59,10 @@ import NotificationsList from "./pages/notifications/NotificationsList";
 import GlobalSearchPage from "./pages/search/GlobalSearchPage";
 import AuditLogsList from "./pages/audit-logs/AuditLogsList";
 import AuditLogDetails from "./pages/audit-logs/AuditLogDetails";
+import AdministrationDashboard from "./pages/administration/AdministrationDashboard";
+import SystemSettings from "./pages/administration/SystemSettings";
+import RolePermissions from "./pages/administration/RolePermissions";
+import SystemInformation from "./pages/administration/SystemInformation";
 
 function RootComponent() {
   return <Outlet />;
@@ -408,6 +412,30 @@ const auditLogDetailsRoute = createRoute({
   component: AuditLogDetails,
 });
 
+const administrationRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/administration",
+  component: AdministrationDashboard,
+});
+
+const systemSettingsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/administration/settings",
+  component: SystemSettings,
+});
+
+const rolePermissionsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/administration/permissions",
+  component: RolePermissions,
+});
+
+const systemInformationRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/administration/system",
+  component: SystemInformation,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -463,6 +491,10 @@ const routeTree = rootRoute.addChildren([
     searchRoute,
     auditLogsRoute,
     auditLogDetailsRoute,
+    administrationRoute,
+    systemSettingsRoute,
+    rolePermissionsRoute,
+    systemInformationRoute,
   ]),
 ]);
 

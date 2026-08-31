@@ -32,6 +32,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AuditModule } from './audit/audit.module';
 import { GlobalSearchModule } from './global-search/global-search.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { AdministrationModule } from './administration/administration.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     AuditModule,
     GlobalSearchModule,
     AuditLogsModule,
+    AdministrationModule,
     UsersModule,
     ResearchersModule,
     LaboratoriesModule,

@@ -362,11 +362,12 @@ model User {
   reviewedApplications     GrantApplication[]        @relation("ReviewedApplications")
   createdGrants            ResearchGrant[]           @relation("CreatedGrants")
   assignedEthicsReviews    EthicsReviewer[]          @relation("AssignedByUser")
-  createdEvents            ResearchEvent[]            @relation("CreatedEvents")
-  createdAllocations       BudgetAllocation[]         @relation("CreatedAllocations")
-  approvedExpenses         ResearchExpense[]          @relation("ApprovedExpenses")
-  createdMilestones        ResearchMilestone[]        @relation("CreatedMilestones")
-  reviewedReports          ResearchReport[]           @relation("ReviewedReports")
+  createdEvents            ResearchEvent[]           @relation("CreatedEvents")
+  createdAllocations       BudgetAllocation[]        @relation("CreatedAllocations")
+  approvedExpenses         ResearchExpense[]         @relation("ApprovedExpenses")
+  createdMilestones        ResearchMilestone[]       @relation("CreatedMilestones")
+  reviewedReports          ResearchReport[]          @relation("ReviewedReports")
+  updatedSettings          SystemSetting[]
 
   @@index([email])
   @@index([role])
@@ -387,23 +388,23 @@ model Researcher {
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  equipmentRequests    EquipmentRequest[]
-  equipmentAssignments EquipmentAssignment[]
-  innovations          Innovation[]
-  reportedMaintenance  MaintenanceRecord[]   @relation("ReportedMaintenance")
-  maintainedEquipment  MaintenanceRecord[]   @relation("MaintenanceResearcher")
-  projectMemberships   ProjectMember[]
-  publicationAuthors   PublicationAuthor[]
-  grantApplications    GrantApplication[]
-  principalGrants      ResearchGrant[]       @relation("PrincipalInvestigator")
-  ethicsApplications   EthicsApplication[]   @relation("EthicsApplicant")
-  reviewedEthicsApplications EthicsApplication[] @relation("EthicsApplicationReviewer")
-  ethicsReviews        EthicsReview[]        @relation("EthicsReviewReviewer")
-  assignedEthicsReviews EthicsReviewer[]     @relation("AssignedReviewer")
-  eventParticipations   EventParticipation[]
-  submittedExpenses     ResearchExpense[]    @relation("SubmittedExpenses")
-  submittedReports      ResearchReport[]     @relation("SubmittedReports")
+  user                       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  equipmentRequests          EquipmentRequest[]
+  equipmentAssignments       EquipmentAssignment[]
+  innovations                Innovation[]
+  reportedMaintenance        MaintenanceRecord[]   @relation("ReportedMaintenance")
+  maintainedEquipment        MaintenanceRecord[]   @relation("MaintenanceResearcher")
+  projectMemberships         ProjectMember[]
+  publicationAuthors         PublicationAuthor[]
+  grantApplications          GrantApplication[]
+  principalGrants            ResearchGrant[]       @relation("PrincipalInvestigator")
+  ethicsApplications         EthicsApplication[]   @relation("EthicsApplicant")
+  reviewedEthicsApplications EthicsApplication[]   @relation("EthicsApplicationReviewer")
+  ethicsReviews              EthicsReview[]        @relation("EthicsReviewReviewer")
+  assignedEthicsReviews      EthicsReviewer[]      @relation("AssignedReviewer")
+  eventParticipations        EventParticipation[]
+  submittedExpenses          ResearchExpense[]     @relation("SubmittedExpenses")
+  submittedReports           ResearchReport[]      @relation("SubmittedReports")
 
   @@index([employeeOrStudentId])
   @@index([department])
@@ -615,8 +616,8 @@ model ProjectMember {
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
-  researchProject    ResearchProject   @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
-  researcher         Researcher        @relation(fields: [researcherId], references: [id], onDelete: Cascade)
+  researchProject    ResearchProject     @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  researcher         Researcher          @relation(fields: [researcherId], references: [id], onDelete: Cascade)
   assignedActivities ProjectActivity[]
   assignedMilestones ResearchMilestone[]
 
@@ -879,10 +880,10 @@ model ResearchGrant {
   createdAt               DateTime    @default(now()) @map("created_at")
   updatedAt               DateTime    @updatedAt @map("updated_at")
 
-  application           GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
-  researchProject       ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
-  principalInvestigator Researcher?      @relation("PrincipalInvestigator", fields: [principalInvestigatorId], references: [id], onDelete: SetNull)
-  createdBy             User             @relation("CreatedGrants", fields: [createdById], references: [id], onDelete: Restrict)
+  application           GrantApplication   @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  researchProject       ResearchProject?   @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  principalInvestigator Researcher?        @relation("PrincipalInvestigator", fields: [principalInvestigatorId], references: [id], onDelete: SetNull)
+  createdBy             User               @relation("CreatedGrants", fields: [createdById], references: [id], onDelete: Restrict)
   budgetAllocations     BudgetAllocation[]
   expenses              ResearchExpense[]
 
@@ -897,32 +898,32 @@ model ResearchGrant {
 }
 
 model EthicsApplication {
-  id                  String                  @id @default(uuid())
-  applicationCode     String                  @unique @map("application_code")
-  researchProjectId   String                  @map("research_project_id")
-  applicantId         String                  @map("applicant_id")
-  title               String
-  researchSummary     String                  @map("research_summary")
-  methodology         String?
-  participantDetails  String?                 @map("participant_details")
-  riskAssessment      String?                 @map("risk_assessment")
-  benefitStatement    String?                 @map("benefit_statement")
-  dataProtectionPlan  String?                 @map("data_protection_plan")
-  consentProcess      String?                 @map("consent_process")
-  status              EthicsApplicationStatus @default(DRAFT)
-  submittedAt         DateTime?               @map("submitted_at")
-  reviewedAt          DateTime?               @map("reviewed_at")
-  approvedAt          DateTime?               @map("approved_at")
-  rejectedAt          DateTime?               @map("rejected_at")
-  reviewerId          String?                 @map("reviewer_id")
-  reviewComment       String?                 @map("review_comment")
-  revisionComment     String?                 @map("revision_comment")
-  createdAt           DateTime                @default(now()) @map("created_at")
-  updatedAt           DateTime                @updatedAt @map("updated_at")
+  id                 String                  @id @default(uuid())
+  applicationCode    String                  @unique @map("application_code")
+  researchProjectId  String                  @map("research_project_id")
+  applicantId        String                  @map("applicant_id")
+  title              String
+  researchSummary    String                  @map("research_summary")
+  methodology        String?
+  participantDetails String?                 @map("participant_details")
+  riskAssessment     String?                 @map("risk_assessment")
+  benefitStatement   String?                 @map("benefit_statement")
+  dataProtectionPlan String?                 @map("data_protection_plan")
+  consentProcess     String?                 @map("consent_process")
+  status             EthicsApplicationStatus @default(DRAFT)
+  submittedAt        DateTime?               @map("submitted_at")
+  reviewedAt         DateTime?               @map("reviewed_at")
+  approvedAt         DateTime?               @map("approved_at")
+  rejectedAt         DateTime?               @map("rejected_at")
+  reviewerId         String?                 @map("reviewer_id")
+  reviewComment      String?                 @map("review_comment")
+  revisionComment    String?                 @map("revision_comment")
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
 
-  researchProject ResearchProject        @relation(fields: [researchProjectId], references: [id], onDelete: Restrict)
-  applicant       Researcher             @relation("EthicsApplicant", fields: [applicantId], references: [id], onDelete: Restrict)
-  reviewer        Researcher?            @relation("EthicsApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  researchProject ResearchProject  @relation(fields: [researchProjectId], references: [id], onDelete: Restrict)
+  applicant       Researcher       @relation("EthicsApplicant", fields: [applicantId], references: [id], onDelete: Restrict)
+  reviewer        Researcher?      @relation("EthicsApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
   reviews         EthicsReview[]
   reviewers       EthicsReviewer[]
 
@@ -936,14 +937,14 @@ model EthicsApplication {
 }
 
 model EthicsReview {
-  id              String               @id @default(uuid())
-  applicationId   String               @map("application_id")
-  reviewerId      String               @map("reviewer_id")
-  decision        EthicsReviewDecision
-  comment         String?
-  reviewedAt      DateTime             @default(now()) @map("reviewed_at")
-  createdAt       DateTime             @default(now()) @map("created_at")
-  updatedAt       DateTime             @updatedAt @map("updated_at")
+  id            String               @id @default(uuid())
+  applicationId String               @map("application_id")
+  reviewerId    String               @map("reviewer_id")
+  decision      EthicsReviewDecision
+  comment       String?
+  reviewedAt    DateTime             @default(now()) @map("reviewed_at")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
 
   application EthicsApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   reviewer    Researcher        @relation("EthicsReviewReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
@@ -978,38 +979,38 @@ model EthicsReviewer {
 }
 
 model ResearchEvent {
-  id                   String       @id @default(uuid())
-  eventCode            String       @unique @map("event_code")
+  id                   String      @id @default(uuid())
+  eventCode            String      @unique @map("event_code")
   title                String
   description          String?
-  eventType            EventType    @map("event_type")
-  status               EventStatus  @default(DRAFT)
-  startDate            DateTime     @map("start_date")
-  endDate              DateTime     @map("end_date")
-  registrationDeadline DateTime?    @map("registration_deadline")
+  eventType            EventType   @map("event_type")
+  status               EventStatus @default(DRAFT)
+  startDate            DateTime    @map("start_date")
+  endDate              DateTime    @map("end_date")
+  registrationDeadline DateTime?   @map("registration_deadline")
   venue                String?
   location             String?
-  isVirtual            Boolean      @default(false) @map("is_virtual")
-  meetingUrl           String?      @map("meeting_url")
+  isVirtual            Boolean     @default(false) @map("is_virtual")
+  meetingUrl           String?     @map("meeting_url")
   organizer            String?
-  contactEmail         String?      @map("contact_email")
-  contactPhone         String?      @map("contact_phone")
-  maxParticipants      Int?         @map("max_participants")
-  currentParticipants  Int          @default(0) @map("current_participants")
-  researchProjectId    String?      @map("research_project_id")
-  innovationId         String?      @map("innovation_id")
-  publicationId        String?      @map("publication_id")
+  contactEmail         String?     @map("contact_email")
+  contactPhone         String?     @map("contact_phone")
+  maxParticipants      Int?        @map("max_participants")
+  currentParticipants  Int         @default(0) @map("current_participants")
+  researchProjectId    String?     @map("research_project_id")
+  innovationId         String?     @map("innovation_id")
+  publicationId        String?     @map("publication_id")
   objectives           String?
   eligibility          String?
   requirements         String?
-  createdById          String       @map("created_by_id")
-  createdAt            DateTime     @default(now()) @map("created_at")
-  updatedAt            DateTime     @updatedAt @map("updated_at")
+  createdById          String      @map("created_by_id")
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
 
-  researchProject ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
-  innovation      Innovation?      @relation(fields: [innovationId], references: [id], onDelete: SetNull)
+  researchProject ResearchProject?     @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  innovation      Innovation?          @relation(fields: [innovationId], references: [id], onDelete: SetNull)
   publication     ResearchPublication? @relation(fields: [publicationId], references: [id], onDelete: SetNull)
-  createdBy       User             @relation("CreatedEvents", fields: [createdById], references: [id], onDelete: Restrict)
+  createdBy       User                 @relation("CreatedEvents", fields: [createdById], references: [id], onDelete: Restrict)
   participations  EventParticipation[]
 
   @@index([eventCode])
@@ -1026,17 +1027,17 @@ model ResearchEvent {
 }
 
 model EventParticipation {
-  id              String              @id @default(uuid())
-  eventId         String              @map("event_id")
-  researcherId    String              @map("researcher_id")
-  status          ParticipationStatus @default(REGISTERED)
-  registeredAt    DateTime            @default(now()) @map("registered_at")
-  confirmedAt     DateTime?           @map("confirmed_at")
-  attendedAt      DateTime?           @map("attended_at")
-  cancelledAt     DateTime?           @map("cancelled_at")
-  notes           String?
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
+  id           String              @id @default(uuid())
+  eventId      String              @map("event_id")
+  researcherId String              @map("researcher_id")
+  status       ParticipationStatus @default(REGISTERED)
+  registeredAt DateTime            @default(now()) @map("registered_at")
+  confirmedAt  DateTime?           @map("confirmed_at")
+  attendedAt   DateTime?           @map("attended_at")
+  cancelledAt  DateTime?           @map("cancelled_at")
+  notes        String?
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
 
   event      ResearchEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   researcher Researcher    @relation(fields: [researcherId], references: [id], onDelete: Cascade)
@@ -1050,18 +1051,18 @@ model EventParticipation {
 }
 
 model BudgetAllocation {
-  id                String         @id @default(uuid())
-  researchGrantId   String         @map("research_grant_id")
-  category          BudgetCategory
-  allocatedAmount   Decimal        @map("allocated_amount") @db.Decimal(14, 2)
-  description       String?
-  createdById       String         @map("created_by_id")
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
+  id              String         @id @default(uuid())
+  researchGrantId String         @map("research_grant_id")
+  category        BudgetCategory
+  allocatedAmount Decimal        @map("allocated_amount") @db.Decimal(14, 2)
+  description     String?
+  createdById     String         @map("created_by_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
-  researchGrant     ResearchGrant  @relation(fields: [researchGrantId], references: [id], onDelete: Cascade)
-  createdBy         User           @relation("CreatedAllocations", fields: [createdById], references: [id], onDelete: Restrict)
-  expenses          ResearchExpense[]
+  researchGrant ResearchGrant     @relation(fields: [researchGrantId], references: [id], onDelete: Cascade)
+  createdBy     User              @relation("CreatedAllocations", fields: [createdById], references: [id], onDelete: Restrict)
+  expenses      ResearchExpense[]
 
   @@index([researchGrantId])
   @@index([category])
@@ -1070,33 +1071,33 @@ model BudgetAllocation {
 }
 
 model ResearchExpense {
-  id                    String         @id @default(uuid())
-  expenseCode           String         @unique @map("expense_code")
-  researchGrantId       String         @map("research_grant_id")
-  researchProjectId     String?        @map("research_project_id")
-  budgetAllocationId    String?        @map("budget_allocation_id")
-  category              BudgetCategory
-  description           String
-  amount                Decimal        @db.Decimal(14, 2)
-  expenseDate           DateTime       @map("expense_date")
-  vendor                String?
-  referenceNumber       String?        @map("reference_number")
-  status                ExpenseStatus  @default(DRAFT)
-  submittedById         String         @map("submitted_by_id")
-  approvedById          String?        @map("approved_by_id")
-  approvedAt            DateTime?      @map("approved_at")
-  rejectionReason       String?        @map("rejection_reason")
-  receiptDocumentId     String?        @map("receipt_document_id")
-  notes                 String?
-  createdAt             DateTime       @default(now()) @map("created_at")
-  updatedAt             DateTime       @updatedAt @map("updated_at")
+  id                 String         @id @default(uuid())
+  expenseCode        String         @unique @map("expense_code")
+  researchGrantId    String         @map("research_grant_id")
+  researchProjectId  String?        @map("research_project_id")
+  budgetAllocationId String?        @map("budget_allocation_id")
+  category           BudgetCategory
+  description        String
+  amount             Decimal        @db.Decimal(14, 2)
+  expenseDate        DateTime       @map("expense_date")
+  vendor             String?
+  referenceNumber    String?        @map("reference_number")
+  status             ExpenseStatus  @default(DRAFT)
+  submittedById      String         @map("submitted_by_id")
+  approvedById       String?        @map("approved_by_id")
+  approvedAt         DateTime?      @map("approved_at")
+  rejectionReason    String?        @map("rejection_reason")
+  receiptDocumentId  String?        @map("receipt_document_id")
+  notes              String?
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
 
-  researchGrant         ResearchGrant  @relation(fields: [researchGrantId], references: [id], onDelete: Restrict)
-  researchProject       ResearchProject? @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
-  budgetAllocation      BudgetAllocation? @relation(fields: [budgetAllocationId], references: [id], onDelete: SetNull)
-  submittedBy           Researcher     @relation("SubmittedExpenses", fields: [submittedById], references: [id], onDelete: Restrict)
-  approvedBy            User?          @relation("ApprovedExpenses", fields: [approvedById], references: [id], onDelete: SetNull)
-  receiptDocument       ResearchDocument? @relation(fields: [receiptDocumentId], references: [id], onDelete: SetNull)
+  researchGrant    ResearchGrant     @relation(fields: [researchGrantId], references: [id], onDelete: Restrict)
+  researchProject  ResearchProject?  @relation(fields: [researchProjectId], references: [id], onDelete: SetNull)
+  budgetAllocation BudgetAllocation? @relation(fields: [budgetAllocationId], references: [id], onDelete: SetNull)
+  submittedBy      Researcher        @relation("SubmittedExpenses", fields: [submittedById], references: [id], onDelete: Restrict)
+  approvedBy       User?             @relation("ApprovedExpenses", fields: [approvedById], references: [id], onDelete: SetNull)
+  receiptDocument  ResearchDocument? @relation(fields: [receiptDocumentId], references: [id], onDelete: SetNull)
 
   @@index([researchGrantId])
   @@index([researchProjectId])
@@ -1111,25 +1112,25 @@ model ResearchExpense {
 }
 
 model ResearchMilestone {
-  id                     String           @id @default(uuid())
-  researchProjectId      String           @map("research_project_id")
-  title                  String
-  description            String?
-  milestoneOrder         Int              @default(0) @map("milestone_order")
-  plannedStartDate       DateTime?        @map("planned_start_date")
-  plannedDueDate         DateTime?        @map("planned_due_date")
-  actualCompletionDate   DateTime?        @map("actual_completion_date")
-  status                 MilestoneStatus  @default(PLANNED)
-  progress               Int              @default(0)
-  responsibleMemberId    String?          @map("responsible_member_id")
-  notes                  String?
-  createdById            String           @map("created_by_id")
-  createdAt              DateTime         @default(now()) @map("created_at")
-  updatedAt              DateTime         @updatedAt @map("updated_at")
+  id                   String          @id @default(uuid())
+  researchProjectId    String          @map("research_project_id")
+  title                String
+  description          String?
+  milestoneOrder       Int             @default(0) @map("milestone_order")
+  plannedStartDate     DateTime?       @map("planned_start_date")
+  plannedDueDate       DateTime?       @map("planned_due_date")
+  actualCompletionDate DateTime?       @map("actual_completion_date")
+  status               MilestoneStatus @default(PLANNED)
+  progress             Int             @default(0)
+  responsibleMemberId  String?         @map("responsible_member_id")
+  notes                String?
+  createdById          String          @map("created_by_id")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
 
-  researchProject    ResearchProject  @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
-  responsibleMember  ProjectMember?   @relation(fields: [responsibleMemberId], references: [id], onDelete: SetNull)
-  createdBy          User             @relation("CreatedMilestones", fields: [createdById], references: [id], onDelete: Restrict)
+  researchProject   ResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  responsibleMember ProjectMember?  @relation(fields: [responsibleMemberId], references: [id], onDelete: SetNull)
+  createdBy         User            @relation("CreatedMilestones", fields: [createdById], references: [id], onDelete: Restrict)
 
   @@index([researchProjectId])
   @@index([status])
@@ -1141,35 +1142,35 @@ model ResearchMilestone {
 }
 
 model ResearchReport {
-  id                     String               @id @default(uuid())
-  reportCode             String               @unique @map("report_code")
-  title                  String
-  reportType             ResearchReportType   @map("report_type")
-  researchProjectId      String               @map("research_project_id")
-  submittedById          String               @map("submitted_by_id")
-  reportingPeriodStart   DateTime?            @map("reporting_period_start")
-  reportingPeriodEnd     DateTime?            @map("reporting_period_end")
-  submittedAt            DateTime?            @map("submitted_at")
-  status                 ResearchReportStatus @default(DRAFT)
-  executiveSummary       String?              @map("executive_summary")
-  objectives             String?
-  methodology            String?
-  achievements           String?
-  challenges             String?
-  findings               String?
-  recommendations        String?
-  conclusion             String?
-  progressPercentage     Int?                 @map("progress_percentage")
-  nextPeriodPlan         String?              @map("next_period_plan")
-  reviewerId             String?              @map("reviewer_id")
-  reviewComment          String?              @map("review_comment")
-  reviewedAt             DateTime?            @map("reviewed_at")
-  createdAt              DateTime             @default(now()) @map("created_at")
-  updatedAt              DateTime             @updatedAt @map("updated_at")
+  id                   String               @id @default(uuid())
+  reportCode           String               @unique @map("report_code")
+  title                String
+  reportType           ResearchReportType   @map("report_type")
+  researchProjectId    String               @map("research_project_id")
+  submittedById        String               @map("submitted_by_id")
+  reportingPeriodStart DateTime?            @map("reporting_period_start")
+  reportingPeriodEnd   DateTime?            @map("reporting_period_end")
+  submittedAt          DateTime?            @map("submitted_at")
+  status               ResearchReportStatus @default(DRAFT)
+  executiveSummary     String?              @map("executive_summary")
+  objectives           String?
+  methodology          String?
+  achievements         String?
+  challenges           String?
+  findings             String?
+  recommendations      String?
+  conclusion           String?
+  progressPercentage   Int?                 @map("progress_percentage")
+  nextPeriodPlan       String?              @map("next_period_plan")
+  reviewerId           String?              @map("reviewer_id")
+  reviewComment        String?              @map("review_comment")
+  reviewedAt           DateTime?            @map("reviewed_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
 
-  researchProject   ResearchProject        @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
-  submittedBy       Researcher             @relation("SubmittedReports", fields: [submittedById], references: [id], onDelete: Restrict)
-  reviewer          User?                  @relation("ReviewedReports", fields: [reviewerId], references: [id], onDelete: SetNull)
+  researchProject ResearchProject @relation(fields: [researchProjectId], references: [id], onDelete: Cascade)
+  submittedBy     Researcher      @relation("SubmittedReports", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewer        User?           @relation("ReviewedReports", fields: [reviewerId], references: [id], onDelete: SetNull)
 
   @@index([reportCode])
   @@index([researchProjectId])
@@ -1179,4 +1180,21 @@ model ResearchReport {
   @@index([reportType])
   @@index([createdAt])
   @@map("research_reports")
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("general")
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by_id")
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([key])
+  @@index([category])
+  @@map("system_settings")
 }

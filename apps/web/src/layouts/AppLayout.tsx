@@ -101,6 +101,15 @@ const navigation: { section: string; items: NavItem[] }[] = [
     ],
   },
   {
+    section: 'ADMINISTRATION',
+    items: [
+      { name: 'Overview', href: '/administration', icon: Settings, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'System Settings', href: '/administration/settings', icon: Settings, roles: ['ADMIN'] },
+      { name: 'Roles & Permissions', href: '/administration/permissions', icon: Shield, roles: ['ADMIN'] },
+      { name: 'System Information', href: '/administration/system', icon: Activity, roles: ['ADMIN', 'COORDINATOR'] },
+    ],
+  },
+  {
     section: 'SYSTEM',
     items: [
       { name: 'Users', href: '/users', icon: Settings, roles: ['ADMIN', 'COORDINATOR'] },
