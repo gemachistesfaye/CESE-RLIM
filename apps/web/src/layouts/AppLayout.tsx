@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Clock,
   Info,
+  Activity,
 } from 'lucide-react';
 import { Link, useLocation, Outlet, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -104,6 +105,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
     items: [
       { name: 'Users', href: '/users', icon: Settings, roles: ['ADMIN', 'COORDINATOR'] },
       { name: 'Notifications', href: '/notifications', icon: Bell },
+      { name: 'Audit Logs', href: '/audit-logs', icon: Activity, roles: ['ADMIN', 'COORDINATOR'] },
     ],
   },
 ];

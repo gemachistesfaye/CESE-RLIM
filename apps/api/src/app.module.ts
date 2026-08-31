@@ -31,6 +31,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditModule } from './audit/audit.module';
 import { GlobalSearchModule } from './global-search/global-search.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { GlobalSearchModule } from './global-search/global-search.module';
     HealthModule,
     AuditModule,
     GlobalSearchModule,
+    AuditLogsModule,
     UsersModule,
     ResearchersModule,
     LaboratoriesModule,
