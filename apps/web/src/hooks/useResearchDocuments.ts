@@ -35,6 +35,7 @@ export interface ResearchDocument {
   storageKey: string;
   mimeType: string;
   fileSize: number;
+  checksum: string | null;
   version: number;
   status: DocumentStatus;
   archivedAt: string | null;
@@ -57,13 +58,14 @@ export interface ResearchDocument {
 export interface DocumentVersion {
   id: string;
   documentId: string;
-  version: number;
+  versionNumber: number;
   fileName: string;
   filePath: string;
   storageKey: string;
   mimeType: string;
   fileSize: number;
-  changeNotes: string | null;
+  checksum: string | null;
+  changeDescription: string | null;
   uploadedById: string;
   createdAt: string;
   uploadedBy: {
@@ -94,6 +96,13 @@ export interface PaginatedResponse<T> {
     total: number;
     totalPages: number;
   };
+}
+
+export interface DownloadUrl {
+  url: string;
+  expiresAt: string;
+  fileName: string;
+  mimeType: string;
 }
 
 export function useResearchDocuments(params: {
@@ -169,21 +178,43 @@ export function useMyDocuments(params: {
 export function useCreateResearchDocument() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: {
-      researchProjectId: string;
-      title: string;
-      description?: string;
-      documentType: DocumentType;
-      fileName: string;
-      filePath: string;
-      storageKey: string;
-      mimeType: string;
-      fileSize: number;
-      status?: DocumentStatus;
+    mutationFn: async ({
+      file,
+      metadata,
+      onProgress,
+    }: {
+      file: File;
+      metadata: {
+        researchProjectId?: string;
+        title: string;
+        description?: string;
+        documentType: DocumentType;
+      };
+      onProgress?: (progress: number) => void;
     }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (metadata.researchProjectId) {
+        formData.append('researchProjectId', metadata.researchProjectId);
+      }
+      formData.append('title', metadata.title);
+      if (metadata.description) {
+        formData.append('description', metadata.description);
+      }
+      formData.append('documentType', metadata.documentType);
+
       const { data } = await apiClient.post<{ success: boolean; data: ResearchDocument }>(
         '/research-documents',
-        payload,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total && onProgress) {
+              const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              onProgress(progress);
+            }
+          },
+        },
       );
       return data.data;
     },
@@ -228,21 +259,33 @@ export function useUploadDocumentVersion() {
   return useMutation({
     mutationFn: async ({
       id,
-      payload,
+      file,
+      changeDescription,
+      onProgress,
     }: {
       id: string;
-      payload: {
-        fileName: string;
-        filePath: string;
-        storageKey: string;
-        mimeType: string;
-        fileSize: number;
-        changeNotes?: string;
-      };
+      file: File;
+      changeDescription?: string;
+      onProgress?: (progress: number) => void;
     }) => {
-      const { data } = await apiClient.post<{ success: boolean; data: DocumentVersion }>(
+      const formData = new FormData();
+      formData.append('file', file);
+      if (changeDescription) {
+        formData.append('changeDescription', changeDescription);
+      }
+
+      const { data } = await apiClient.post<{ success: boolean; data: { document: ResearchDocument; version: DocumentVersion } }>(
         `/research-documents/${id}/versions`,
-        payload,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total && onProgress) {
+              const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              onProgress(progress);
+            }
+          },
+        },
       );
       return data.data;
     },
@@ -306,12 +349,25 @@ export function useDownloadResearchDocument(id: string) {
   return useQuery({
     queryKey: ['researchDocuments', id, 'download'],
     queryFn: async () => {
-      const { data } = await apiClient.get<{ success: boolean; data: { downloadUrl: string } }>(
+      const { data } = await apiClient.get<{ success: boolean; data: DownloadUrl }>(
         `/research-documents/${id}/download`,
       );
       return data.data;
     },
     enabled: !!id,
+  });
+}
+
+export function useDownloadVersion(documentId: string, versionId: string) {
+  return useQuery({
+    queryKey: ['researchDocuments', documentId, 'versions', versionId, 'download'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ success: boolean; data: DownloadUrl }>(
+        `/research-documents/${documentId}/versions/${versionId}/download`,
+      );
+      return data.data;
+    },
+    enabled: !!documentId && !!versionId,
   });
 }
 

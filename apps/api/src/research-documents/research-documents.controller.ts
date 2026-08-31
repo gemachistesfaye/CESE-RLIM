@@ -9,10 +9,13 @@ import {
   Query,
   ParseUUIDPipe,
   UseGuards,
+  UseInterceptors,
   Request,
+  UploadedFile,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,6 +23,8 @@ import {
   ApiBearerAuth,
   ApiQuery,
   ApiParam,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -214,15 +219,62 @@ export class ResearchDocumentsController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new research document' })
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Create a new research document with file upload' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        researchProjectId: { type: 'string', format: 'uuid' },
+        title: { type: 'string' },
+        description: { type: 'string' },
+        documentType: {
+          type: 'string',
+          enum: ['PROPOSAL', 'RESEARCH_PLAN', 'PROGRESS_REPORT', 'FINAL_REPORT',
+            'TECHNICAL_REPORT', 'DATASET', 'PRESENTATION', 'THESIS',
+            'MANUSCRIPT', 'PAPER', 'OTHER'],
+        },
+      },
+      required: ['file', 'title', 'documentType'],
+    },
+  })
   @ApiResponse({ status: 201, description: 'Document created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 404, description: 'Project not found' })
   async create(
-    @Body() dto: CreateResearchDocumentDto,
-    @Request() req: any,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('researchProjectId') researchProjectId?: string,
+    @Body('title') title?: string,
+    @Body('description') description?: string,
+    @Body('documentType') documentType?: string,
+    @Request() req?: any,
   ) {
-    const result = await this.documentsService.create(dto, req.user.id, req.user.role);
+    if (!file) {
+      return {
+        success: false,
+        message: 'File is required',
+      };
+    }
+
+    const dto: CreateResearchDocumentDto = {
+      researchProjectId,
+      title: title || '',
+      description,
+      documentType: documentType as any,
+      fileName: file.originalname,
+      filePath: '',
+      mimeType: file.mimetype,
+      fileSize: file.size,
+    };
+
+    const result = await this.documentsService.createWithFile(
+      dto,
+      file,
+      req.user.id,
+      req.user.role,
+    );
 
     return {
       success: true,
@@ -296,19 +348,48 @@ export class ResearchDocumentsController {
   @Post(':id/versions')
   @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Upload a new version of a research document' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        changeDescription: { type: 'string' },
+      },
+      required: ['file'],
+    },
+  })
   @ApiParam({ name: 'id', description: 'Research document UUID' })
   @ApiResponse({ status: 201, description: 'Document version uploaded successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input or file validation failed' })
   @ApiResponse({ status: 404, description: 'Document not found' })
   async uploadVersion(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UploadDocumentVersionDto,
-    @Request() req: any,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('changeDescription') changeDescription?: string,
+    @Request() req?: any,
   ) {
-    const result = await this.documentsService.uploadVersion(
+    if (!file) {
+      return {
+        success: false,
+        message: 'File is required',
+      };
+    }
+
+    const dto: UploadDocumentVersionDto = {
+      fileName: file.originalname,
+      filePath: '',
+      mimeType: file.mimetype,
+      fileSize: file.size,
+      changeDescription,
+    };
+
+    const result = await this.documentsService.uploadVersionWithFile(
       id,
       dto,
+      file,
       req.user.id,
       req.user.role,
     );

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +10,7 @@ import {
 import { useToast } from "../ui/Toast";
 import { Loader2 } from "lucide-react";
 import type { ResearchDocument } from "../../hooks/useResearchDocuments";
+import FileUpload from "./FileUpload";
 
 const documentSchema = z.object({
   researchProjectId: z.string().optional(),
@@ -27,8 +29,6 @@ const documentSchema = z.object({
     "PAPER",
     "OTHER",
   ]),
-  fileName: z.string().min(1, "File name is required").max(255),
-  mimeType: z.string().min(1, "MIME type is required"),
 });
 
 type DocumentFormData = z.infer<typeof documentSchema>;
@@ -51,6 +51,10 @@ export default function ResearchDocumentForm({
   const updateDocument = useUpdateResearchDocument();
   const isEditing = !!initialData;
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -63,16 +67,12 @@ export default function ResearchDocumentForm({
           title: initialData.title,
           description: initialData.description ?? "",
           documentType: initialData.documentType,
-          fileName: initialData.fileName,
-          mimeType: initialData.mimeType,
         }
       : {
           researchProjectId: "",
           title: "",
           description: "",
           documentType: "OTHER",
-          fileName: "",
-          mimeType: "application/pdf",
         },
   });
 
@@ -98,17 +98,24 @@ export default function ResearchDocumentForm({
         },
       );
     } else {
+      if (!selectedFile) {
+        toast("error", "Please select a file to upload");
+        return;
+      }
+
+      setUploadError(null);
+      setUploadProgress(0);
+
       createDocument.mutate(
         {
-          researchProjectId: values.researchProjectId || "",
-          title: values.title.trim(),
-          description: values.description?.trim() || undefined,
-          documentType: values.documentType,
-          fileName: values.fileName.trim(),
-          filePath: `/uploads/${values.fileName.trim()}`,
-          storageKey: `documents/${Date.now()}-${values.fileName.trim()}`,
-          mimeType: values.mimeType.trim(),
-          fileSize: Math.floor(Math.random() * 1000000) + 1,
+          file: selectedFile,
+          metadata: {
+            researchProjectId: values.researchProjectId || undefined,
+            title: values.title.trim(),
+            description: values.description?.trim() || undefined,
+            documentType: values.documentType,
+          },
+          onProgress: setUploadProgress,
         },
         {
           onSuccess: () => {
@@ -116,7 +123,9 @@ export default function ResearchDocumentForm({
             onSuccess();
           },
           onError: (err: any) => {
-            toast("error", err?.response?.data?.message || "Failed to create document");
+            const message = err?.response?.data?.message || "Failed to create document";
+            setUploadError(message);
+            toast("error", message);
           },
         },
       );
@@ -197,37 +206,16 @@ export default function ResearchDocumentForm({
 
       {!isEditing && (
         <div className="border-t border-slate-200 pt-4 mt-4">
-          <h4 className="text-sm font-semibold text-slate-900 mb-3">File Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                File Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                {...register("fileName")}
-                placeholder="document.pdf"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {errors.fileName && (
-                <p className="text-red-500 text-xs mt-1">{errors.fileName.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                MIME Type <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                {...register("mimeType")}
-                placeholder="application/pdf"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {errors.mimeType && (
-                <p className="text-red-500 text-xs mt-1">{errors.mimeType.message}</p>
-              )}
-            </div>
-          </div>
+          <h4 className="text-sm font-semibold text-slate-900 mb-3">File Upload</h4>
+          <FileUpload
+            onFileSelect={setSelectedFile}
+            onFileRemove={() => setSelectedFile(null)}
+            selectedFile={selectedFile}
+            uploadProgress={uploadProgress}
+            isUploading={createDocument.isPending}
+            error={uploadError}
+            disabled={isPending}
+          />
         </div>
       )}
 
@@ -241,7 +229,7 @@ export default function ResearchDocumentForm({
         </button>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || (!isEditing && !selectedFile)}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
           {isPending ? <Loader2 size={16} className="animate-spin" /> : null}

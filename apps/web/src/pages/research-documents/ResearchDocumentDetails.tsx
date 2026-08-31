@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams, Link } from "@tanstack/react-router";
 import {
   useResearchDocument,
@@ -12,6 +12,7 @@ import {
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ResearchDocumentForm from "../../components/research-documents/ResearchDocumentForm";
+import FileUpload from "../../components/research-documents/FileUpload";
 import { useResearchProjects } from "../../hooks/useResearchProjects";
 import {
   ArrowLeft,
@@ -119,6 +120,22 @@ export default function ResearchDocumentDetails() {
       onError: () => toast("error", "Failed to archive document"),
     });
   };
+
+  const handleDownload = useCallback(async () => {
+    if (!document) return;
+    try {
+      const { apiClient } = await import("../../lib/api");
+      const { data } = await apiClient.get<{ success: boolean; data: { url: string; expiresAt: string; fileName: string; mimeType: string } }>(
+        `/research-documents/${id}/download`,
+      );
+      if (data.success && data.data.url) {
+        window.open(data.data.url, "_blank");
+        toast("success", "Download started");
+      }
+    } catch {
+      toast("error", "Failed to get download URL");
+    }
+  }, [document, id, toast]);
 
   if (isLoading) {
     return (
@@ -367,6 +384,17 @@ export default function ResearchDocumentDetails() {
                   <div className="text-sm text-slate-500">{document.mimeType}</div>
                 </div>
               </div>
+              {document.checksum && (
+                <div className="flex items-start gap-3">
+                  <Tag className="text-slate-400 mt-0.5" size={18} />
+                  <div>
+                    <div className="text-sm font-medium text-slate-900">Checksum</div>
+                    <div className="text-sm text-slate-500 font-mono break-all">
+                      {document.checksum.substring(0, 16)}...
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex items-start gap-3">
                 <Clock className="text-slate-400 mt-0.5" size={18} />
                 <div>
@@ -456,7 +484,7 @@ export default function ResearchDocumentDetails() {
                   {versions.map((version) => (
                     <tr key={version.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-3 font-medium text-slate-900">
-                        v{version.version}
+                        v{version.versionNumber}
                       </td>
                       <td className="px-4 py-3 text-slate-500">{version.fileName}</td>
                       <td className="px-4 py-3 text-slate-500">
@@ -469,7 +497,7 @@ export default function ResearchDocumentDetails() {
                         {new Date(version.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3 text-slate-500">
-                        {version.changeNotes || "—"}
+                        {version.changeDescription || "—"}
                       </td>
                     </tr>
                   ))}
@@ -484,7 +512,10 @@ export default function ResearchDocumentDetails() {
             Actions
           </h3>
           <div className="flex gap-3 flex-wrap">
-            <button className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+            <button
+              onClick={handleDownload}
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
               <Download size={16} />
               Download
             </button>
@@ -594,28 +625,27 @@ function UploadVersionModal({
 }) {
   const { toast } = useToast();
   const uploadVersion = useUploadDocumentVersion();
-  const [fileName, setFileName] = useState("");
-  const [mimeType, setMimeType] = useState("application/pdf");
-  const [changeNotes, setChangeNotes] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [changeDescription, setChangeDescription] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fileName.trim()) {
-      toast("error", "File name is required");
+    if (!selectedFile) {
+      toast("error", "Please select a file to upload");
       return;
     }
+
+    setUploadError(null);
+    setUploadProgress(0);
 
     uploadVersion.mutate(
       {
         id: documentId,
-        payload: {
-          fileName: fileName.trim(),
-          filePath: `/uploads/${fileName.trim()}`,
-          storageKey: `documents/${Date.now()}-${fileName.trim()}`,
-          mimeType: mimeType.trim(),
-          fileSize: Math.floor(Math.random() * 1000000) + 1,
-          changeNotes: changeNotes.trim() || undefined,
-        },
+        file: selectedFile,
+        changeDescription: changeDescription.trim() || undefined,
+        onProgress: setUploadProgress,
       },
       {
         onSuccess: () => {
@@ -623,7 +653,9 @@ function UploadVersionModal({
           onClose();
         },
         onError: (err: any) => {
-          toast("error", err?.response?.data?.message || "Failed to upload version");
+          const message = err?.response?.data?.message || "Failed to upload version";
+          setUploadError(message);
+          toast("error", message);
         },
       },
     );
@@ -636,37 +668,23 @@ function UploadVersionModal({
           Upload New Version (v{currentVersion + 1})
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              File Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={fileName}
-              onChange={(e) => setFileName(e.target.value)}
-              placeholder="document-v2.pdf"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              MIME Type <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={mimeType}
-              onChange={(e) => setMimeType(e.target.value)}
-              placeholder="application/pdf"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <FileUpload
+            onFileSelect={setSelectedFile}
+            onFileRemove={() => setSelectedFile(null)}
+            selectedFile={selectedFile}
+            uploadProgress={uploadProgress}
+            isUploading={uploadVersion.isPending}
+            error={uploadError}
+            disabled={uploadVersion.isPending}
+          />
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Change Description
             </label>
             <textarea
-              value={changeNotes}
-              onChange={(e) => setChangeNotes(e.target.value)}
+              value={changeDescription}
+              onChange={(e) => setChangeDescription(e.target.value)}
               rows={3}
               placeholder="Describe what changed in this version..."
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
@@ -682,7 +700,7 @@ function UploadVersionModal({
             </button>
             <button
               type="submit"
-              disabled={uploadVersion.isPending}
+              disabled={uploadVersion.isPending || !selectedFile}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {uploadVersion.isPending ? (

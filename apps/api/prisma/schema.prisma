@@ -715,6 +715,7 @@ model ResearchDocument {
   storageKey        String         @unique @map("storage_key")
   mimeType          String         @map("mime_type")
   fileSize          Int            @map("file_size")
+  checksum          String?
   version           Int            @default(1)
   status            DocumentStatus @default(DRAFT)
   archivedAt        DateTime?      @map("archived_at")
@@ -743,6 +744,7 @@ model ResearchDocumentVersion {
   storageKey        String   @unique @map("storage_key")
   mimeType          String   @map("mime_type")
   fileSize          Int      @map("file_size")
+  checksum          String?
   uploadedById      String   @map("uploaded_by_id")
   changeDescription String?  @map("change_description")
   createdAt         DateTime @default(now()) @map("created_at")

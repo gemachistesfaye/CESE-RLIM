@@ -3,9 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { IStorageService } from '../storage/storage.interface';
+import { STORAGE_SERVICE_TOKEN } from '../storage/storage.module';
 import { CreateResearchDocumentDto } from './dto/create-research-document.dto';
 import { UpdateResearchDocumentDto } from './dto/update-research-document.dto';
 import { UploadDocumentVersionDto } from './dto/upload-document-version.dto';
@@ -31,6 +34,7 @@ const RESEARCH_DOCUMENT_SELECT = {
   storageKey: true,
   mimeType: true,
   fileSize: true,
+  checksum: true,
   version: true,
   status: true,
   archivedAt: true,
@@ -61,6 +65,7 @@ const RESEARCH_DOCUMENT_SELECT = {
       storageKey: true,
       mimeType: true,
       fileSize: true,
+      checksum: true,
       uploadedById: true,
       changeDescription: true,
       createdAt: true,
@@ -116,6 +121,7 @@ export class ResearchDocumentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    @Inject(STORAGE_SERVICE_TOKEN) private readonly storageService: IStorageService,
   ) {}
 
   private generateStorageKey(originalFileName: string): string {
@@ -139,6 +145,14 @@ export class ResearchDocumentsService {
         `File type "${mimeType}" is not allowed. Allowed types: ${ALLOWED_MIME_TYPES.slice(0, 5).join(', ')}...`,
       );
     }
+  }
+
+  private sanitizeFileName(fileName: string): string {
+    return fileName
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/_{2,}/g, '_')
+      .replace(/^[._]+/, '')
+      .substring(0, 255);
   }
 
   async findAll(params: {
@@ -426,6 +440,7 @@ export class ResearchDocumentsService {
         storageKey: true,
         mimeType: true,
         fileSize: true,
+        checksum: true,
         uploadedById: true,
         changeDescription: true,
         createdAt: true,
@@ -473,6 +488,8 @@ export class ResearchDocumentsService {
       }
     }
 
+    const signedUrl = await this.storageService.getSignedUrl(document.storageKey, 60);
+
     await this.auditService.log({
       userId,
       action: AuditAction.DOWNLOAD,
@@ -487,10 +504,120 @@ export class ResearchDocumentsService {
     });
 
     return {
-      url: `/storage/${document.storageKey}`,
+      url: signedUrl.url,
+      expiresAt: signedUrl.expiresAt,
       fileName: document.fileName,
       mimeType: document.mimeType,
     };
+  }
+
+  async createWithFile(
+    dto: CreateResearchDocumentDto,
+    file: Express.Multer.File,
+    userId: string,
+    userRole: UserRole,
+  ) {
+    this.validateFileSize(file.size);
+    this.validateMimeType(file.mimetype);
+
+    if (dto.researchProjectId) {
+      const project = await this.prisma.researchProject.findUnique({
+        where: { id: dto.researchProjectId },
+      });
+      if (!project) {
+        throw new NotFoundException('Research project not found');
+      }
+    }
+
+    if (userRole === UserRole.RESEARCHER && dto.researchProjectId) {
+      const researcher = await this.prisma.researcher.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (!researcher) {
+        throw new ForbiddenException('Researcher profile not found');
+      }
+      const membership = await this.prisma.projectMember.findUnique({
+        where: {
+          researchProjectId_researcherId: {
+            researchProjectId: dto.researchProjectId,
+            researcherId: researcher.id,
+          },
+        },
+      });
+      if (!membership || !membership.isActive) {
+        throw new ForbiddenException('You are not an active member of this project');
+      }
+    }
+
+    const storageKey = this.generateStorageKey(this.sanitizeFileName(file.originalname));
+
+    const existingKey = await this.prisma.researchDocument.findUnique({
+      where: { storageKey },
+    });
+    if (existingKey) {
+      throw new BadRequestException('Storage key already exists. Please try again.');
+    }
+
+    let uploadResult;
+    try {
+      uploadResult = await this.storageService.upload(file, storageKey);
+    } catch (error) {
+      throw new BadRequestException(`File upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    const document = await this.prisma.researchDocument.create({
+      data: {
+        researchProjectId: dto.researchProjectId || null,
+        uploadedById: userId,
+        title: dto.title.trim(),
+        description: dto.description?.trim(),
+        documentType: dto.documentType,
+        fileName: this.sanitizeFileName(file.originalname),
+        filePath: storageKey,
+        storageKey,
+        mimeType: file.mimetype,
+        fileSize: file.size,
+        checksum: uploadResult.checksum,
+        version: 1,
+        status: DocumentStatus.DRAFT,
+      },
+      select: RESEARCH_DOCUMENT_SELECT,
+    });
+
+    await this.prisma.researchDocumentVersion.create({
+      data: {
+        documentId: document.id,
+        versionNumber: 1,
+        fileName: this.sanitizeFileName(file.originalname),
+        filePath: storageKey,
+        storageKey,
+        mimeType: file.mimetype,
+        fileSize: file.size,
+        checksum: uploadResult.checksum,
+        uploadedById: userId,
+        changeDescription: 'Initial version',
+      },
+    });
+
+    await this.auditService.log({
+      userId,
+      action: AuditAction.CREATE,
+      entityType: 'ResearchDocument',
+      entityId: document.id,
+      description: `Created document "${document.title}" (${document.documentType})`,
+      metadata: {
+        researchProjectId: dto.researchProjectId,
+        documentType: document.documentType,
+        status: document.status,
+        version: 1,
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+      },
+    });
+
+    return document;
   }
 
   async create(dto: CreateResearchDocumentDto, userId: string, userRole: UserRole) {
@@ -722,6 +849,95 @@ export class ResearchDocumentsService {
     return document;
   }
 
+  async uploadVersionWithFile(
+    documentId: string,
+    dto: UploadDocumentVersionDto,
+    file: Express.Multer.File,
+    userId: string,
+    userRole: UserRole,
+  ) {
+    const document = await this.findById(documentId);
+
+    if (userRole === UserRole.RESEARCHER) {
+      if (document.uploadedById !== userId) {
+        throw new ForbiddenException('You can only upload versions for documents you uploaded');
+      }
+    }
+
+    if (document.status === DocumentStatus.ARCHIVED) {
+      throw new BadRequestException('Cannot upload versions for archived documents');
+    }
+
+    this.validateFileSize(file.size);
+    this.validateMimeType(file.mimetype);
+
+    const storageKey = this.generateStorageKey(this.sanitizeFileName(file.originalname));
+
+    let uploadResult;
+    try {
+      uploadResult = await this.storageService.upload(file, storageKey);
+    } catch (error) {
+      throw new BadRequestException(`File upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    const nextVersionNumber = document.version + 1;
+
+    const [updatedDocument, newVersion] = await this.prisma.$transaction([
+      this.prisma.researchDocument.update({
+        where: { id: documentId },
+        data: {
+          version: nextVersionNumber,
+          fileName: this.sanitizeFileName(file.originalname),
+          filePath: storageKey,
+          storageKey,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          checksum: uploadResult.checksum,
+        },
+        select: RESEARCH_DOCUMENT_SELECT,
+      }),
+      this.prisma.researchDocumentVersion.create({
+        data: {
+          documentId,
+          versionNumber: nextVersionNumber,
+          fileName: this.sanitizeFileName(file.originalname),
+          filePath: storageKey,
+          storageKey,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          checksum: uploadResult.checksum,
+          uploadedById: userId,
+          changeDescription: dto.changeDescription?.trim(),
+        },
+        select: {
+          id: true,
+          versionNumber: true,
+          fileName: true,
+          createdAt: true,
+          changeDescription: true,
+        },
+      }),
+    ]);
+
+    await this.auditService.log({
+      userId,
+      action: AuditAction.VERSION_UPLOAD,
+      entityType: 'ResearchDocument',
+      entityId: documentId,
+      description: `Uploaded version ${nextVersionNumber} of document "${document.title}"`,
+      metadata: {
+        researchProjectId: document.researchProjectId,
+        previousVersion: document.version,
+        newVersion: nextVersionNumber,
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+      },
+    });
+
+    return { document: updatedDocument, version: newVersion };
+  }
+
   async uploadVersion(documentId: string, dto: UploadDocumentVersionDto, userId: string, userRole: UserRole) {
     const document = await this.findById(documentId);
 
@@ -808,6 +1024,29 @@ export class ResearchDocumentsService {
 
     if (existing.status !== DocumentStatus.DRAFT && userRole !== UserRole.ADMIN && userRole !== UserRole.COORDINATOR) {
       throw new BadRequestException('Only DRAFT documents can be deleted');
+    }
+
+    try {
+      const versions = await this.prisma.researchDocumentVersion.findMany({
+        where: { documentId: id },
+        select: { storageKey: true },
+      });
+
+      for (const version of versions) {
+        try {
+          await this.storageService.delete(version.storageKey);
+        } catch {
+          // Log but don't fail if storage deletion fails
+        }
+      }
+
+      try {
+        await this.storageService.delete(existing.storageKey);
+      } catch {
+        // Log but don't fail if storage deletion fails
+      }
+    } catch {
+      // Continue with database deletion even if storage cleanup fails
     }
 
     await this.prisma.researchDocumentVersion.deleteMany({
