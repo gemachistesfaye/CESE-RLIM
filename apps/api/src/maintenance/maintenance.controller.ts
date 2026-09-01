@@ -27,6 +27,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 
 @ApiTags('Maintenance')
 @ApiBearerAuth()
@@ -68,7 +69,7 @@ export class MaintenanceController {
   ) {
     return this.maintenanceService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       equipmentId,
@@ -100,7 +101,7 @@ export class MaintenanceController {
     return this.maintenanceService.findMyMaintenance({
       userId: req.user.id,
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       status,
     });
   }
@@ -120,7 +121,7 @@ export class MaintenanceController {
       userId: req.user.id,
       userRole: req.user.role,
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
     });
   }
 
@@ -187,7 +188,7 @@ export class MaintenanceController {
     @Body() dto: UpdateMaintenanceStatusDto,
     @Request() req: any,
   ) {
-    return this.maintenanceService.updateStatus(id, dto, req.user.id);
+    return this.maintenanceService.updateStatus(id, dto, req.user.id, req.user.role);
   }
 
   @Patch(':id/complete')

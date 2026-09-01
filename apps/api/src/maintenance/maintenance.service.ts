@@ -487,8 +487,12 @@ export class MaintenanceService {
     return record;
   }
 
-  async updateStatus(id: string, dto: UpdateMaintenanceStatusDto, operatorId: string) {
+  async updateStatus(id: string, dto: UpdateMaintenanceStatusDto, operatorId: string, userRole?: string) {
     const existing = await this.findById(id);
+
+    if (userRole === 'TECHNICIAN' && existing.assignedTechnicianId !== operatorId) {
+      throw new ForbiddenException('Technicians can only update status for maintenance tasks assigned to them');
+    }
 
     const validTransitions: Record<string, string[]> = {
       'REPORTED': ['DIAGNOSING', 'CANCELLED'],

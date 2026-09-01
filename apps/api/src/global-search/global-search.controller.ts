@@ -1,5 +1,6 @@
 import { Controller, Get, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -15,6 +16,7 @@ export class GlobalSearchController {
   constructor(private readonly globalSearchService: GlobalSearchService) {}
 
   @Get()
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Search across all platform entities' })
   @ApiQuery({ name: 'q', required: true, type: String, description: 'Search query' })

@@ -6,6 +6,7 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  Matches,
 } from 'class-validator';
 
 export class CreateResearcherDto {
@@ -32,10 +33,13 @@ export class CreateResearcherDto {
   @MaxLength(20)
   phone?: string;
 
-  @ApiProperty({ example: 'password123' })
+  @ApiProperty({ example: 'Password123!' })
   @IsString()
-  @MinLength(6)
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(128)
+  @Matches(/^(?=.*[a-z])/, { message: 'Password must contain at least one lowercase letter' })
+  @Matches(/^(?=.*[A-Z])/, { message: 'Password must contain at least one uppercase letter' })
+  @Matches(/^(?=.*\d)/, { message: 'Password must contain at least one number' })
   password!: string;
 
   @ApiProperty({ example: 'ASTU-RES-003' })

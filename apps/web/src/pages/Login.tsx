@@ -108,9 +108,9 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center">
-            <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
-              Forgot password?
-            </a>
+            <p className="text-sm text-slate-500">
+              Contact your administrator to reset your password.
+            </p>
           </div>
         </div>
 

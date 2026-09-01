@@ -58,6 +58,7 @@ export class GlobalSearchService {
 
     const typeFilter = type === 'ALL' ? null : type;
     const queries: Promise<SearchResult[]>[] = [];
+    const isPrivileged = userRole === 'ADMIN' || userRole === 'COORDINATOR';
 
     if (!typeFilter || typeFilter === 'RESEARCHER') {
       queries.push(this.searchResearchers(searchTerm, userRole));
@@ -89,7 +90,7 @@ export class GlobalSearchService {
     if (!typeFilter || typeFilter === 'RESEARCH_GRANT') {
       queries.push(this.searchResearchGrants(searchTerm, userRole));
     }
-    if (!typeFilter || typeFilter === 'ETHICS') {
+    if (isPrivileged && (!typeFilter || typeFilter === 'ETHICS')) {
       queries.push(this.searchEthicsApplications(searchTerm, userRole));
     }
     if (!typeFilter || typeFilter === 'EVENT') {
@@ -130,16 +131,18 @@ export class GlobalSearchService {
     const { q, limit = 8, userRole } = params;
     const searchTerm = q.trim();
     const perTypeLimit = Math.max(2, Math.ceil(limit / 5));
+    const isPrivileged = userRole === 'ADMIN' || userRole === 'COORDINATOR';
 
-    const [researchers, projects, equipment, publications, events] = await Promise.all([
+    const queries: Promise<SearchSuggestion[]>[] = [
       this.suggestResearchers(searchTerm, perTypeLimit, userRole),
       this.suggestProjects(searchTerm, perTypeLimit, userRole),
       this.suggestEquipment(searchTerm, perTypeLimit, userRole),
       this.suggestPublications(searchTerm, perTypeLimit, userRole),
       this.suggestEvents(searchTerm, perTypeLimit, userRole),
-    ]);
+    ];
 
-    const allSuggestions = [...researchers, ...projects, ...equipment, ...publications, ...events];
+    const results = await Promise.all(queries);
+    const allSuggestions = results.flat();
     return allSuggestions.slice(0, limit);
   }
 
