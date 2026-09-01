@@ -56,6 +56,9 @@ export interface SecuritySummary {
   suspendedUsers: number;
   inactiveUsers: number;
   adminCount: number;
+  coordinatorCount: number;
+  researcherCount: number;
+  technicianCount: number;
   recentRoleChanges: Array<{
     id: string;
     action: string;

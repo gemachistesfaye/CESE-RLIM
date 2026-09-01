@@ -87,6 +87,33 @@ function requireGuest() {
   }
 }
 
+function getUserRole(): string | null {
+  try {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      return user.role || null;
+    }
+  } catch {}
+  return null;
+}
+
+function requireAdmin() {
+  requireAuth();
+  const role = getUserRole();
+  if (role !== "ADMIN") {
+    throw redirect({ to: "/" });
+  }
+}
+
+function requireAdminOrCoordinator() {
+  requireAuth();
+  const role = getUserRole();
+  if (role !== "ADMIN" && role !== "COORDINATOR") {
+    throw redirect({ to: "/" });
+  }
+}
+
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
@@ -110,12 +137,14 @@ const dashboardRoute = createRoute({
 const usersRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/users",
+  beforeLoad: requireAdminOrCoordinator,
   component: UsersList,
 });
 
 const userDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/users/$id",
+  beforeLoad: requireAdminOrCoordinator,
   component: UserDetails,
 });
 
@@ -332,6 +361,7 @@ const myEventsRoute = createRoute({
 const financeDashboardRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/finance",
+  beforeLoad: requireAdminOrCoordinator,
   component: ResearchFinanceDashboard,
 });
 
@@ -350,6 +380,7 @@ const researchExpenseDetailsRoute = createRoute({
 const budgetManagementRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/budget-management",
+  beforeLoad: requireAdminOrCoordinator,
   component: BudgetManagement,
 });
 
@@ -404,42 +435,49 @@ const searchRoute = createRoute({
 const auditLogsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/audit-logs",
+  beforeLoad: requireAdminOrCoordinator,
   component: AuditLogsList,
 });
 
 const auditLogDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/audit-logs/$id",
+  beforeLoad: requireAdminOrCoordinator,
   component: AuditLogDetails,
 });
 
 const administrationRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/administration",
+  beforeLoad: requireAdminOrCoordinator,
   component: AdministrationDashboard,
 });
 
 const systemSettingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/administration/settings",
+  beforeLoad: requireAdminOrCoordinator,
   component: SystemSettings,
 });
 
 const rolePermissionsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/administration/permissions",
+  beforeLoad: requireAdminOrCoordinator,
   component: RolePermissions,
 });
 
 const systemInformationRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/administration/system",
+  beforeLoad: requireAdminOrCoordinator,
   component: SystemInformation,
 });
 
 const securityDashboardRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/administration/security",
+  beforeLoad: requireAdmin,
   component: SecurityDashboard,
 });
 

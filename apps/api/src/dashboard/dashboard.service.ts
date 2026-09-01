@@ -2,23 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   ProjectStatus,
-  EquipmentStatus,
   LabStatus,
   MaintenanceStatus,
   RequestStatus,
-  InnovationStatus,
-  InnovationStage,
-  PublicationStatus,
-  DocumentStatus,
-  GrantApplicationStatus,
-  GrantStatus,
-  FundingOpportunityStatus,
+  ExpenseStatus,
   EthicsApplicationStatus,
   EventStatus,
   MilestoneStatus,
   ResearchReportStatus,
-  ExpenseStatus,
-  AuditAction,
 } from '@prisma/client';
 
 @Injectable()
@@ -92,19 +83,19 @@ export class DashboardService {
   }
 
   private async getUserStats() {
-    const [total, active] = await Promise.all([
-      this.prisma.user.count(),
-      this.prisma.user.count({ where: { isActive: true } }),
-    ]);
     const byRole = await this.prisma.user.groupBy({
       by: ['role'],
       _count: { id: true },
     });
     const roleMap: Record<string, number> = {};
+    let total = 0;
+    let active = 0;
     for (const entry of byRole) {
       roleMap[entry.role] = entry._count.id;
+      total += entry._count.id;
     }
-    return { total, active, byRole: roleMap };
+    const activeCount = await this.prisma.user.count({ where: { isActive: true } });
+    return { total, active: activeCount, byRole: roleMap };
   }
 
   private async getResearcherStats() {
@@ -123,60 +114,62 @@ export class DashboardService {
   }
 
   private async getEquipmentStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups] = await Promise.all([
       this.prisma.equipment.count(),
-      ...Object.values(EquipmentStatus).map((status) =>
-        this.prisma.equipment.count({ where: { status } }),
-      ),
+      this.prisma.equipment.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(EquipmentStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-    return { total, byStatus: statusMap };
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
+    return { total: totalResult, byStatus: statusMap };
   }
 
   private async getEquipmentRequestStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups] = await Promise.all([
       this.prisma.equipmentRequest.count(),
-      ...Object.values(RequestStatus).map((status) =>
-        this.prisma.equipmentRequest.count({ where: { status } }),
-      ),
+      this.prisma.equipmentRequest.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(RequestStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
     const pending = (statusMap['SUBMITTED'] || 0) + (statusMap['UNDER_REVIEW'] || 0);
-    return { total, byStatus: statusMap, pending };
+    return { total: totalResult, byStatus: statusMap, pending };
   }
 
   private async getMaintenanceStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, overdue, costResult] = await Promise.all([
       this.prisma.maintenanceRecord.count(),
-      ...Object.values(MaintenanceStatus).map((status) =>
-        this.prisma.maintenanceRecord.count({ where: { status } }),
-      ),
+      this.prisma.maintenanceRecord.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.maintenanceRecord.count({
+        where: {
+          status: { notIn: [MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED] },
+          reportedAt: { lt: new Date() },
+        },
+      }),
+      this.prisma.maintenanceRecord.aggregate({
+        _sum: { cost: true },
+        where: { status: MaintenanceStatus.COMPLETED },
+      }),
     ]);
+
     const statusMap: Record<string, number> = {};
-    Object.values(MaintenanceStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-
-    const overdue = await this.prisma.maintenanceRecord.count({
-      where: {
-        status: { notIn: [MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED] },
-        reportedAt: { lt: new Date() },
-      },
-    });
-
-    const costResult = await this.prisma.maintenanceRecord.aggregate({
-      _sum: { cost: true },
-      where: { status: MaintenanceStatus.COMPLETED },
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     return {
-      total,
+      total: totalResult,
       byStatus: statusMap,
       overdue,
       totalCost: Number(costResult._sum.cost || 0),
@@ -184,16 +177,17 @@ export class DashboardService {
   }
 
   private async getProjectStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups] = await Promise.all([
       this.prisma.researchProject.count(),
-      ...Object.values(ProjectStatus).map((status) =>
-        this.prisma.researchProject.count({ where: { projectStatus: status } }),
-      ),
+      this.prisma.researchProject.groupBy({
+        by: ['projectStatus'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(ProjectStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.projectStatus] = entry._count.id;
+    }
 
     const activeProjects = await this.prisma.researchProject.findMany({
       where: { projectStatus: ProjectStatus.ACTIVE },
@@ -245,167 +239,172 @@ export class DashboardService {
       };
     });
 
-    return { total, byStatus: statusMap, activeProjects: projectProgress };
+    return { total: totalResult, byStatus: statusMap, activeProjects: projectProgress };
   }
 
   private async getProjectActivityStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, overdue] = await Promise.all([
       this.prisma.projectActivity.count(),
-      ...(['TODO', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CANCELLED'] as const).map(
-        (status) => this.prisma.projectActivity.count({ where: { status } }),
-      ),
+      this.prisma.projectActivity.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.projectActivity.count({
+        where: {
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          dueDate: { lt: new Date() },
+        },
+      }),
     ]);
 
-    const overdue = await this.prisma.projectActivity.count({
-      where: {
-        status: { notIn: ['COMPLETED', 'CANCELLED'] },
-        dueDate: { lt: new Date() },
-      },
-    });
+    const statusMap: Record<string, number> = {};
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     return {
-      total,
-      todo: statusCounts[0],
-      inProgress: statusCounts[1],
-      blocked: statusCounts[2],
-      completed: statusCounts[3],
-      cancelled: statusCounts[4],
+      total: totalResult,
+      todo: statusMap['TODO'] || 0,
+      inProgress: statusMap['IN_PROGRESS'] || 0,
+      blocked: statusMap['BLOCKED'] || 0,
+      completed: statusMap['COMPLETED'] || 0,
+      cancelled: statusMap['CANCELLED'] || 0,
       overdue,
     };
   }
 
   private async getInnovationStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, stageGroups] = await Promise.all([
       this.prisma.innovation.count(),
-      ...Object.values(InnovationStatus).map((status) =>
-        this.prisma.innovation.count({ where: { status } }),
-      ),
+      this.prisma.innovation.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.innovation.groupBy({
+        by: ['developmentStage'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(InnovationStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-
-    const byStage = await this.prisma.innovation.groupBy({
-      by: ['developmentStage'],
-      _count: { id: true },
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
     const stageMap: Record<string, number> = {};
-    for (const entry of byStage) {
+    for (const entry of stageGroups) {
       stageMap[entry.developmentStage] = entry._count.id;
     }
 
-    return { total, byStatus: statusMap, byStage: stageMap };
+    return { total: totalResult, byStatus: statusMap, byStage: stageMap };
   }
 
   private async getPublicationStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, totalCitations] = await Promise.all([
       this.prisma.researchPublication.count(),
-      ...Object.values(PublicationStatus).map((status) =>
-        this.prisma.researchPublication.count({ where: { status } }),
-      ),
+      this.prisma.researchPublication.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.researchPublication.aggregate({
+        _sum: { citationCount: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(PublicationStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-
-    const totalCitations = await this.prisma.researchPublication.aggregate({
-      _sum: { citationCount: true },
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     return {
-      total,
+      total: totalResult,
       byStatus: statusMap,
       totalCitations: Number(totalCitations._sum.citationCount || 0),
     };
   }
 
   private async getDocumentStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, typeGroups] = await Promise.all([
       this.prisma.researchDocument.count(),
-      ...Object.values(DocumentStatus).map((status) =>
-        this.prisma.researchDocument.count({ where: { status } }),
-      ),
+      this.prisma.researchDocument.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.researchDocument.groupBy({
+        by: ['documentType'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(DocumentStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-
-    const byType = await this.prisma.researchDocument.groupBy({
-      by: ['documentType'],
-      _count: { id: true },
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
     const typeMap: Record<string, number> = {};
-    for (const entry of byType) {
+    for (const entry of typeGroups) {
       typeMap[entry.documentType] = entry._count.id;
     }
 
-    return { total, byStatus: statusMap, byType: typeMap };
+    return { total: totalResult, byStatus: statusMap, byType: typeMap };
   }
 
   private async getFundingStats() {
-    const [totalOpportunities, ...oppStatusCounts] = await Promise.all([
+    const [totalOpportunitiesResult, oppStatusGroups, totalApplicationsResult, appStatusGroups, totalGrantsResult, grantStatusGroups, awardedAggregate] = await Promise.all([
       this.prisma.fundingOpportunity.count(),
-      ...Object.values(FundingOpportunityStatus).map((status) =>
-        this.prisma.fundingOpportunity.count({ where: { status } }),
-      ),
-    ]);
-    const oppStatusMap: Record<string, number> = {};
-    Object.values(FundingOpportunityStatus).forEach((status, i) => {
-      oppStatusMap[status] = oppStatusCounts[i];
-    });
-
-    const [totalApplications, ...appStatusCounts] = await Promise.all([
+      this.prisma.fundingOpportunity.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
       this.prisma.grantApplication.count(),
-      ...Object.values(GrantApplicationStatus).map((status) =>
-        this.prisma.grantApplication.count({ where: { status } }),
-      ),
-    ]);
-    const appStatusMap: Record<string, number> = {};
-    Object.values(GrantApplicationStatus).forEach((status, i) => {
-      appStatusMap[status] = appStatusCounts[i];
-    });
-
-    const [totalGrants, ...grantStatusCounts] = await Promise.all([
+      this.prisma.grantApplication.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
       this.prisma.researchGrant.count(),
-      ...Object.values(GrantStatus).map((status) =>
-        this.prisma.researchGrant.count({ where: { status } }),
-      ),
+      this.prisma.researchGrant.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.researchGrant.aggregate({
+        _sum: { awardedAmount: true },
+      }),
     ]);
-    const grantStatusMap: Record<string, number> = {};
-    Object.values(GrantStatus).forEach((status, i) => {
-      grantStatusMap[status] = grantStatusCounts[i];
-    });
 
-    const awardedAggregate = await this.prisma.researchGrant.aggregate({
-      _sum: { awardedAmount: true },
-    });
+    const oppStatusMap: Record<string, number> = {};
+    for (const entry of oppStatusGroups) {
+      oppStatusMap[entry.status] = entry._count.id;
+    }
+
+    const appStatusMap: Record<string, number> = {};
+    for (const entry of appStatusGroups) {
+      appStatusMap[entry.status] = entry._count.id;
+    }
+
+    const grantStatusMap: Record<string, number> = {};
+    for (const entry of grantStatusGroups) {
+      grantStatusMap[entry.status] = entry._count.id;
+    }
 
     return {
-      opportunities: { total: totalOpportunities, byStatus: oppStatusMap },
-      applications: { total: totalApplications, byStatus: appStatusMap },
-      grants: { total: totalGrants, byStatus: grantStatusMap },
+      opportunities: { total: totalOpportunitiesResult, byStatus: oppStatusMap },
+      applications: { total: totalApplicationsResult, byStatus: appStatusMap },
+      grants: { total: totalGrantsResult, byStatus: grantStatusMap },
       totalAwarded: Number(awardedAggregate._sum.awardedAmount || 0),
     };
   }
 
   private async getFinanceStats() {
-    const [totalAwarded, totalSpent, totalExpenses, ...expenseStatusCounts] =
+    const [totalAwarded, totalSpent, totalExpenses, expenseStatusGroups] =
       await Promise.all([
         this.prisma.researchGrant.aggregate({ _sum: { awardedAmount: true } }),
         this.prisma.researchGrant.aggregate({ _sum: { spentAmount: true } }),
         this.prisma.researchExpense.count(),
-        ...Object.values(ExpenseStatus).map((status) =>
-          this.prisma.researchExpense.count({ where: { status } }),
-        ),
+        this.prisma.researchExpense.groupBy({
+          by: ['status'],
+          _count: { id: true },
+        }),
       ]);
 
     const expenseStatusMap: Record<string, number> = {};
-    Object.values(ExpenseStatus).forEach((status, i) => {
-      expenseStatusMap[status] = expenseStatusCounts[i];
-    });
+    for (const entry of expenseStatusGroups) {
+      expenseStatusMap[entry.status] = entry._count.id;
+    }
 
     const awarded = Number(totalAwarded._sum.awardedAmount || 0);
     const spent = Number(totalSpent._sum.spentAmount || 0);
@@ -437,16 +436,17 @@ export class DashboardService {
   }
 
   private async getEthicsStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups] = await Promise.all([
       this.prisma.ethicsApplication.count(),
-      ...Object.values(EthicsApplicationStatus).map((status) =>
-        this.prisma.ethicsApplication.count({ where: { status } }),
-      ),
+      this.prisma.ethicsApplication.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(EthicsApplicationStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     const pendingReview =
       (statusMap['SUBMITTED'] || 0) + (statusMap['RESUBMITTED'] || 0);
@@ -457,42 +457,40 @@ export class DashboardService {
         ? Math.round((approved / (approved + rejected)) * 100)
         : 0;
 
-    return { total, byStatus: statusMap, pendingReview, approvalRate };
+    return { total: totalResult, byStatus: statusMap, pendingReview, approvalRate };
   }
 
   private async getEventStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, upcoming, upcoming30Days, totalParticipation] = await Promise.all([
       this.prisma.researchEvent.count(),
-      ...Object.values(EventStatus).map((status) =>
-        this.prisma.researchEvent.count({ where: { status } }),
-      ),
+      this.prisma.researchEvent.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.researchEvent.count({
+        where: {
+          startDate: { gte: new Date() },
+          status: { notIn: [EventStatus.CANCELLED, EventStatus.COMPLETED] },
+        },
+      }),
+      this.prisma.researchEvent.count({
+        where: {
+          startDate: {
+            gte: new Date(),
+            lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          },
+          status: { notIn: [EventStatus.CANCELLED, EventStatus.COMPLETED] },
+        },
+      }),
+      this.prisma.eventParticipation.count(),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(EventStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-
-    const upcoming = await this.prisma.researchEvent.count({
-      where: {
-        startDate: { gte: new Date() },
-        status: { notIn: [EventStatus.CANCELLED, EventStatus.COMPLETED] },
-      },
-    });
-
-    const upcoming30Days = await this.prisma.researchEvent.count({
-      where: {
-        startDate: {
-          gte: new Date(),
-          lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        },
-        status: { notIn: [EventStatus.CANCELLED, EventStatus.COMPLETED] },
-      },
-    });
-
-    const totalParticipation = await this.prisma.eventParticipation.count();
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     return {
-      total,
+      total: totalResult,
       byStatus: statusMap,
       upcoming,
       upcoming30Days,
@@ -501,30 +499,29 @@ export class DashboardService {
   }
 
   private async getMilestoneStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups, overdue, progressAggregate] = await Promise.all([
       this.prisma.researchMilestone.count(),
-      ...Object.values(MilestoneStatus).map((status) =>
-        this.prisma.researchMilestone.count({ where: { status } }),
-      ),
+      this.prisma.researchMilestone.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.researchMilestone.count({
+        where: {
+          plannedDueDate: { lt: new Date() },
+          status: { notIn: [MilestoneStatus.COMPLETED, MilestoneStatus.CANCELLED] },
+        },
+      }),
+      this.prisma.researchMilestone.aggregate({
+        _avg: { progress: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(MilestoneStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
-
-    const overdue = await this.prisma.researchMilestone.count({
-      where: {
-        plannedDueDate: { lt: new Date() },
-        status: { notIn: [MilestoneStatus.COMPLETED, MilestoneStatus.CANCELLED] },
-      },
-    });
-
-    const progressAggregate = await this.prisma.researchMilestone.aggregate({
-      _avg: { progress: true },
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     return {
-      total,
+      total: totalResult,
       byStatus: statusMap,
       overdue,
       averageProgress: Math.round(progressAggregate._avg.progress || 0),
@@ -532,21 +529,22 @@ export class DashboardService {
   }
 
   private async getReportStats() {
-    const [total, ...statusCounts] = await Promise.all([
+    const [totalResult, statusGroups] = await Promise.all([
       this.prisma.researchReport.count(),
-      ...Object.values(ResearchReportStatus).map((status) =>
-        this.prisma.researchReport.count({ where: { status } }),
-      ),
+      this.prisma.researchReport.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
     ]);
     const statusMap: Record<string, number> = {};
-    Object.values(ResearchReportStatus).forEach((status, i) => {
-      statusMap[status] = statusCounts[i];
-    });
+    for (const entry of statusGroups) {
+      statusMap[entry.status] = entry._count.id;
+    }
 
     const awaitingReview =
       (statusMap['SUBMITTED'] || 0) + (statusMap['RESUBMITTED'] || 0);
 
-    return { total, byStatus: statusMap, awaitingReview };
+    return { total: totalResult, byStatus: statusMap, awaitingReview };
   }
 
   private async getRecentActivity() {

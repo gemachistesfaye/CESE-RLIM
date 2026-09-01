@@ -83,9 +83,9 @@ export default function SecurityDashboard() {
           <div className="space-y-3">
             {[
               { role: 'ADMIN', count: data.adminCount },
-              { role: 'COORDINATOR', count: 0 },
-              { role: 'RESEARCHER', count: 0 },
-              { role: 'TECHNICIAN', count: 0 },
+              { role: 'COORDINATOR', count: data.coordinatorCount },
+              { role: 'RESEARCHER', count: data.researcherCount },
+              { role: 'TECHNICIAN', count: data.technicianCount },
             ].map((item) => (
               <div key={item.role} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

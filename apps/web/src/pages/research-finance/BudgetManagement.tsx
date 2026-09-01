@@ -13,7 +13,7 @@ export default function BudgetManagement() {
 
   const { data: grants } = useResearchGrants({ page: 1, limit: 100 });
   const { data: allocations, isLoading: allocLoading } = useBudgetAllocationsByGrant(selectedGrant);
-  const { data: summary, isLoading: summaryLoading } = useCategorySummary(selectedGrant);
+  const { data: summary } = useCategorySummary(selectedGrant);
   const deleteAllocation = useDeleteBudgetAllocation();
 
   return (

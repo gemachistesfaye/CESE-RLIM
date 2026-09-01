@@ -21,7 +21,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function ResearchExpenseForm({
-  initialData, grants, allocations, projects, onSuccess, onCancel,
+  initialData, grants, allocations, projects: _projects, onSuccess, onCancel,
 }: {
   initialData?: ResearchExpense;
   grants?: Array<{ id: string; grantNumber: string; awardedAmount: number }>;

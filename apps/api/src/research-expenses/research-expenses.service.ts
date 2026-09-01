@@ -484,7 +484,7 @@ export class ResearchExpensesService {
 
     const updateData: Record<string, unknown> = {
       status,
-      approvedById: (await this.prisma.user.findFirst({ where: {}, select: { id: true } }))?.id,
+      approvedById: userId,
       approvedAt: new Date(),
     };
     if (status === ExpenseStatus.REJECTED) {

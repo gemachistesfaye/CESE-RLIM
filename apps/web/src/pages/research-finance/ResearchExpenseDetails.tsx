@@ -15,7 +15,7 @@ const statusStyles: Record<string, string> = {
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
 export default function ResearchExpenseDetails() {
-  const { id } = useParams({ from: '/research-expenses/$id' });
+  const { id } = useParams({ from: '/app/research-expenses/$id' });
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showEdit, setShowEdit] = useState(false);

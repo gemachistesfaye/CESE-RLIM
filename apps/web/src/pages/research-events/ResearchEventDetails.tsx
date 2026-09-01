@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { useResearchEvent, useUpdateEventStatus, EVENT_TYPE_LABELS, EVENT_STATUS_LABELS } from '../../hooks/useResearchEvents';
-import { useRegisterForEvent, useCancelEventRegistration, useUpdateParticipationStatus, PARTICIPATION_STATUS_LABELS } from '../../hooks/useEventParticipations';
+import { useRegisterForEvent, useCancelEventRegistration, PARTICIPATION_STATUS_LABELS } from '../../hooks/useEventParticipations';
 import { useAuth } from '../../contexts/AuthContext';
 import ResearchEventForm from '../../components/research-events/ResearchEventForm';
 import { ArrowLeft, Calendar, MapPin, Monitor, Users, Clock, Edit, Loader2 } from 'lucide-react';
@@ -28,7 +28,7 @@ const statusTransitions: Record<string, Array<{ status: string; label: string }>
 };
 
 export default function ResearchEventDetails() {
-  const { id } = useParams({ from: '/research-events/$id' });
+  const { id } = useParams({ from: '/app/research-events/$id' });
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showEdit, setShowEdit] = useState(false);

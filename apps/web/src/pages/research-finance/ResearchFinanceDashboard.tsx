@@ -1,5 +1,5 @@
 import { useFinanceSummary, useExpenseSummary, BUDGET_CATEGORY_LABELS } from '../../hooks/useResearchFinance';
-import { DollarSign, TrendingUp, Clock, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { DollarSign, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 

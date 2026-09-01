@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useMyEventParticipations, PARTICIPATION_STATUS_LABELS } from '../../hooks/useEventParticipations';
 import { useCancelEventRegistration } from '../../hooks/useEventParticipations';
-import { EVENT_TYPE_LABELS, EVENT_STATUS_LABELS } from '../../hooks/useResearchEvents';
+import { EVENT_TYPE_LABELS } from '../../hooks/useResearchEvents';
 import { Calendar, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
 
 const participationStatusStyles: Record<string, string> = {

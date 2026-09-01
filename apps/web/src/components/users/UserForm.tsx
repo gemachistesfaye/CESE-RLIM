@@ -2,6 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateUser, useUpdateUser } from '../../hooks/useUsers';
+import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../ui/Toast';
 import { Loader2 } from 'lucide-react';
 
@@ -35,6 +36,7 @@ export default function UserForm({
   const isEditing = !!initialData;
   const schema = isEditing ? baseSchema : createSchema;
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -162,7 +164,9 @@ export default function UserForm({
               <option value="RESEARCHER">Researcher</option>
               <option value="TECHNICIAN">Technician</option>
               <option value="COORDINATOR">Coordinator</option>
-              <option value="ADMIN">Admin</option>
+              {currentUser?.role === 'ADMIN' && (
+                <option value="ADMIN">Admin</option>
+              )}
             </select>
             {errors.role && <p className="text-xs text-red-500">{errors.role.message as string}</p>}
           </div>
