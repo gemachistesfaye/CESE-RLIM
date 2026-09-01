@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { ResearchReportsService } from './research-reports.service';
 import { CreateResearchReportDto } from './dto/create-research-report.dto';
 import { UpdateResearchReportDto } from './dto/update-research-report.dto';
@@ -28,7 +29,7 @@ export class ResearchReportsController {
     @Req() req?: any,
   ) {
     return this.reportsService.findAll({
-      page: parseInt(page, 10) || 1, limit: parseInt(limit, 10) || 10,
+      page: parseInt(page, 10) || 1,       limit: safeLimit(limit, 10),
       search, status, reportType, researchProjectId, sortBy, sortOrder,
       userId: req?.user?.id, userRole: req?.user?.role,
     });
@@ -42,7 +43,7 @@ export class ResearchReportsController {
     @Query('page') page = '1', @Query('limit') limit = '10', @Query('status') status?: string,
   ) {
     return this.reportsService.findMyReports({
-      userId: req.user.id, page: parseInt(page, 10) || 1, limit: parseInt(limit, 10) || 10, status,
+      userId: req.user.id, page: parseInt(page, 10) || 1,       limit: safeLimit(limit, 10), status,
     });
   }
 
@@ -54,7 +55,7 @@ export class ResearchReportsController {
     @Query('page') page = '1', @Query('limit') limit = '10', @Query('status') status?: string,
   ) {
     return this.reportsService.findByReviewer(req.user.id, {
-      page: parseInt(page, 10) || 1, limit: parseInt(limit, 10) || 10, status,
+      page: parseInt(page, 10) || 1,       limit: safeLimit(limit, 10), status,
     });
   }
 

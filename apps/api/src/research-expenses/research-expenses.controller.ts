@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, ExpenseStatus } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { ResearchExpensesService } from './research-expenses.service';
 import { CreateResearchExpenseDto } from './dto/create-research-expense.dto';
 import { UpdateResearchExpenseDto } from './dto/update-research-expense.dto';
@@ -45,7 +46,7 @@ export class ResearchExpensesController {
   ) {
     const result = await this.researchExpensesService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       category,
@@ -75,7 +76,7 @@ export class ResearchExpensesController {
     const result = await this.researchExpensesService.findMyExpenses({
       userId: req.user.id,
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       status,
     });
     return { success: true, data: result };
@@ -92,7 +93,7 @@ export class ResearchExpensesController {
   ) {
     const result = await this.researchExpensesService.findPending({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
     });
     return { success: true, data: result };
   }

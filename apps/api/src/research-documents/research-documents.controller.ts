@@ -30,6 +30,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { ResearchDocumentsService } from './research-documents.service';
 import { CreateResearchDocumentDto } from './dto/create-research-document.dto';
 import { UpdateResearchDocumentDto } from './dto/update-research-document.dto';
@@ -84,7 +85,7 @@ export class ResearchDocumentsController {
   ) {
     const result = await this.documentsService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       documentType,
@@ -136,7 +137,7 @@ export class ResearchDocumentsController {
   ) {
     const result = await this.documentsService.getMyDocuments(req.user.id, {
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       status,
       documentType,
       sortBy,

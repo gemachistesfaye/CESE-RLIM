@@ -12,7 +12,7 @@ import { UpdateResearchProjectDto } from './dto/update-research-project.dto';
 import { UpdateResearchProjectStatusDto } from './dto/update-research-project-status.dto';
 import { AuditAction, ProjectStatus, Prisma, NotificationType, UserRole } from '@prisma/client';
 
-const PROJECT_SELECT = {
+const PROJECT_SELECT_PRIVILEGED_BASE = {
   id: true,
   projectCode: true,
   title: true,
@@ -40,7 +40,6 @@ const PROJECT_SELECT = {
               id: true,
               firstName: true,
               lastName: true,
-              email: true,
             },
           },
         },
@@ -75,7 +74,6 @@ const PROJECT_SELECT = {
               id: true,
               firstName: true,
               lastName: true,
-              email: true,
             },
           },
         },
@@ -99,6 +97,72 @@ const PROJECT_SELECT = {
       category: true,
       developmentStage: true,
       status: true,
+      submittedBy: {
+        select: {
+          id: true,
+          userId: true,
+          department: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.ResearchProjectSelect;
+
+const PROJECT_SELECT_PRIVILEGED_PRIVILEGED = {
+  ...PROJECT_SELECT_PRIVILEGED_BASE,
+  equipmentRequests: {
+    ...PROJECT_SELECT_PRIVILEGED_BASE.equipmentRequests,
+    select: {
+      ...PROJECT_SELECT_PRIVILEGED_BASE.equipmentRequests.select,
+      requester: {
+        select: {
+          id: true,
+          userId: true,
+          department: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  equipmentAssignments: {
+    ...PROJECT_SELECT_PRIVILEGED_BASE.equipmentAssignments,
+    select: {
+      ...PROJECT_SELECT_PRIVILEGED_BASE.equipmentAssignments.select,
+      researcher: {
+        select: {
+          id: true,
+          userId: true,
+          department: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  innovations: {
+    ...PROJECT_SELECT_PRIVILEGED_BASE.innovations,
+    select: {
+      ...PROJECT_SELECT_PRIVILEGED_BASE.innovations.select,
       submittedBy: {
         select: {
           id: true,
@@ -160,6 +224,10 @@ export class ResearchProjectsService {
       where.endDate = { lte: new Date(endDate) };
     }
 
+    const validSortFields = ['createdAt', 'title', 'projectCode', 'projectStatus', 'startDate', 'endDate'];
+    const sortField = validSortFields.includes(sortBy || '') ? sortBy : 'createdAt';
+    const order = sortOrder === 'asc' ? 'asc' : 'desc';
+
     const [items, total] = await Promise.all([
       this.prisma.researchProject.findMany({
         where,
@@ -181,7 +249,7 @@ export class ResearchProjectsService {
             },
           },
         },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: { [sortField!]: order },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -199,10 +267,14 @@ export class ResearchProjectsService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, userRole?: UserRole) {
+    const select = userRole === UserRole.ADMIN || userRole === UserRole.COORDINATOR
+      ? PROJECT_SELECT_PRIVILEGED_PRIVILEGED
+      : PROJECT_SELECT_PRIVILEGED_BASE;
+
     const project = await this.prisma.researchProject.findUnique({
       where: { id },
-      select: PROJECT_SELECT,
+      select,
     });
 
     if (!project) {
@@ -234,7 +306,7 @@ export class ResearchProjectsService {
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
       },
-      select: PROJECT_SELECT,
+      select: PROJECT_SELECT_PRIVILEGED_PRIVILEGED,
     });
 
     await this.auditService.log({
@@ -281,7 +353,7 @@ export class ResearchProjectsService {
     const project = await this.prisma.researchProject.update({
       where: { id },
       data,
-      select: PROJECT_SELECT,
+      select: PROJECT_SELECT_PRIVILEGED_PRIVILEGED,
     });
 
     await this.auditService.log({
@@ -314,7 +386,7 @@ export class ResearchProjectsService {
     const project = await this.prisma.researchProject.update({
       where: { id },
       data: { projectStatus: dto.status },
-      select: PROJECT_SELECT,
+      select: PROJECT_SELECT_PRIVILEGED_PRIVILEGED,
     });
 
     await this.auditService.log({
@@ -343,8 +415,10 @@ export class ResearchProjectsService {
     return project;
   }
 
-  async getProjectMembers(id: string) {
+  async getProjectMembers(id: string, userRole?: UserRole) {
     await this.findById(id);
+
+    const includeEmail = userRole === UserRole.ADMIN || userRole === UserRole.COORDINATOR;
 
     const [requesters, assignees, innovators] = await Promise.all([
       this.prisma.equipmentRequest.findMany({
@@ -361,7 +435,7 @@ export class ResearchProjectsService {
                   id: true,
                   firstName: true,
                   lastName: true,
-                  email: true,
+                  ...(includeEmail ? { email: true } : {}),
                 },
               },
             },
@@ -383,7 +457,7 @@ export class ResearchProjectsService {
                   id: true,
                   firstName: true,
                   lastName: true,
-                  email: true,
+                  ...(includeEmail ? { email: true } : {}),
                 },
               },
             },
@@ -405,7 +479,7 @@ export class ResearchProjectsService {
                   id: true,
                   firstName: true,
                   lastName: true,
-                  email: true,
+                  ...(includeEmail ? { email: true } : {}),
                 },
               },
             },

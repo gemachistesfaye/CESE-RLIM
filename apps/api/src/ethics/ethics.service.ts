@@ -2,13 +2,13 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException,
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { AuditAction, EthicsApplicationStatus, EthicsReviewDecision, NotificationType, UserRole } from '@prisma/client';
+import { AuditAction, EthicsApplicationStatus, EthicsReviewDecision, NotificationType, Prisma, UserRole } from '@prisma/client';
 import { CreateEthicsApplicationDto } from './dto/create-ethics-application.dto';
 import { UpdateEthicsApplicationDto } from './dto/update-ethics-application.dto';
 import { ReviewEthicsApplicationDto } from './dto/review-ethics-application.dto';
 import { AssignEthicsReviewerDto } from './dto/assign-ethics-reviewer.dto';
 
-const ETHICS_APPLICATION_SELECT = {
+const ETHICS_APPLICATION_BASE_SELECT = {
   id: true,
   applicationCode: true,
   researchProjectId: true,
@@ -16,11 +16,6 @@ const ETHICS_APPLICATION_SELECT = {
   title: true,
   researchSummary: true,
   methodology: true,
-  participantDetails: true,
-  riskAssessment: true,
-  benefitStatement: true,
-  dataProtectionPlan: true,
-  consentProcess: true,
   status: true,
   submittedAt: true,
   reviewedAt: true,
@@ -32,8 +27,8 @@ const ETHICS_APPLICATION_SELECT = {
   createdAt: true,
   updatedAt: true,
   researchProject: { select: { id: true, projectCode: true, title: true } },
-  applicant: { select: { id: true, userId: true, user: { select: { id: true, firstName: true, lastName: true, email: true } } } },
-  reviewer: { select: { id: true, user: { select: { id: true, firstName: true, lastName: true, email: true } } } },
+  applicant: { select: { id: true, userId: true, user: { select: { id: true, firstName: true, lastName: true } } } },
+  reviewer: { select: { id: true, user: { select: { id: true, firstName: true, lastName: true } } } },
   reviews: {
     select: {
       id: true,
@@ -50,12 +45,51 @@ const ETHICS_APPLICATION_SELECT = {
       assignedAt: true,
       isActive: true,
       completedAt: true,
+      reviewer: { select: { id: true, user: { select: { firstName: true, lastName: true } } } },
+      assignedBy: { select: { firstName: true, lastName: true } },
+    },
+    where: { isActive: true },
+  },
+} satisfies Prisma.EthicsApplicationSelect;
+
+const ETHICS_APPLICATION_PRIVILEGED_SELECT = {
+  ...ETHICS_APPLICATION_BASE_SELECT,
+  applicant: { select: { id: true, userId: true, user: { select: { id: true, firstName: true, lastName: true, email: true } } } },
+  reviewer: { select: { id: true, user: { select: { id: true, firstName: true, lastName: true, email: true } } } },
+  reviewers: {
+    select: {
+      id: true,
+      assignedAt: true,
+      isActive: true,
+      completedAt: true,
       reviewer: { select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } } },
       assignedBy: { select: { firstName: true, lastName: true } },
     },
     where: { isActive: true },
   },
-};
+} satisfies Prisma.EthicsApplicationSelect;
+
+const ETHICS_SENSITIVE_FIELDS = {
+  participantDetails: true,
+  riskAssessment: true,
+  benefitStatement: true,
+  dataProtectionPlan: true,
+  consentProcess: true,
+} satisfies Prisma.EthicsApplicationSelect;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EthicsApplicationResult = any;
+
+function stripSensitiveFields(application: EthicsApplicationResult) {
+  return {
+    ...application,
+    participantDetails: null,
+    riskAssessment: null,
+    benefitStatement: null,
+    dataProtectionPlan: null,
+    consentProcess: null,
+  };
+}
 
 const VALID_TRANSITIONS: Record<EthicsApplicationStatus, EthicsApplicationStatus[]> = {
   DRAFT: [EthicsApplicationStatus.SUBMITTED, EthicsApplicationStatus.WITHDRAWN],
@@ -135,7 +169,7 @@ export class EthicsService {
     const [items, total] = await Promise.all([
       this.prisma.ethicsApplication.findMany({
         where,
-        select: ETHICS_APPLICATION_SELECT,
+        select: ETHICS_APPLICATION_BASE_SELECT,
         skip,
         take: limit,
         orderBy,
@@ -149,14 +183,40 @@ export class EthicsService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, userRole?: UserRole, userId?: string) {
+    const select: Prisma.EthicsApplicationSelect = userRole === UserRole.ADMIN || userRole === UserRole.COORDINATOR
+      ? { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS }
+      : ETHICS_APPLICATION_BASE_SELECT;
+
     const application = await this.prisma.ethicsApplication.findUnique({
       where: { id },
-      select: ETHICS_APPLICATION_SELECT,
+      select,
     });
 
     if (!application) {
       throw new NotFoundException('Ethics application not found');
+    }
+
+    if (userRole === UserRole.RESEARCHER && userId) {
+      const researcher = await this.prisma.researcher.findUnique({ where: { userId }, select: { id: true } });
+      if (researcher) {
+        const isApplicant = application.applicantId === researcher.id;
+        const isAssignedReviewer = await this.prisma.ethicsReviewer.findFirst({
+          where: { applicationId: id, reviewerId: researcher.id, isActive: true },
+        });
+        if (isApplicant || isAssignedReviewer) {
+          const fullApplication = await this.prisma.ethicsApplication.findUnique({
+            where: { id },
+            select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
+          });
+          return fullApplication;
+        }
+      }
+      return stripSensitiveFields(application as EthicsApplicationResult);
+    }
+
+    if (userRole === UserRole.TECHNICIAN) {
+      return stripSensitiveFields(application as EthicsApplicationResult);
     }
 
     return application;
@@ -179,7 +239,7 @@ export class EthicsService {
     const [items, total] = await Promise.all([
       this.prisma.ethicsApplication.findMany({
         where,
-        select: ETHICS_APPLICATION_SELECT,
+        select: ETHICS_APPLICATION_BASE_SELECT,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -322,7 +382,7 @@ export class EthicsService {
         consentProcess: dto.consentProcess,
         status: EthicsApplicationStatus.DRAFT,
       },
-      select: ETHICS_APPLICATION_SELECT,
+      select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
     });
 
     await this.auditService.log({
@@ -374,7 +434,7 @@ export class EthicsService {
         ...(dto.dataProtectionPlan !== undefined && { dataProtectionPlan: dto.dataProtectionPlan }),
         ...(dto.consentProcess !== undefined && { consentProcess: dto.consentProcess }),
       },
-      select: ETHICS_APPLICATION_SELECT,
+      select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
     });
 
     await this.auditService.log({
@@ -420,7 +480,7 @@ export class EthicsService {
         submittedAt: new Date(),
         revisionComment: existing.status === EthicsApplicationStatus.REVISION_REQUIRED ? null : existing.revisionComment,
       },
-      select: ETHICS_APPLICATION_SELECT,
+      select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
     });
 
     await this.auditService.log({
@@ -487,7 +547,7 @@ export class EthicsService {
     const application = await this.prisma.ethicsApplication.update({
       where: { id },
       data: { status: EthicsApplicationStatus.WITHDRAWN },
-      select: ETHICS_APPLICATION_SELECT,
+      select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
     });
 
     await this.auditService.log({
@@ -515,6 +575,17 @@ export class EthicsService {
 
     if (existing.applicantId === reviewer.id) {
       throw new ForbiddenException('Reviewers cannot review their own application');
+    }
+
+    const assignedReviewer = await this.prisma.ethicsReviewer.findFirst({
+      where: {
+        applicationId: id,
+        reviewerId: reviewer.id,
+        isActive: true,
+      },
+    });
+    if (!assignedReviewer) {
+      throw new ForbiddenException('You are not an assigned reviewer for this application');
     }
 
     const reviewableStatuses: EthicsApplicationStatus[] = [EthicsApplicationStatus.SUBMITTED, EthicsApplicationStatus.UNDER_REVIEW, EthicsApplicationStatus.RESUBMITTED];
@@ -555,7 +626,7 @@ export class EthicsService {
           reviewComment: dto.comment || null,
           revisionComment: dto.decision === EthicsReviewDecision.REQUEST_REVISION ? dto.comment : existing.revisionComment,
         },
-        select: ETHICS_APPLICATION_SELECT,
+        select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
       }),
       this.prisma.ethicsReview.create({
         data: {
@@ -652,7 +723,7 @@ export class EthicsService {
           status: EthicsApplicationStatus.UNDER_REVIEW,
           reviewerId: reviewerResearcher.id,
         },
-        select: ETHICS_APPLICATION_SELECT,
+        select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
       }),
     ]);
 
@@ -682,7 +753,7 @@ export class EthicsService {
     return application;
   }
 
-  async removeReviewer(id: string, reviewerId: string, userId: string) {
+  async removeReviewer(id: string, reviewerId: string, userId: string, userRole?: UserRole) {
     const existing = await this.prisma.ethicsApplication.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Ethics application not found');
@@ -710,7 +781,7 @@ export class EthicsService {
       metadata: { applicationCode: existing.applicationCode, reviewerId },
     });
 
-    return this.findById(id);
+    return this.findById(id, userRole, userId);
   }
 
   async updateStatus(id: string, newStatus: EthicsApplicationStatus, userId: string) {
@@ -727,7 +798,7 @@ export class EthicsService {
     const application = await this.prisma.ethicsApplication.update({
       where: { id },
       data: { status: newStatus },
-      select: ETHICS_APPLICATION_SELECT,
+      select: { ...ETHICS_APPLICATION_PRIVILEGED_SELECT, ...ETHICS_SENSITIVE_FIELDS },
     });
 
     await this.auditService.log({

@@ -16,6 +16,7 @@ import {
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
+import { safeLimit } from '../common/utils/pagination.util';
 import { InnovationsService } from './innovations.service';
 import { CreateInnovationDto } from './dto/create-innovation.dto';
 import { UpdateInnovationDto } from './dto/update-innovation.dto';
@@ -60,7 +61,7 @@ export class InnovationsController {
   ) {
     const result = await this.innovationsService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       developmentStage,

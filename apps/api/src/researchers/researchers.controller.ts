@@ -24,6 +24,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 
 @ApiTags('Researchers')
 @ApiBearerAuth()
@@ -51,7 +52,7 @@ export class ResearchersController {
   ) {
     return this.researchersService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       department,
       position,

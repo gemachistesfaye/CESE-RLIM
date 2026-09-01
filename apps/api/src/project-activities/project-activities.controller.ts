@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { ProjectActivitiesService } from './project-activities.service';
 import { CreateProjectActivityDto } from './dto/create-project-activity.dto';
 import { UpdateProjectActivityDto } from './dto/update-project-activity.dto';
@@ -69,7 +70,7 @@ export class ProjectActivitiesController {
   ) {
     const result = await this.activitiesService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       priority,
@@ -112,7 +113,7 @@ export class ProjectActivitiesController {
   ) {
     const result = await this.activitiesService.getMyActivities(req.user.id, {
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       status,
       priority,
       overdue,

@@ -10,6 +10,7 @@ import { UpdateEthicsApplicationDto } from './dto/update-ethics-application.dto'
 import { ReviewEthicsApplicationDto } from './dto/review-ethics-application.dto';
 import { AssignEthicsReviewerDto } from './dto/assign-ethics-reviewer.dto';
 import { UpdateEthicsStatusDto } from './dto/update-ethics-status.dto';
+import { safeLimit } from '../common/utils/pagination.util';
 
 @ApiTags('Ethics')
 @ApiBearerAuth()
@@ -41,7 +42,7 @@ export class EthicsController {
   ) {
     const result = await this.ethicsService.findAll({
       page: parseInt(page || '1', 10),
-      limit: parseInt(limit || '20', 10),
+      limit: safeLimit(limit),
       search,
       status,
       researchProjectId,
@@ -69,7 +70,7 @@ export class EthicsController {
     const result = await this.ethicsService.getMyApplications({
       userId: req.user.id,
       page: parseInt(page || '1', 10),
-      limit: parseInt(limit || '20', 10),
+      limit: safeLimit(limit),
       status,
     });
     return { success: true, data: result };
@@ -115,8 +116,8 @@ export class EthicsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get ethics application by ID' })
-  async findById(@Param('id') id: string) {
-    const result = await this.ethicsService.findById(id);
+  async findById(@Param('id') id: string, @Req() req: any) {
+    const result = await this.ethicsService.findById(id, req.user.role, req.user.id);
     return { success: true, data: result };
   }
 
@@ -171,7 +172,7 @@ export class EthicsController {
   @ApiOperation({ summary: 'Remove reviewer from ethics application' })
   @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
   async removeReviewer(@Param('id') id: string, @Param('reviewerId') reviewerId: string, @Req() req: any) {
-    const result = await this.ethicsService.removeReviewer(id, reviewerId, req.user.id);
+    const result = await this.ethicsService.removeReviewer(id, reviewerId, req.user.id, req.user.role);
     return { success: true, data: result, message: 'Reviewer removed' };
   }
 

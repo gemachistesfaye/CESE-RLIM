@@ -24,6 +24,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { GrantApplicationsService } from './grant-applications.service';
 import { CreateGrantApplicationDto } from './dto/create-grant-application.dto';
 import { UpdateGrantApplicationDto } from './dto/update-grant-application.dto';
@@ -63,7 +64,7 @@ export class GrantApplicationsController {
   ) {
     const result = await this.grantApplicationsService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       opportunityId,
@@ -100,7 +101,7 @@ export class GrantApplicationsController {
   ) {
     const result = await this.grantApplicationsService.getMyApplications(req.user.id, {
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       status,
       sortBy,
       sortOrder,

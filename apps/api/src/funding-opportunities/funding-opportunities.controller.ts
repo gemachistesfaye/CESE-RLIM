@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { FundingOpportunitiesService } from './funding-opportunities.service';
 import { CreateFundingOpportunityDto } from './dto/create-funding-opportunity.dto';
 import { UpdateFundingOpportunityDto } from './dto/update-funding-opportunity.dto';
@@ -61,7 +62,7 @@ export class FundingOpportunitiesController {
   ) {
     const result = await this.opportunitiesService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       fundingType,

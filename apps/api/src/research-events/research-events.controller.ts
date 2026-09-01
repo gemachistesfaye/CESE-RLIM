@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole, EventStatus } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 import { ResearchEventsService } from './research-events.service';
 import { CreateResearchEventDto } from './dto/create-research-event.dto';
 import { UpdateResearchEventDto } from './dto/update-research-event.dto';
@@ -44,7 +45,7 @@ export class ResearchEventsController {
   ) {
     const result = await this.researchEventsService.findAll({
       page: parseInt(page || '1', 10),
-      limit: parseInt(limit || '20', 10),
+      limit: safeLimit(limit),
       search,
       status,
       eventType,

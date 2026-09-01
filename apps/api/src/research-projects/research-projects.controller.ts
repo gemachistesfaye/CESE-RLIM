@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { safeLimit } from '../common/utils/pagination.util';
 
 @ApiTags('Research Projects')
 @ApiBearerAuth()
@@ -57,7 +58,7 @@ export class ResearchProjectsController {
   ) {
     const result = await this.researchProjectsService.findAll({
       page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      limit: safeLimit(limit),
       search,
       status,
       startDate,
@@ -91,8 +92,8 @@ export class ResearchProjectsController {
   @ApiOperation({ summary: 'Get research project by ID' })
   @ApiResponse({ status: 200, description: 'Research project retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Research project not found' })
-  async findById(@Param('id') id: string) {
-    const result = await this.researchProjectsService.findById(id);
+  async findById(@Param('id') id: string, @Request() req: any) {
+    const result = await this.researchProjectsService.findById(id, req.user.role);
     return {
       success: true,
       data: result,
@@ -156,8 +157,8 @@ export class ResearchProjectsController {
   @ApiOperation({ summary: 'Get research project members' })
   @ApiResponse({ status: 200, description: 'Project members retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Research project not found' })
-  async getMembers(@Param('id') id: string) {
-    const result = await this.researchProjectsService.getProjectMembers(id);
+  async getMembers(@Param('id') id: string, @Request() req: any) {
+    const result = await this.researchProjectsService.getProjectMembers(id, req.user.role);
     return {
       success: true,
       data: result,
