@@ -1,6 +1,7 @@
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import {
-  ArrowLeft, Clock, User, Activity, FileText, Hash,
+  ArrowLeft, Activity, FileText, Hash,
   Globe, Monitor, Loader2, ExternalLink,
 } from 'lucide-react';
 import { useAuditLog, ACTION_LABELS, ACTION_COLORS, ENTITY_COLORS } from '../../hooks/useAuditLogs';
@@ -60,7 +61,6 @@ const ENTITY_ROUTES: Record<string, (id: string) => string> = {
 };
 
 export default function AuditLogDetails() {
-  const navigate = useNavigate();
   const { id } = useParams({ strict: false }) as { id: string };
   const { data, isLoading } = useAuditLog(id);
 
@@ -79,12 +79,9 @@ export default function AuditLogDetails() {
         <Activity size={48} className="mx-auto text-slate-300 mb-3" />
         <h3 className="text-lg font-medium text-slate-900 mb-1">Audit log not found</h3>
         <p className="text-sm text-slate-500 mb-4">The requested audit log does not exist.</p>
-        <button
-          onClick={() => navigate({ to: '/audit-logs' })}
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-        >
+        <Link to="/audit-logs" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
           Back to Audit Logs
-        </button>
+        </Link>
       </div>
     );
   }
@@ -92,117 +89,112 @@ export default function AuditLogDetails() {
   const entityRoute = data.entityId ? ENTITY_ROUTES[data.entityType]?.(data.entityId) : null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <button
-          onClick={() => navigate({ to: '/audit-logs' })}
-          className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-3"
-        >
-          <ArrowLeft size={14} /> Back to Audit Logs
-        </button>
-        <h1 className="text-2xl font-bold text-slate-900">Audit Log Details</h1>
-        <p className="text-sm text-slate-500 mt-1 font-mono">{data.id}</p>
+    <div className="max-w-5xl space-y-6">
+      <div className="flex items-center gap-4">
+        <Link to="/audit-logs" className="p-2 hover:bg-slate-200 rounded-full transition-colors"><ArrowLeft size={20} className="text-slate-600" /></Link>
+        <div><h1 className="text-2xl font-bold text-slate-900">Audit Log Details</h1><p className="text-sm text-slate-500 mt-1 font-mono">{data.id}</p></div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Action</label>
-              <div className="mt-1">
-                <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${ACTION_COLORS[data.action] || 'bg-slate-100 text-slate-600'}`}>
-                  {ACTION_LABELS[data.action] || data.action}
-                </span>
-              </div>
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center"><Activity size={28} /></div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Audit Log Entry</h2>
+            <div className="flex items-center gap-3 mt-1">
+              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${ACTION_COLORS[data.action] || 'bg-slate-100 text-slate-600'}`}>
+                {ACTION_LABELS[data.action] || data.action}
+              </span>
+              <span className="text-sm text-slate-500">{formatDateTime(data.createdAt)}</span>
             </div>
-
-            <div>
-              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Timestamp</label>
-              <div className="mt-1 flex items-center gap-2 text-sm text-slate-900">
-                <Clock size={14} className="text-slate-400" />
-                {formatDateTime(data.createdAt)}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">User</label>
-              <div className="mt-1 flex items-center gap-2">
-                <User size={14} className="text-slate-400" />
-                {data.user ? (
-                  <div>
-                    <span className="text-sm font-medium text-slate-900">
-                      {data.user.firstName} {data.user.lastName}
-                    </span>
-                    <span className="text-xs text-slate-500 ml-2">{data.user.email}</span>
-                    {data.user.role && (
-                      <span className="text-xs text-slate-400 ml-2">({data.user.role})</span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-sm text-slate-400">System</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Entity Type</label>
-              <div className="mt-1">
-                <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${ENTITY_COLORS[data.entityType] || 'bg-slate-100 text-slate-600'}`}>
-                  {data.entityType}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Entity ID</label>
-              <div className="mt-1 flex items-center gap-2">
-                <Hash size={14} className="text-slate-400" />
-                <span className="text-sm font-mono text-slate-900">{data.entityId || '—'}</span>
-                {entityRoute && (
-                  <button
-                    onClick={() => navigate({ to: entityRoute })}
-                    className="text-blue-600 hover:text-blue-700"
-                    title="Navigate to entity"
-                  >
-                    <ExternalLink size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {data.ipAddress && (
-              <div>
-                <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">IP Address</label>
-                <div className="mt-1 flex items-center gap-2 text-sm text-slate-900">
-                  <Globe size={14} className="text-slate-400" />
-                  {data.ipAddress}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {data.description && (
-          <div>
-            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Description</label>
-            <p className="mt-1 text-sm text-slate-900">{data.description}</p>
-          </div>
-        )}
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Action Details</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">User</label>
+                <div className="mt-1">
+                  {data.user ? (
+                    <div>
+                      <span className="text-sm font-medium text-slate-900">
+                        {data.user.firstName} {data.user.lastName}
+                      </span>
+                      <span className="text-xs text-slate-500 ml-2">{data.user.email}</span>
+                      {data.user.role && (
+                        <span className="text-xs text-slate-400 ml-2">({data.user.role})</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-slate-400">System</span>
+                  )}
+                </div>
+              </div>
 
-        {data.userAgent && (
-          <div>
-            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">User Agent</label>
-            <div className="mt-1 flex items-start gap-2">
-              <Monitor size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
-              <span className="text-xs text-slate-600 font-mono break-all">{data.userAgent}</span>
+              {data.description && (
+                <div>
+                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Description</label>
+                  <p className="mt-1 text-sm text-slate-900">{data.description}</p>
+                </div>
+              )}
+
+              {data.ipAddress && (
+                <div>
+                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">IP Address</label>
+                  <div className="mt-1 flex items-center gap-2 text-sm text-slate-900">
+                    <Globe size={14} className="text-slate-400" />
+                    {data.ipAddress}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Entity Information</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Entity Type</label>
+                <div className="mt-1">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${ENTITY_COLORS[data.entityType] || 'bg-slate-100 text-slate-600'}`}>
+                    {data.entityType}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Entity ID</label>
+                <div className="mt-1 flex items-center gap-2">
+                  <Hash size={14} className="text-slate-400" />
+                  <span className="text-sm font-mono text-slate-900">{data.entityId || '—'}</span>
+                  {entityRoute && (
+                    <Link
+                      to={entityRoute}
+                      className="text-blue-600 hover:text-blue-700"
+                      aria-label="Navigate to entity"
+                    >
+                      <ExternalLink size={14} />
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {data.userAgent && (
+                <div>
+                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">User Agent</label>
+                  <div className="mt-1 flex items-start gap-2">
+                    <Monitor size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-slate-600 font-mono break-all">{data.userAgent}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4">
           <FileText size={16} className="text-slate-400" />
           <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Metadata</h2>

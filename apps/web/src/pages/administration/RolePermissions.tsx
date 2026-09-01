@@ -40,7 +40,7 @@ export default function RolePermissions() {
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-2">
             <Shield size={16} className="text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-700">Permission Matrix</h2>
+            <h2 className="text-sm font-semibold text-slate-900">Permission Matrix</h2>
           </div>
           <p className="text-xs text-slate-500 mt-1">
             This matrix reflects the actual authorization logic implemented in the backend. Read-only display.
@@ -65,7 +65,7 @@ export default function RolePermissions() {
                     const access = row[role];
                     return (
                       <td key={role} className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${ACCESS_COLORS[access] || 'bg-slate-100 text-slate-600'}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ACCESS_COLORS[access] || 'bg-slate-100 text-slate-600'}`}>
                           {access}
                         </span>
                       </td>
@@ -79,7 +79,7 @@ export default function RolePermissions() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">Role Descriptions</h2>
+        <h2 className="text-sm font-semibold text-slate-900 mb-3">Role Descriptions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-4 rounded-lg border border-slate-200">
             <div className="flex items-center gap-2 mb-2">

@@ -79,7 +79,7 @@ export default function ResearcherProfile() {
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-slate-600 font-medium">{researcher.employeeOrStudentId}</span>
                   <span className="text-slate-300">•</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     researcher.user.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
                   }`}>
                     {researcher.user.isActive ? "Active" : "Inactive"}
@@ -101,8 +101,8 @@ export default function ResearcherProfile() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-1 space-y-6">
-              <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <UserCircle size={16} className="text-slate-400" />
                   Contact Info
                 </h3>
@@ -124,8 +124,8 @@ export default function ResearcherProfile() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Briefcase size={16} className="text-slate-400" />
                   Academic Profile
                 </h3>
@@ -150,7 +150,7 @@ export default function ResearcherProfile() {
 
             <div className="md:col-span-2 space-y-6">
               <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <FileText size={16} className="text-blue-500" />
                   Biography
                 </h3>
@@ -164,7 +164,7 @@ export default function ResearcherProfile() {
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <BookOpen size={16} className="text-blue-500" />
                   Research Information
                 </h3>
@@ -203,7 +203,7 @@ export default function ResearcherProfile() {
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <FlaskConical size={16} className="text-purple-500" />
                   Project Memberships
                 </h3>
@@ -244,7 +244,7 @@ export default function ResearcherProfile() {
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <BookOpen size={16} className="text-blue-500" />
                   Publications
                 </h3>
@@ -285,7 +285,7 @@ export default function ResearcherProfile() {
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <FileText size={16} className="text-blue-500" />
                   Grant Applications
                 </h3>
@@ -328,7 +328,7 @@ export default function ResearcherProfile() {
 
               {grants && grants.length > 0 && (
                 <div className="bg-white rounded-xl p-6 border border-slate-200">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Award size={16} className="text-emerald-500" />
                     Active Grants
                   </h3>
@@ -367,7 +367,7 @@ export default function ResearcherProfile() {
 
               {ethicsApps && ethicsApps.length > 0 && (
                 <div className="bg-white rounded-xl p-6 border border-slate-200">
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Shield size={16} className="text-blue-500" />
                     Ethics Applications
                   </h3>

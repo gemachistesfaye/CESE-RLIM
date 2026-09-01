@@ -42,7 +42,7 @@ const statusStyles: Record<string, string> = {
   SUBMITTED: "bg-blue-100 text-blue-700",
   UNDER_REVIEW: "bg-amber-100 text-amber-700",
   ACCEPTED: "bg-emerald-100 text-emerald-700",
-  PUBLISHED: "bg-green-100 text-green-700",
+  PUBLISHED: "bg-emerald-100 text-emerald-700",
   REJECTED: "bg-red-100 text-red-700",
 };
 
@@ -174,7 +174,7 @@ export default function ResearchPublicationDetails() {
           <div className="flex items-center gap-4">
             <div className={`w-14 h-14 rounded-lg flex items-center justify-center ${
               publication.status === "PUBLISHED"
-                ? "bg-green-100 text-green-600"
+                ? "bg-emerald-100 text-emerald-600"
                 : publication.status === "REJECTED"
                 ? "bg-red-100 text-red-600"
                 : "bg-blue-100 text-blue-600"
@@ -221,7 +221,7 @@ export default function ResearchPublicationDetails() {
                     onClick={() => setStatusDialog({ status })}
                     className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       status === "PUBLISHED"
-                        ? "bg-green-50 text-green-600 hover:bg-green-100"
+                        ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                         : status === "REJECTED"
                         ? "bg-red-50 text-red-600 hover:bg-red-100"
                         : status === "SUBMITTED"

@@ -36,7 +36,7 @@ import { useUnreadNotificationCount } from '../hooks/useNotifications';
 import { Link } from '@tanstack/react-router';
 
 const CHART_COLORS = [
-  '#3b82f6',
+  '#2563eb',
   '#10b981',
   '#f59e0b',
   '#ef4444',
@@ -536,7 +536,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="text-base font-semibold text-slate-900 mb-4">Spending by Category</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={financeChartData}>
+              <BarChart data={financeChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="name"
@@ -551,7 +551,7 @@ export default function Dashboard() {
               <Tooltip
                 formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Amount']}
               />
-              <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="amount" fill="#2563eb" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

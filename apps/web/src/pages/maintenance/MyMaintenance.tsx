@@ -4,12 +4,12 @@ import { Loader2, Wrench } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const statusStyles: Record<string, string> = {
-  REPORTED: "bg-blue-50 text-blue-700 border border-blue-200",
-  DIAGNOSING: "bg-amber-50 text-amber-700 border border-amber-200",
-  REPAIRING: "bg-orange-50 text-orange-700 border border-orange-200",
-  TESTING: "bg-purple-50 text-purple-700 border border-purple-200",
-  COMPLETED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  CANCELLED: "bg-slate-50 text-slate-500 border border-slate-200",
+  REPORTED: "bg-blue-100 text-blue-700",
+  DIAGNOSING: "bg-amber-100 text-amber-700",
+  REPAIRING: "bg-orange-100 text-orange-700",
+  TESTING: "bg-purple-100 text-purple-700",
+  COMPLETED: "bg-emerald-100 text-emerald-700",
+  CANCELLED: "bg-slate-100 text-slate-500",
 };
 
 const priorityStyles: Record<string, string> = {

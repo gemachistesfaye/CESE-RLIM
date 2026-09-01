@@ -25,7 +25,7 @@ const statusStyles: Record<string, string> = {
   UNDER_MAINTENANCE: "bg-orange-100 text-orange-700",
   DAMAGED: "bg-red-100 text-red-700",
   LOST: "bg-slate-100 text-slate-700",
-  RETIRED: "bg-gray-100 text-gray-700",
+  RETIRED: "bg-slate-100 text-slate-700",
 };
 
 const conditionStyles: Record<string, string> = {

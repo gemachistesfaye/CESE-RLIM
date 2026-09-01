@@ -4,7 +4,7 @@ import { useGrantApplication, useSubmitGrantApplication, useReviewGrantApplicati
 import { useFundingOpportunities } from "../../hooks/useFundingOpportunities";
 import { useResearchProjects } from "../../hooks/useResearchProjects";
 import { useToast } from "../../components/ui/Toast";
-import { ArrowLeft, Edit, Loader2, Send, CheckCircle, XCircle, X } from "lucide-react";
+import { ArrowLeft, Edit, Loader2, Send, CheckCircle, XCircle, X, FileText } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import GrantApplicationForm from "../../components/grant-applications/GrantApplicationForm";
 
@@ -53,8 +53,9 @@ export default function GrantApplicationDetails() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <div>
+        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><FileText size={28} /></div>
+          <div className="flex-1">
             <h2 className="text-xl font-bold text-slate-900">{app.title}</h2>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[app.status]}`}>{GRANT_APPLICATION_STATUS_LABELS[app.status]}</span>
@@ -121,7 +122,7 @@ export default function GrantApplicationDetails() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <h2 className="text-lg font-bold text-slate-900 mb-2">{reviewDialog === 'APPROVE' ? 'Approve' : 'Reject'} Application?</h2>
             <p className="text-sm text-slate-500 mb-4">{reviewDialog === 'REJECT' ? 'Please provide a reason for rejection:' : 'Are you sure you want to approve this application?'}</p>
-            {reviewDialog === 'REJECT' && <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)} rows={3} placeholder="Rejection reason..." className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm mb-4" />}
+            {reviewDialog === 'REJECT' && <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)} rows={3} placeholder="Rejection reason..." className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mb-4" />}
             <div className="flex justify-end gap-3">
               <button onClick={() => { setReviewDialog(null); setReviewComment(''); }} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>
               <button onClick={handleReview} className={`px-4 py-2 rounded-lg text-sm font-medium text-white ${reviewDialog === 'APPROVE' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}`}>{reviewDialog === 'APPROVE' ? 'Approve' : 'Reject'}</button>

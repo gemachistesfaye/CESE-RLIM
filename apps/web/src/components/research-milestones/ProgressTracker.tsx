@@ -21,7 +21,7 @@ export function ProgressTracker({ milestoneId, currentProgress, onProgressChange
   const getProgressColor = (p: number) => {
     if (p >= 100) return 'bg-emerald-500';
     if (p >= 75) return 'bg-blue-500';
-    if (p >= 50) return 'bg-yellow-500';
+    if (p >= 50) return 'bg-amber-500';
     if (p >= 25) return 'bg-orange-500';
     return 'bg-red-500';
   };
@@ -32,7 +32,7 @@ export function ProgressTracker({ milestoneId, currentProgress, onProgressChange
         <input type="range" min={0} max={100} value={newProgress} onChange={(e) => setNewProgress(Number(e.target.value))} className="flex-1" />
         <span className="text-sm font-medium w-12 text-right">{newProgress}%</span>
         <button onClick={handleSave} className="text-emerald-600 hover:text-emerald-800 text-sm font-medium" disabled={updateProgress.isPending}>Save</button>
-        <button onClick={() => { setIsEditing(false); setNewProgress(currentProgress); }} className="text-gray-500 hover:text-gray-700 text-sm">Cancel</button>
+        <button onClick={() => { setIsEditing(false); setNewProgress(currentProgress); }} className="text-slate-500 hover:text-slate-700 text-sm">Cancel</button>
       </div>
     );
   }

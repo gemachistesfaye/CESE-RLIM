@@ -522,7 +522,7 @@ export default function ResearchProjectDetails() {
               <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
                 <div className="text-2xl font-bold text-slate-900">{projectProgress.overallProgress}%</div>
                 <div className="text-xs text-slate-500">Overall Progress</div>
-                <div className="mt-2 bg-gray-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${projectProgress.overallProgress}%` }} /></div>
+                <div className="mt-2 bg-slate-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${projectProgress.overallProgress}%` }} /></div>
               </div>
               <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
                 <div className="text-2xl font-bold text-emerald-600">{projectProgress.completedMilestones}/{projectProgress.totalMilestones}</div>
@@ -550,7 +550,7 @@ export default function ResearchProjectDetails() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-16"><div className="bg-gray-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${m.progress}%` }} /></div></div>
+                    <div className="w-16"><div className="bg-slate-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${m.progress}%` }} /></div></div>
                     <span className="text-xs text-slate-500">{m.progress}%</span>
                   </div>
                 </Link>
@@ -576,7 +576,7 @@ export default function ResearchProjectDetails() {
               {projectReports.slice(0, 5).map((r) => (
                 <Link key={r.id} to="/research-reports/$id" params={{ id: r.id }} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">
                   <div className="flex items-center gap-3">
-                    <FileText size={16} className={`${r.status === 'APPROVED' ? 'text-emerald-500' : r.status === 'UNDER_REVIEW' ? 'text-yellow-500' : 'text-slate-400'}`} />
+                    <FileText size={16} className={`${r.status === 'APPROVED' ? 'text-emerald-500' : r.status === 'UNDER_REVIEW' ? 'text-amber-500' : 'text-slate-400'}`} />
                     <div>
                       <div className="text-sm font-medium text-slate-900">{r.title}</div>
                       <div className="text-xs text-slate-500">{r.reportCode} | {r.reportType}</div>
@@ -584,7 +584,7 @@ export default function ResearchProjectDetails() {
                   </div>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                     r.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                    r.status === 'UNDER_REVIEW' ? 'bg-yellow-100 text-yellow-700' :
+                    r.status === 'UNDER_REVIEW' ? 'bg-amber-100 text-amber-700' :
                     r.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
                     'bg-slate-100 text-slate-700'
                   }`}>{r.status}</span>

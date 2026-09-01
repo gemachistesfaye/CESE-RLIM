@@ -81,7 +81,7 @@ export default function SystemInformation() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Server size={16} className="text-slate-400" />
-              <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Application</h2>
+              <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Application</h2>
             </div>
             <button
               onClick={() => { refetchInfo(); refetchHealth(); }}
@@ -134,7 +134,7 @@ export default function SystemInformation() {
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-4">
             <Clock size={16} className="text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Health Status</h2>
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">Health Status</h2>
           </div>
           <div className="space-y-3">
             {healthLoading ? (

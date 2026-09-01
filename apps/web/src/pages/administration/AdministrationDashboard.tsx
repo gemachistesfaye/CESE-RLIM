@@ -56,14 +56,14 @@ export default function AdministrationDashboard() {
     { label: 'Projects', value: data.projects, icon: FolderOpen, color: 'text-emerald-600 bg-emerald-50', href: '/research-projects' },
     { label: 'Publications', value: data.publications, icon: BookOpen, color: 'text-indigo-600 bg-indigo-50', href: '/research-publications' },
     { label: 'Documents', value: data.documents, icon: FileText, color: 'text-slate-600 bg-slate-50', href: '/research-documents' },
-    { label: 'Innovations', value: data.innovations, icon: Lightbulb, color: 'text-yellow-600 bg-yellow-50', href: '/innovations' },
+    { label: 'Innovations', value: data.innovations, icon: Lightbulb, color: 'text-amber-600 bg-amber-50', href: '/innovations' },
   ];
 
   const pendingCards = [
     { label: 'Ethics Applications', value: data.pendingOperations.ethicsApplications, icon: Shield, color: 'text-rose-600 bg-rose-50', href: '/ethics/applications' },
     { label: 'Equipment Requests', value: data.pendingOperations.equipmentRequests, icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', href: '/equipment-requests' },
     { label: 'Grant Applications', value: data.pendingOperations.grantApplications, icon: Award, color: 'text-teal-600 bg-teal-50', href: '/grant-applications' },
-    { label: 'Active Grants', value: data.activeGrants, icon: Target, color: 'text-green-600 bg-green-50', href: '/research-grants' },
+    { label: 'Active Grants', value: data.activeGrants, icon: Target, color: 'text-emerald-600 bg-emerald-50', href: '/research-grants' },
   ];
 
   const roleEntries = Object.entries(data.users.byRole);

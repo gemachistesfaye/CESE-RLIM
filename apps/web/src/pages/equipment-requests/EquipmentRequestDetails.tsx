@@ -23,7 +23,7 @@ const statusStyles: Record<string, string> = {
   ISSUED: "bg-purple-100 text-purple-700",
   IN_USE: "bg-orange-100 text-orange-700",
   RETURNED: "bg-slate-100 text-slate-700",
-  CLOSED: "bg-gray-100 text-gray-700",
+  CLOSED: "bg-slate-100 text-slate-700",
   CANCELLED: "bg-slate-100 text-slate-500",
 };
 

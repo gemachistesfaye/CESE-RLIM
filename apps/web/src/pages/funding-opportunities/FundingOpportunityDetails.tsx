@@ -47,8 +47,8 @@ export default function FundingOpportunityDetails() {
               <h2 className="text-xl font-bold text-slate-900">{opp.title}</h2>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-sm text-slate-600">{opp.organization}</span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">{FUNDING_TYPE_LABELS[opp.fundingType]}</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusStyles[opp.status]}`}>{FUNDING_OPPORTUNITY_STATUS_LABELS[opp.status]}</span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">{FUNDING_TYPE_LABELS[opp.fundingType]}</span>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[opp.status]}`}>{FUNDING_OPPORTUNITY_STATUS_LABELS[opp.status]}</span>
               </div>
             </div>
           </div>

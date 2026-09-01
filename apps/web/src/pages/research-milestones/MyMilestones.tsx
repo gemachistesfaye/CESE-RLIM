@@ -65,7 +65,7 @@ export default function MyMilestones() {
                       </span>
                     )}
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
-                    <div className="w-16"><div className="bg-gray-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${m.progress}%` }} /></div>
+                    <div className="w-16"><div className="bg-slate-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${m.progress}%` }} /></div>
                       <div className="text-xs text-slate-400 text-right mt-0.5">{m.progress}%</div>
                     </div>
                   </div>

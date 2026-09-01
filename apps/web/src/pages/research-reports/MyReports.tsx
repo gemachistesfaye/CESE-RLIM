@@ -10,7 +10,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-slate-100 text-slate-700', SUBMITTED: 'bg-blue-100 text-blue-700',
-  UNDER_REVIEW: 'bg-yellow-100 text-yellow-700', APPROVED: 'bg-emerald-100 text-emerald-700',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-700', APPROVED: 'bg-emerald-100 text-emerald-700',
   REVISION_REQUIRED: 'bg-orange-100 text-orange-700', REJECTED: 'bg-red-100 text-red-700',
   RESUBMITTED: 'bg-purple-100 text-purple-700', WITHDRAWN: 'bg-slate-100 text-slate-500',
 };
@@ -56,7 +56,7 @@ export default function MyReports() {
                 <Link key={r.id} to="/research-reports/$id" params={{ id: r.id }} className="flex items-center justify-between p-4 hover:bg-slate-50/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <FileText size={18} className={`${
-                      r.status === 'APPROVED' ? 'text-emerald-500' : r.status === 'REJECTED' ? 'text-red-500' : r.status === 'UNDER_REVIEW' ? 'text-yellow-500' : 'text-slate-400'
+                      r.status === 'APPROVED' ? 'text-emerald-500' : r.status === 'REJECTED' ? 'text-red-500' : r.status === 'UNDER_REVIEW' ? 'text-amber-500' : 'text-slate-400'
                     }`} />
                     <div>
                       <div className="text-sm font-medium text-slate-900">{r.title}</div>

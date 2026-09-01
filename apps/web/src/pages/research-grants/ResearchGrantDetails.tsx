@@ -59,8 +59,9 @@ export default function ResearchGrantDetails() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <div>
+        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><DollarSign size={28} /></div>
+          <div className="flex-1">
             <h2 className="text-xl font-bold text-slate-900 font-mono">{grant.grantNumber}</h2>
             <div className="flex items-center gap-3 mt-1">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[grant.status]}`}>{GRANT_STATUS_LABELS[grant.status]}</span>
@@ -125,8 +126,8 @@ export default function ResearchGrantDetails() {
             <h2 className="text-lg font-bold text-slate-900 mb-4">Update Spending</h2>
             <p className="text-sm text-slate-500 mb-4">Current spent: {fmt(grant.spentAmount)} / {fmt(grant.awardedAmount)}</p>
             <div className="space-y-4">
-              <div><label className="block text-sm font-medium text-slate-700 mb-1">Additional Spending Amount</label><input type="number" step="0.01" value={spendAmount} onChange={e => setSpendAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" placeholder="0.00" /></div>
-              <div><label className="block text-sm font-medium text-slate-700 mb-1">Notes</label><textarea value={spendNotes} onChange={e => setSpendNotes(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-1">Additional Spending Amount</label><input type="number" step="0.01" value={spendAmount} onChange={e => setSpendAmount(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="0.00" /></div>
+              <div><label className="block text-sm font-medium text-slate-700 mb-1">Notes</label><textarea value={spendNotes} onChange={e => setSpendNotes(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" /></div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => { setSpendingOpen(false); setSpendAmount(''); setSpendNotes(''); }} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>

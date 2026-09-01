@@ -16,7 +16,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-slate-100 text-slate-700', SUBMITTED: 'bg-blue-100 text-blue-700',
-  UNDER_REVIEW: 'bg-yellow-100 text-yellow-700', APPROVED: 'bg-emerald-100 text-emerald-700',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-700', APPROVED: 'bg-emerald-100 text-emerald-700',
   REVISION_REQUIRED: 'bg-orange-100 text-orange-700', REJECTED: 'bg-red-100 text-red-700',
   RESUBMITTED: 'bg-purple-100 text-purple-700', WITHDRAWN: 'bg-slate-100 text-slate-500',
 };
@@ -273,7 +273,7 @@ export default function ResearchReportDetails() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full">
             <h3 className="text-lg font-semibold mb-2">Submit Report</h3>
-            <p className="text-gray-600 mb-4">Are you sure you want to submit this report? Once submitted, it will be sent for review.</p>
+            <p className="text-slate-600 mb-4">Are you sure you want to submit this report? Once submitted, it will be sent for review.</p>
             <div className="flex justify-end gap-2">
               <button onClick={() => setShowSubmitConfirm(false)} className="px-4 py-2 border border-slate-200 rounded-lg text-sm">Cancel</button>
               <button onClick={handleSubmit} disabled={submitReport.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
@@ -288,7 +288,7 @@ export default function ResearchReportDetails() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold mb-2">Assign Reviewer</h3>
-            <p className="text-gray-600 mb-4">Select a coordinator or admin to review this report.</p>
+            <p className="text-slate-600 mb-4">Select a coordinator or admin to review this report.</p>
             <select value={selectedReviewer} onChange={(e) => setSelectedReviewer(e.target.value)}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select reviewer...</option>

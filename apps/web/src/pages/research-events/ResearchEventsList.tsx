@@ -9,7 +9,7 @@ import { Plus, Search, ChevronLeft, ChevronRight, Loader2, Calendar, MapPin, Mon
 const statusStyles: Record<string, string> = {
   DRAFT: 'bg-slate-100 text-slate-700', PUBLISHED: 'bg-blue-100 text-blue-700',
   REGISTRATION_OPEN: 'bg-emerald-100 text-emerald-700', REGISTRATION_CLOSED: 'bg-amber-100 text-amber-700',
-  ONGOING: 'bg-purple-100 text-purple-700', COMPLETED: 'bg-green-100 text-green-700',
+  ONGOING: 'bg-purple-100 text-purple-700',   COMPLETED: 'bg-emerald-100 text-emerald-700',
   CANCELLED: 'bg-red-100 text-red-700',
 };
 
@@ -54,7 +54,7 @@ export default function ResearchEventsList() {
           <div className="bg-white rounded-xl border border-slate-200 p-4"><div className="text-2xl font-bold text-slate-900">{summary.total}</div><div className="text-xs text-slate-500">Total Events</div></div>
           <div className="bg-white rounded-xl border border-slate-200 p-4"><div className="text-2xl font-bold text-emerald-600">{summary.registrationOpen}</div><div className="text-xs text-slate-500">Open for Registration</div></div>
           <div className="bg-white rounded-xl border border-slate-200 p-4"><div className="text-2xl font-bold text-purple-600">{summary.ongoing}</div><div className="text-xs text-slate-500">Ongoing</div></div>
-          <div className="bg-white rounded-xl border border-slate-200 p-4"><div className="text-2xl font-bold text-green-600">{summary.completed}</div><div className="text-xs text-slate-500">Completed</div></div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4"><div className="text-2xl font-bold text-emerald-600">{summary.completed}</div><div className="text-xs text-slate-500">Completed</div></div>
           <div className="bg-white rounded-xl border border-slate-200 p-4"><div className="text-2xl font-bold text-blue-600">{summary.totalParticipants}</div><div className="text-xs text-slate-500">Total Participants</div></div>
         </div>
       )}
