@@ -1,11 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
   app.setGlobalPrefix('api/v1');
 
@@ -41,10 +42,10 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`Application is running on: http://localhost:${port}`);
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`Swagger docs: http://localhost:${port}/api/docs`);
+    logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
   }
 }
 bootstrap();
