@@ -27,19 +27,24 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('CESE-RLIM API')
-    .setDescription('CESE Research, Laboratory & Innovation Management Platform API')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('CESE-RLIM API')
+      .setDescription('CESE Research, Laboratory & Innovation Management Platform API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger docs: http://localhost:${port}/api/docs`);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Swagger docs: http://localhost:${port}/api/docs`);
+  }
 }
 bootstrap();
