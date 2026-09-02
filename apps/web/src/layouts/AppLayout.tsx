@@ -53,32 +53,27 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Activities', href: '/project-activities', icon: ClipboardList },
       { name: 'Milestones', href: '/research-milestones', icon: Flag },
       { name: 'Reports', href: '/research-reports', icon: FileText },
-      { name: 'Documents', href: '/research-documents', icon: FileText },
+      { name: 'Documents', href: '/research-documents', icon: BookOpen },
       { name: 'Publications', href: '/research-publications', icon: BookOpen },
       { name: 'Innovations', href: '/innovations', icon: Microscope },
       { name: 'Events', href: '/research-events', icon: Calendar },
+      { name: 'Ethics & Approvals', href: '/ethics/applications', icon: Shield },
     ],
   },
   {
     section: 'FUNDING',
     items: [
       { name: 'Opportunities', href: '/funding-opportunities', icon: Target },
-      { name: 'Applications', href: '/grant-applications', icon: FileText },
+      { name: 'Applications', href: '/grant-applications', icon: ClipboardList },
       { name: 'Grants', href: '/research-grants', icon: Award },
     ],
   },
   {
     section: 'FINANCE',
     items: [
-      { name: 'Finance Dashboard', href: '/finance', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
-      { name: 'Expenses', href: '/research-expenses', icon: FileText },
+      { name: 'Dashboard', href: '/finance', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Expenses', href: '/research-expenses', icon: DollarSign },
       { name: 'Budgets', href: '/budget-management', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
-    ],
-  },
-  {
-    section: 'COMPLIANCE',
-    items: [
-      { name: 'Ethics & Approvals', href: '/ethics/applications', icon: Shield },
     ],
   },
   {
@@ -86,36 +81,20 @@ const navigation: { section: string; items: NavItem[] }[] = [
     items: [
       { name: 'Laboratories', href: '/laboratories', icon: FlaskConical },
       { name: 'Equipment', href: '/equipment', icon: Wrench },
-      { name: 'Requests', href: '/equipment-requests', icon: FileText },
-      { name: 'Assignments', href: '/equipment-assignments', icon: FileText },
-      { name: 'Maintenance', href: '/maintenance', icon: Wrench },
-    ],
-  },
-  {
-    section: 'MY WORK',
-    items: [
-      { name: 'My Tasks', href: '/my-maintenance', icon: Wrench },
-      { name: 'My Milestones', href: '/my-milestones', icon: Flag },
-      { name: 'My Events', href: '/my-events', icon: Calendar },
-      { name: 'My Reports', href: '/my-reports', icon: FileText },
+      { name: 'Requests', href: '/equipment-requests', icon: ClipboardList },
+      { name: 'Assignments', href: '/equipment-assignments', icon: CheckCircle },
+      { name: 'Maintenance', href: '/maintenance', icon: AlertTriangle },
     ],
   },
   {
     section: 'ADMINISTRATION',
     items: [
-      { name: 'Overview', href: '/administration', icon: Settings, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Users', href: '/users', icon: Users, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Settings', href: '/administration/settings', icon: Settings, roles: ['ADMIN'] },
       { name: 'Security', href: '/administration/security', icon: Shield, roles: ['ADMIN'] },
-      { name: 'System Settings', href: '/administration/settings', icon: Settings, roles: ['ADMIN'] },
-      { name: 'Roles & Permissions', href: '/administration/permissions', icon: Shield, roles: ['ADMIN'] },
-      { name: 'System Information', href: '/administration/system', icon: Activity, roles: ['ADMIN', 'COORDINATOR'] },
-    ],
-  },
-  {
-    section: 'SYSTEM',
-    items: [
-      { name: 'Users', href: '/users', icon: Settings, roles: ['ADMIN', 'COORDINATOR'] },
-      { name: 'Notifications', href: '/notifications', icon: Bell },
       { name: 'Audit Logs', href: '/audit-logs', icon: Activity, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'System Info', href: '/administration/system', icon: Info, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Notifications', href: '/notifications', icon: Bell },
     ],
   },
 ];
@@ -123,6 +102,12 @@ const navigation: { section: string; items: NavItem[] }[] = [
 function Sidebar() {
   const location = useLocation();
   const { logout, user } = useAuth();
+
+  const currentSection = navigation.find(group => 
+    group.section !== 'OVERVIEW' && group.items.some(item => item.href === location.pathname)
+  )?.section;
+
+  const [openSection, setOpenSection] = useState<string | null>(currentSection || null);
 
   const visibleNav = navigation
     .map((group) => ({
@@ -136,6 +121,16 @@ function Sidebar() {
       }),
     }))
     .filter((group) => group.items.length > 0);
+
+  // When path changes, auto-open the section
+  useEffect(() => {
+    const newSection = navigation.find(group => 
+      group.section !== 'OVERVIEW' && group.items.some(item => item.href === location.pathname)
+    )?.section;
+    if (newSection && newSection !== openSection) {
+      setOpenSection(newSection);
+    }
+  }, [location.pathname]);
 
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col min-h-screen fixed left-0 top-0 z-30">
@@ -151,33 +146,67 @@ function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
-        {visibleNav.map((group) => (
-          <div key={group.section}>
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-3">
-              {group.section}
-            </h3>
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? 'bg-blue-600/20 text-blue-400'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    <item.icon size={18} />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {visibleNav.map((group) => {
+          if (group.section === 'OVERVIEW') {
+            return (
+              <div key={group.section} className="mb-4">
+                {group.items.map((item) => {
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      <item.icon size={20} />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          }
+
+          const isOpen = openSection === group.section;
+          return (
+            <div key={group.section} className="mb-1">
+              <button
+                onClick={() => setOpenSection(isOpen ? null : group.section)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:text-white transition-colors rounded-lg hover:bg-slate-800/50"
+              >
+                <span>{group.section}</span>
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const isActive = location.pathname === item.href;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive
+                            ? 'bg-blue-600/20 text-blue-400'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                        }`}
+                      >
+                        <item.icon size={18} />
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="p-4 border-t border-slate-800">
