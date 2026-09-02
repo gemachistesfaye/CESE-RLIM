@@ -358,10 +358,10 @@ export default function ProjectActivityDetails() {
           </div>
         </div>
 
-        {activity.notes && (
+        {(activity as any).notes && (
           <div className="p-6 border-t border-slate-200">
             <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Notes</h3>
-            <p className="text-sm text-slate-600 whitespace-pre-line">{activity.notes}</p>
+            <p className="text-sm text-slate-600 whitespace-pre-line">{(activity as any).notes}</p>
           </div>
         )}
       </div>

@@ -76,18 +76,12 @@ export default function ResearchReportDetails() {
   const canEdit = canManage || (user?.role === 'RESEARCHER' && isDraft);
 
   const toFormData = () => ({
-    title: report.title, reportType: report.reportType,
+    title: report.title,
+    reportType: report.reportType,
     reportingPeriodStart: report.reportingPeriodStart?.split('T')[0] || undefined,
     reportingPeriodEnd: report.reportingPeriodEnd?.split('T')[0] || undefined,
-    executiveSummary: report.executiveSummary || undefined,
-    objectives: report.objectives || undefined,
-    methodology: report.methodology || undefined,
-    achievements: report.achievements || undefined,
-    challenges: report.challenges || undefined,
-    findings: report.findings || undefined,
-    recommendations: report.recommendations || undefined,
-    conclusion: report.conclusion || undefined,
-    progressPercentage: report.progressPercentage ?? undefined,
+    reportContent: report.reportContent || undefined,
+    fileUrl: report.fileUrl || undefined,
     nextPeriodPlan: report.nextPeriodPlan || undefined,
   });
 

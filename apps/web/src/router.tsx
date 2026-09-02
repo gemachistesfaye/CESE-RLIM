@@ -1,4 +1,4 @@
-﻿import {
+import {
   createRootRoute,
   createRoute,
   createRouter,
@@ -64,6 +64,8 @@ import SystemSettings from "./pages/administration/SystemSettings";
 import RolePermissions from "./pages/administration/RolePermissions";
 import SystemInformation from "./pages/administration/SystemInformation";
 import SecurityDashboard from "./pages/user-management/SecurityDashboard";
+import NotFoundPage from "./pages/NotFoundPage";
+import GlobalErrorPage from "./pages/GlobalErrorPage";
 
 function RootComponent() {
   return <Outlet />;
@@ -71,6 +73,8 @@ function RootComponent() {
 
 const rootRoute = createRootRoute({
   component: RootComponent,
+  notFoundComponent: NotFoundPage,
+  errorComponent: GlobalErrorPage,
 });
 
 function requireAuth() {
@@ -544,7 +548,11 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: NotFoundPage,
+  defaultErrorComponent: GlobalErrorPage,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {

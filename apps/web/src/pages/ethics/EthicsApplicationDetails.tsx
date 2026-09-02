@@ -261,7 +261,7 @@ export default function EthicsApplicationDetails() {
       )}
 
       {withdrawConfirm && (
-        <ConfirmDialog isOpen={withdrawConfirm} title="Withdraw Application" message="Are you sure you want to withdraw this application? This action cannot be undone." confirmLabel="Withdraw" onConfirm={() => withdrawApp.mutate(id, { onSuccess: () => setWithdrawConfirm(false) })} onCancel={() => setWithdrawConfirm(false)} />
+        <ConfirmDialog open={withdrawConfirm} title="Withdraw Application" message="Are you sure you want to withdraw this application? This action cannot be undone." confirmLabel="Withdraw" onConfirm={() => withdrawApp.mutate(id, { onSuccess: () => setWithdrawConfirm(false) })} onCancel={() => setWithdrawConfirm(false)} />
       )}
 
       {/* Hidden printable component - positioned off-screen for react-to-print */}

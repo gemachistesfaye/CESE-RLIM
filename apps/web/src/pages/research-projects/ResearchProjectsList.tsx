@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useResearchProjects, useProjectSummary } from "../../hooks/useResearchProjects";
 import { Search, Plus, Loader2, FlaskConical } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -22,6 +22,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function ResearchProjectsList() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -165,7 +166,11 @@ export default function ResearchProjectsList() {
                 </tr>
               ) : (
                 data?.items.map((project) => (
-                  <tr key={project.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={project.id}
+                    onClick={() => navigate({ to: "/research-projects/$id", params: { id: project.id } })}
+                    className="hover:bg-blue-50/40 cursor-pointer transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="font-medium text-slate-900">{project.title}</div>
                     </td>

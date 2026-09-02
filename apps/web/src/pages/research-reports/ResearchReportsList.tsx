@@ -29,14 +29,14 @@ function useDebounce(value: string, delay: number) {
   return debounced;
 }
 
-export default function ResearchReportsList() {
+export default function ResearchReportsList({ projectId }: { projectId?: string } = {}) {
   const { user } = useAuth();
   const canManage = user?.role === 'ADMIN' || user?.role === 'COORDINATOR';
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-  const [projectFilter, setProjectFilter] = useState('');
+  const [projectFilter, setProjectFilter] = useState(projectId || '');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
 
@@ -55,17 +55,21 @@ export default function ResearchReportsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Research Reports</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage and track research reports</p>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        {!projectId ? (
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Research Reports</h1>
+            <p className="text-sm text-slate-500 mt-1">Manage and track research reports</p>
+          </div>
+        ) : (
+          <div className="flex-1"></div>
+        )}
         <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
           <Plus size={16} /> New Report
         </button>
       </div>
 
-      {summary && (
+      {!projectId && summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total', value: summary.total, color: 'text-slate-900' },
@@ -99,11 +103,13 @@ export default function ResearchReportsList() {
               <option value="">All Types</option>
               {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">All Projects</option>
-              {projects?.items?.map((p: any) => <option key={p.id} value={p.id}>{p.projectCode} - {p.title}</option>)}
-            </select>
+            {!projectId && (
+              <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Projects</option>
+                {projects?.items?.map((p: any) => <option key={p.id} value={p.id}>{p.projectCode} - {p.title}</option>)}
+              </select>
+            )}
           </div>
         </div>
 

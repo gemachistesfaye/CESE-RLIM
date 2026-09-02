@@ -2,14 +2,10 @@ import { useState } from "react";
 import { useParams, Link } from "@tanstack/react-router";
 import { useResearchProject, useUpdateResearchProjectStatus } from "../../hooks/useResearchProjects";
 import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
-import { useProjectActivityStats } from "../../hooks/useProjectActivities";
-import { useResearchDocumentSummary } from "../../hooks/useResearchDocuments";
 import { useResearchPublicationSummary } from "../../hooks/useResearchPublications";
 import { useGrantApplicationsByProject } from "../../hooks/useGrantApplications";
 import { useResearchGrantsByProject } from "../../hooks/useResearchGrants";
 import { useEthicsApplicationsByProject, ETHICS_APPLICATION_STATUS_LABELS } from "../../hooks/useEthics";
-import { useProjectMilestones, useProjectProgress } from "../../hooks/useResearchMilestones";
-import { useProjectReports } from "../../hooks/useResearchReports";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -23,15 +19,22 @@ import {
   Clock,
   Users,
   ChevronRight,
-  ClipboardList,
   FileText,
   BookOpen,
   Award,
   Shield,
-  Flag,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
+import ProjectActivitiesList from "../project-activities/ProjectActivitiesList";
+import ResearchMilestonesList from "../research-milestones/ResearchMilestonesList";
+import ResearchReportsList from "../research-reports/ResearchReportsList";
+import ResearchDocumentsList from "../research-documents/ResearchDocumentsList";
+import ResearchPublicationForm from "../../components/research-publications/ResearchPublicationForm";
+import GrantApplicationForm from "../../components/grant-applications/GrantApplicationForm";
+import EthicsApplicationForm from "../../components/ethics/EthicsApplicationForm";
+import { useFundingOpportunities } from "../../hooks/useFundingOpportunities";
+import ProjectTeamList from "../../components/research-project-members/ProjectTeamList";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-700",
@@ -44,21 +47,21 @@ export default function ResearchProjectDetails() {
   const { id } = useParams({ from: "/app/research-projects/$id" });
   const { data: project, isLoading, error } = useResearchProject(id);
   const { data: teamSummary } = useProjectTeamSummary(id);
-  const { data: activityStats } = useProjectActivityStats(id);
-  const { data: docSummary } = useResearchDocumentSummary(id);
   const { data: pubSummary } = useResearchPublicationSummary(id);
   const { data: projectApps } = useGrantApplicationsByProject(id);
   const { data: projectGrants } = useResearchGrantsByProject(id);
   const { data: projectEthicsApps } = useEthicsApplicationsByProject(id);
-  const { data: projectMilestones } = useProjectMilestones(id);
-  const { data: projectProgress } = useProjectProgress(id);
-  const { data: projectReports } = useProjectReports(id);
+  const { data: opportunitiesData } = useFundingOpportunities({ page: 1, limit: 100 });
   const { user } = useAuth();
   const updateStatus = useUpdateResearchProjectStatus();
   const { toast } = useToast();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPubModalOpen, setIsPubModalOpen] = useState(false);
+  const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
+  const [isEthicsModalOpen, setIsEthicsModalOpen] = useState(false);
   const [statusDialog, setStatusDialog] = useState<{ status: string } | null>(null);
+  const [activeTab, setActiveTab] = useState('OVERVIEW');
 
   const canManage = user?.role === "ADMIN" || user?.role === "COORDINATOR";
 
@@ -111,7 +114,24 @@ export default function ResearchProjectDetails() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="flex overflow-x-auto border-b border-slate-200 bg-white shadow-sm rounded-lg">
+        {['OVERVIEW', 'TEAM', 'ACTIVITIES', 'MILESTONES', 'REPORTS', 'DOCUMENTS'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === tab
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'OVERVIEW' && (
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-slate-50">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
@@ -273,97 +293,6 @@ export default function ResearchProjectDetails() {
           )}
         </div>
 
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Project Activities</h3>
-            <Link
-              to="/project-activities"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View Activities
-              <ChevronRight size={16} />
-            </Link>
-          </div>
-          {activityStats && activityStats.total > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-slate-900">{activityStats.total}</div>
-                <div className="text-xs text-slate-500">Total</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-blue-600">{activityStats.inProgress}</div>
-                <div className="text-xs text-slate-500">In Progress</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-emerald-600">{activityStats.completed}</div>
-                <div className="text-xs text-slate-500">Completed</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-red-600">{activityStats.overdue}</div>
-                <div className="text-xs text-slate-500">Overdue</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-amber-600">{activityStats.completionPercentage}%</div>
-                <div className="text-xs text-slate-500">Completion</div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <ClipboardList size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No activities yet</p>
-              <Link
-                to="/project-activities"
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
-              >
-                + Create first activity
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Documents</h3>
-            <Link
-              to="/research-documents"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View Documents
-              <ChevronRight size={16} />
-            </Link>
-          </div>
-          {docSummary && docSummary.total > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-slate-900">{docSummary.total}</div>
-                <div className="text-xs text-slate-500">Total</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-amber-600">{(docSummary.underReview || 0) + (docSummary.submitted || 0)}</div>
-                <div className="text-xs text-slate-500">Pending Review</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-emerald-600">{docSummary.approved || 0}</div>
-                <div className="text-xs text-slate-500">Approved</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-blue-600">{docSummary.published || 0}</div>
-                <div className="text-xs text-slate-500">Published</div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <FileText size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No documents yet</p>
-              <Link
-                to="/research-documents"
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
-              >
-                + Upload first document
-              </Link>
-            </div>
-          )}
-        </div>
 
         <div className="p-6 border-t border-slate-200">
           <div className="flex items-center justify-between mb-4">
@@ -399,12 +328,12 @@ export default function ResearchProjectDetails() {
             <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
               <BookOpen size={32} className="mx-auto text-slate-300 mb-2" />
               <p className="text-sm text-slate-500">No publications yet</p>
-              <Link
-                to="/research-publications"
+              <button
+                onClick={() => setIsPubModalOpen(true)}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Create first publication
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -443,12 +372,12 @@ export default function ResearchProjectDetails() {
             <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
               <Award size={32} className="mx-auto text-slate-300 mb-2" />
               <p className="text-sm text-slate-500">No funding yet</p>
-              <Link
-                to="/grant-applications"
+              <button
+                onClick={() => setIsGrantModalOpen(true)}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Create grant application
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -500,104 +429,16 @@ export default function ResearchProjectDetails() {
             <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
               <Shield size={32} className="mx-auto text-slate-300 mb-2" />
               <p className="text-sm text-slate-500">No ethics applications yet</p>
-              <Link
-                to="/ethics/applications"
+              <button
+                onClick={() => setIsEthicsModalOpen(true)}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
               >
                 + Create ethics application
-              </Link>
+              </button>
             </div>
           )}
         </div>
 
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Milestones & Progress</h3>
-            <Link to="/research-milestones" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All <ChevronRight size={16} />
-            </Link>
-          </div>
-          {projectProgress ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-slate-900">{projectProgress.overallProgress}%</div>
-                <div className="text-xs text-slate-500">Overall Progress</div>
-                <div className="mt-2 bg-slate-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${projectProgress.overallProgress}%` }} /></div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-emerald-600">{projectProgress.completedMilestones}/{projectProgress.totalMilestones}</div>
-                <div className="text-xs text-slate-500">Milestones Completed</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className={`text-2xl font-bold ${projectProgress.scheduleStatus === 'ON_TRACK' ? 'text-emerald-600' : projectProgress.scheduleStatus === 'AT_RISK' ? 'text-amber-600' : 'text-red-600'}`}>{projectProgress.scheduleStatus.replace('_', ' ')}</div>
-                <div className="text-xs text-slate-500">Schedule Status</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-slate-900">{projectProgress.daysRemaining}</div>
-                <div className="text-xs text-slate-500">Days Remaining</div>
-              </div>
-            </div>
-          ) : null}
-          {projectMilestones && projectMilestones.length > 0 ? (
-            <div className="space-y-2">
-              {projectMilestones.slice(0, 5).map((m) => (
-                <Link key={m.id} to="/research-milestones/$id" params={{ id: m.id }} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Flag size={16} className={`${m.status === 'COMPLETED' ? 'text-emerald-500' : m.status === 'BLOCKED' ? 'text-red-500' : 'text-amber-500'}`} />
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">{m.title}</div>
-                      <div className="text-xs text-slate-500">{m.plannedDueDate ? `Due: ${new Date(m.plannedDueDate).toLocaleDateString()}` : 'No due date'}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16"><div className="bg-slate-200 rounded-full h-1.5"><div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${m.progress}%` }} /></div></div>
-                    <span className="text-xs text-slate-500">{m.progress}%</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <Flag size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No milestones yet</p>
-            </div>
-          )}
-        </div>
-
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Reports</h3>
-            <Link to="/research-reports" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All <ChevronRight size={16} />
-            </Link>
-          </div>
-          {projectReports && projectReports.length > 0 ? (
-            <div className="space-y-2">
-              {projectReports.slice(0, 5).map((r) => (
-                <Link key={r.id} to="/research-reports/$id" params={{ id: r.id }} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FileText size={16} className={`${r.status === 'APPROVED' ? 'text-emerald-500' : r.status === 'UNDER_REVIEW' ? 'text-amber-500' : 'text-slate-400'}`} />
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">{r.title}</div>
-                      <div className="text-xs text-slate-500">{r.reportCode} | {r.reportType}</div>
-                    </div>
-                  </div>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                    r.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                    r.status === 'UNDER_REVIEW' ? 'bg-amber-100 text-amber-700' :
-                    r.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
-                    'bg-slate-100 text-slate-700'
-                  }`}>{r.status}</span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <FileText size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No reports yet</p>
-            </div>
-          )}
-        </div>
 
         <div className="p-6 border-t border-slate-200">
           <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Linked Resources</h3>
@@ -626,6 +467,23 @@ export default function ResearchProjectDetails() {
           </div>
         </div>
       </div>
+      )}
+
+      {activeTab === 'TEAM' && (
+        <ProjectTeamList projectId={id} />
+      )}
+      {activeTab === 'ACTIVITIES' && (
+        <ProjectActivitiesList projectId={id} />
+      )}
+      {activeTab === 'MILESTONES' && (
+        <ResearchMilestonesList projectId={id} />
+      )}
+      {activeTab === 'REPORTS' && (
+        <ResearchReportsList projectId={id} />
+      )}
+      {activeTab === 'DOCUMENTS' && (
+        <ResearchDocumentsList projectId={id} />
+      )}
 
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -650,6 +508,49 @@ export default function ResearchProjectDetails() {
           onConfirm={() => handleStatusChange(statusDialog.status)}
           onCancel={() => setStatusDialog(null)}
         />
+      )}
+
+      {isPubModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Create Publication</h2>
+            <ResearchPublicationForm
+              initialProjectId={id}
+              projects={[{ id: project.id, projectCode: project.projectCode, title: project.title }]}
+              onSuccess={() => setIsPubModalOpen(false)}
+              onCancel={() => setIsPubModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {isGrantModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Create Grant Application</h2>
+            <GrantApplicationForm
+              initialProjectId={id}
+              opportunities={opportunitiesData?.items || []}
+              projects={[{ id: project.id, projectCode: project.projectCode, title: project.title }]}
+              onSuccess={() => setIsGrantModalOpen(false)}
+              onCancel={() => setIsGrantModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {isEthicsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Create Ethics Application</h2>
+            <EthicsApplicationForm
+              initialProjectId={id}
+              projects={[{ id: project.id, projectCode: project.projectCode, title: project.title }]}
+              onSuccess={() => setIsEthicsModalOpen(false)}
+              onCancel={() => setIsEthicsModalOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

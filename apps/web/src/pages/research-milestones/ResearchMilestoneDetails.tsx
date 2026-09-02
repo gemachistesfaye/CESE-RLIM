@@ -84,7 +84,6 @@ export default function ResearchMilestoneDetails() {
               milestoneOrder: milestone.milestoneOrder, plannedStartDate: milestone.plannedStartDate?.split('T')[0] || undefined,
               plannedDueDate: milestone.plannedDueDate?.split('T')[0] || undefined,
               responsibleMemberId: milestone.responsibleMemberId || undefined,
-              notes: milestone.notes || undefined,
             }} isLoading={updateMilestone.isPending} />
           </div>
         ) : (
@@ -150,10 +149,10 @@ export default function ResearchMilestoneDetails() {
               </div>
             )}
 
-            {milestone.notes && (
+            {(milestone as any).notes && (
               <div className="p-6 border-t border-slate-200">
                 <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Notes</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{milestone.notes}</div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{(milestone as any).notes}</div>
               </div>
             )}
 

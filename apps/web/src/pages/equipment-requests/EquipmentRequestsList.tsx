@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useEquipmentRequests } from "../../hooks/useEquipmentRequests";
 import { Search, Plus, Loader2, FileText } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import EquipmentRequestForm from "../../components/equipment-requests/EquipmentRequestForm";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -34,6 +34,7 @@ const priorityStyles: Record<string, string> = {
 };
 
 export default function EquipmentRequestsList() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -175,7 +176,11 @@ export default function EquipmentRequestsList() {
                 </tr>
               ) : (
                 data?.items.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={req.id}
+                    onClick={() => navigate({ to: "/equipment-requests/$id", params: { id: req.id } })}
+                    className="hover:bg-blue-50/40 cursor-pointer transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="font-medium text-slate-900">
                         {req.requester.user.firstName} {req.requester.user.lastName}

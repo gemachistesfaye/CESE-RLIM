@@ -35,13 +35,13 @@ const priorityStyles: Record<string, string> = {
   URGENT: "bg-red-100 text-red-700",
 };
 
-export default function ProjectActivitiesList() {
+export default function ProjectActivitiesList({ projectId }: { projectId?: string } = {}) {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
-  const [projectFilter, setProjectFilter] = useState("");
+  const [projectFilter, setProjectFilter] = useState(projectId || "");
   const [overdueFilter, setOverdueFilter] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
@@ -67,11 +67,15 @@ export default function ProjectActivitiesList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Project Activities</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage tasks and activities across research projects.</p>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        {!projectId ? (
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Project Activities</h1>
+            <p className="text-sm text-slate-500 mt-1">Manage tasks and activities across research projects.</p>
+          </div>
+        ) : (
+          <div className="flex-1"></div>
+        )}
         {canCreate && (
           <button
             onClick={() => setIsModalOpen(true)}
@@ -83,7 +87,7 @@ export default function ProjectActivitiesList() {
         )}
       </div>
 
-      {summary && (
+      {!projectId && summary && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="text-2xl font-bold text-slate-900">{summary.total}</div>
@@ -148,18 +152,20 @@ export default function ProjectActivitiesList() {
               ))}
             </select>
 
-            <select
-              value={projectFilter}
-              onChange={(e) => setProjectFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Projects</option>
-              {projectsData?.items.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
-                </option>
-              ))}
-            </select>
+            {!projectId && (
+              <select
+                value={projectFilter}
+                onChange={(e) => setProjectFilter(e.target.value)}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Projects</option>
+                {projectsData?.items.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <button
               onClick={() => setOverdueFilter(overdueFilter ? "" : "true")}

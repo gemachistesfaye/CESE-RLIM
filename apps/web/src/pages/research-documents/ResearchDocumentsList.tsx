@@ -45,13 +45,13 @@ const typeStyles: Record<string, string> = {
   OTHER: "bg-slate-50 text-slate-600",
 };
 
-export default function ResearchDocumentsList() {
+export default function ResearchDocumentsList({ projectId }: { projectId?: string } = {}) {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [projectFilter, setProjectFilter] = useState("");
+  const [projectFilter, setProjectFilter] = useState(projectId || "");
   const [sortBy, setSortBy] = useState("updatedAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,13 +88,17 @@ export default function ResearchDocumentsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Research Documents</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Manage research documents, reports, and publications.
-          </p>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        {!projectId ? (
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Research Documents</h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Manage research documents, reports, and publications.
+            </p>
+          </div>
+        ) : (
+          <div className="flex-1"></div>
+        )}
         {canCreate && (
           <button
             onClick={() => setIsModalOpen(true)}
@@ -106,7 +110,7 @@ export default function ResearchDocumentsList() {
         )}
       </div>
 
-      {summary && (
+      {!projectId && summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="text-2xl font-bold text-slate-900">{summary.total}</div>
@@ -186,18 +190,20 @@ export default function ResearchDocumentsList() {
               ))}
             </select>
 
-            <select
-              value={projectFilter}
-              onChange={(e) => setProjectFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Projects</option>
-              {projectsData?.items.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
-                </option>
-              ))}
-            </select>
+            {!projectId && (
+              <select
+                value={projectFilter}
+                onChange={(e) => setProjectFilter(e.target.value)}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Projects</option>
+                {projectsData?.items.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <div className="flex items-center gap-1">
               <select
