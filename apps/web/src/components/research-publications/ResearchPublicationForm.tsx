@@ -39,6 +39,7 @@ type PublicationFormData = z.infer<typeof publicationSchema>;
 
 interface ResearchPublicationFormProps {
   initialData?: ResearchPublication;
+  initialProjectId?: string;
   projects: Array<{ id: string; projectCode: string; title: string }>;
   onSuccess: () => void;
   onCancel: () => void;
@@ -46,6 +47,7 @@ interface ResearchPublicationFormProps {
 
 export default function ResearchPublicationForm({
   initialData,
+  initialProjectId,
   projects,
   onSuccess,
   onCancel,
@@ -80,7 +82,7 @@ export default function ResearchPublicationForm({
           citationCount: initialData.citationCount,
         }
       : {
-          researchProjectId: "",
+          researchProjectId: initialProjectId || "",
           title: "",
           abstract: "",
           publicationType: "JOURNAL_ARTICLE",

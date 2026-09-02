@@ -15,9 +15,10 @@ const schema = z.object({
 type GrantApplicationFormData = z.infer<typeof schema>;
 
 export default function GrantApplicationForm({
-  initialData, opportunities, projects, onSuccess, onCancel,
+  initialData, initialProjectId, opportunities, projects, onSuccess, onCancel,
 }: {
   initialData?: GrantApplication;
+  initialProjectId?: string;
   opportunities: Array<{ id: string; title: string; organization: string }>;
   projects: Array<{ id: string; projectCode: string; title: string }>;
   onSuccess: () => void;
@@ -35,8 +36,9 @@ export default function GrantApplicationForm({
       title: initialData.title,
       requestedAmount: initialData.requestedAmount,
       proposalSummary: initialData.proposalSummary,
-      researchProjectId: initialData.researchProjectId || '',
-    } : {},
+    } : {
+      researchProjectId: initialProjectId || '',
+    },
   });
 
   const onSubmit = async (data: GrantApplicationFormData) => {

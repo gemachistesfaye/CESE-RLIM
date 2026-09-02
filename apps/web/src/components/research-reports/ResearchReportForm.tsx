@@ -8,15 +8,8 @@ const reportSchema = z.object({
   reportType: z.string().min(1, 'Report type is required'),
   reportingPeriodStart: z.string().optional(),
   reportingPeriodEnd: z.string().optional(),
-  executiveSummary: z.string().optional(),
-  objectives: z.string().optional(),
-  methodology: z.string().optional(),
-  achievements: z.string().optional(),
-  challenges: z.string().optional(),
-  findings: z.string().optional(),
-  recommendations: z.string().optional(),
-  conclusion: z.string().optional(),
-  progressPercentage: z.number().int().min(0).max(100).optional(),
+  reportContent: z.string().optional(),
+  fileUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   nextPeriodPlan: z.string().optional(),
 });
 
@@ -31,7 +24,7 @@ interface ResearchReportFormProps {
 }
 
 export function ResearchReportForm({ onSubmit, onCancel, initialData, isLoading, isReadOnly }: ResearchReportFormProps) {
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<ReportFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
     defaultValues: initialData || {},
   });
@@ -40,7 +33,7 @@ export function ResearchReportForm({ onSubmit, onCancel, initialData, isLoading,
     if (initialData) Object.entries(initialData).forEach(([k, v]) => { if (v !== undefined) setValue(k as any, v); });
   }, [initialData, setValue]);
 
-  const progressValue = watch('progressPercentage');
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -67,71 +60,28 @@ export function ResearchReportForm({ onSubmit, onCancel, initialData, isLoading,
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Reporting Period Start</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Reporting Period Start <span className="text-slate-400 font-normal">(Optional)</span></label>
           <input type="date" {...register('reportingPeriodStart')} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Reporting Period End</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Reporting Period End <span className="text-slate-400 font-normal">(Optional)</span></label>
           <input type="date" {...register('reportingPeriodEnd')} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Executive Summary</label>
-        <textarea {...register('executiveSummary')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
+        <label className="block text-sm font-medium text-slate-700 mb-1">Report Content <span className="text-slate-400 font-normal">(Optional)</span></label>
+        <textarea {...register('reportContent')} rows={8} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Objectives</label>
-          <textarea {...register('objectives')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
+          <label className="block text-sm font-medium text-slate-700 mb-1">Attachment File URL <span className="text-slate-400 font-normal">(Optional)</span></label>
+          <input type="text" placeholder="https://..." {...register('fileUrl')} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
+          {errors.fileUrl && <p className="text-red-500 text-xs mt-1">{errors.fileUrl.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Methodology</label>
-          <textarea {...register('methodology')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Achievements</label>
-        <textarea {...register('achievements')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Challenges</label>
-          <textarea {...register('challenges')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Findings</label>
-          <textarea {...register('findings')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Recommendations</label>
-        <textarea {...register('recommendations')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Conclusion</label>
-        <textarea {...register('conclusion')} rows={3} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Progress (%)</label>
-          <div className="flex items-center gap-3">
-            <input type="number" {...register('progressPercentage', { valueAsNumber: true })} disabled={isReadOnly} className="w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
-            {progressValue !== undefined && progressValue !== null && (
-              <div className="flex-1 bg-slate-200 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${Math.min(100, Math.max(0, progressValue))}%` }} />
-              </div>
-            )}
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Next Period Plan</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Next Period Plan <span className="text-slate-400 font-normal">(Optional)</span></label>
           <textarea {...register('nextPeriodPlan')} rows={2} disabled={isReadOnly} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" />
         </div>
       </div>

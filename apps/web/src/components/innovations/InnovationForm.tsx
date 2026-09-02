@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +8,8 @@ import { useResearchProjects } from "../../hooks/useResearchProjects";
 import { useToast } from "../ui/Toast";
 import { Loader2 } from "lucide-react";
 import type { Innovation } from "../../hooks/useInnovations";
+import { useAuth } from "../../contexts/AuthContext";
+import SearchableSelect from "../ui/SearchableSelect";
 
 const innovationSchema = z.object({
   title: z.string().min(1, "Title is required").max(255),
@@ -26,6 +29,7 @@ interface InnovationFormProps {
 }
 
 export default function InnovationForm({ initialData, onSuccess, onCancel }: InnovationFormProps) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const createInnovation = useCreateInnovation();
   const updateInnovation = useUpdateInnovation();
@@ -36,6 +40,8 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<InnovationFormData>({
     resolver: zodResolver(innovationSchema),
@@ -58,6 +64,37 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
         },
   });
 
+  const selectedResearcherId = watch("submittedById");
+  const selectedProjectId = watch("researchProjectId");
+
+  // Automatically pre-fill the current researcher's profile
+  useEffect(() => {
+    if (!isEditing && user && researchersData?.items) {
+      const myResearcher = researchersData.items.find(
+        (r) => r.userId === user.id || r.user.id === user.id || r.user.email === user.email
+      );
+      if (myResearcher && !selectedResearcherId) {
+        setValue("submittedById", myResearcher.id, { shouldValidate: true });
+      }
+    }
+  }, [user, researchersData, isEditing, selectedResearcherId, setValue]);
+
+  const researcherOptions =
+    researchersData?.items.map((r) => ({
+      value: r.id,
+      label: `${r.user.firstName} ${r.user.lastName}`,
+      subLabel: r.department,
+      badge: r.academicPosition || undefined,
+    })) || [];
+
+  const projectOptions =
+    projectsData?.items.map((p) => ({
+      value: p.id,
+      label: p.title,
+      subLabel: p.projectCode,
+      badge: p.projectStatus,
+    })) || [];
+
   const onSubmit = (values: InnovationFormData) => {
     const payload = {
       title: values.title.trim(),
@@ -79,7 +116,7 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
           onError: (err: any) => {
             toast("error", err?.response?.data?.message || "Failed to update innovation");
           },
-        },
+        }
       );
     } else {
       createInnovation.mutate(payload, {
@@ -105,7 +142,7 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
         <input
           type="text"
           {...register("title")}
-          placeholder="Smart Energy Monitoring System"
+          placeholder="e.g. Smart Energy Monitoring System"
           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
@@ -116,7 +153,7 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
         <textarea
           {...register("description")}
           rows={3}
-          placeholder="Describe the innovation..."
+          placeholder="Describe the innovation, its goals, and key novelty..."
           className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
         {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
@@ -128,7 +165,7 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
           <input
             type="text"
             {...register("category")}
-            placeholder="IoT Technology"
+            placeholder="e.g. IoT, Clean Tech, Robotics"
             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
@@ -150,44 +187,38 @@ export default function InnovationForm({ initialData, onSuccess, onCancel }: Inn
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Researcher <span className="text-red-500">*</span>
-        </label>
-        <select
-          {...register("submittedById")}
-          disabled={isEditing}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50"
-        >
-          <option value="">Select researcher</option>
-          {researchersData?.items.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.user.firstName} {r.user.lastName} — {r.department}
-            </option>
-          ))}
-        </select>
-        {errors.submittedById && <p className="text-red-500 text-xs mt-1">{errors.submittedById.message}</p>}
+        <SearchableSelect
+          label="Researcher"
+          required
+          disabled={isEditing || (user?.role === "RESEARCHER" && !!selectedResearcherId)}
+          options={researcherOptions}
+          value={selectedResearcherId}
+          onChange={(val) => setValue("submittedById", val, { shouldValidate: true })}
+          placeholder="Search and select researcher..."
+          error={errors.submittedById?.message}
+        />
+        {user?.role === "RESEARCHER" && (
+          <p className="text-[11px] text-slate-400 mt-1">
+            Automatically linked to your active researcher profile.
+          </p>
+        )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Research Project</label>
-        <select
-          {...register("researchProjectId")}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">No project (optional)</option>
-          {projectsData?.items.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title} ({p.projectCode})
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          label="Linked Research Project (Optional)"
+          options={projectOptions}
+          value={selectedProjectId || ""}
+          onChange={(val) => setValue("researchProjectId", val)}
+          placeholder="Select an existing research project..."
+        />
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
         >
           Cancel
         </button>

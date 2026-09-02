@@ -29,6 +29,16 @@ const documentSchema = z.object({
     "PAPER",
     "OTHER",
   ]),
+  version: z.number().int().min(1).optional(),
+  status: z.enum([
+    "DRAFT",
+    "SUBMITTED",
+    "UNDER_REVIEW",
+    "APPROVED",
+    "REJECTED",
+    "PUBLISHED",
+    "ARCHIVED"
+  ]).optional(),
 });
 
 type DocumentFormData = z.infer<typeof documentSchema>;
@@ -67,12 +77,16 @@ export default function ResearchDocumentForm({
           title: initialData.title,
           description: initialData.description ?? "",
           documentType: initialData.documentType,
+          version: initialData.version,
+          status: initialData.status,
         }
       : {
           researchProjectId: "",
           title: "",
           description: "",
           documentType: "OTHER",
+          version: 1,
+          status: "DRAFT",
         },
   });
 
@@ -85,6 +99,7 @@ export default function ResearchDocumentForm({
             title: values.title.trim(),
             description: values.description?.trim() || undefined,
             documentType: values.documentType,
+            status: values.status,
           },
         },
         {
@@ -138,7 +153,7 @@ export default function ResearchDocumentForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">
-          Project
+          Project <span className="text-slate-400 font-normal">(Optional)</span>
         </label>
         <select
           {...register("researchProjectId")}
@@ -173,7 +188,7 @@ export default function ResearchDocumentForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Description <span className="text-slate-400 font-normal">(Optional)</span></label>
         <textarea
           {...register("description")}
           rows={3}
@@ -202,6 +217,37 @@ export default function ResearchDocumentForm({
         {errors.documentType && (
           <p className="text-red-500 text-xs mt-1">{errors.documentType.message}</p>
         )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Version
+          </label>
+          <input
+            type="number"
+            min={1}
+            {...register("version", { valueAsNumber: true })}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Status
+          </label>
+          <select
+            {...register("status")}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="DRAFT">Draft</option>
+            <option value="SUBMITTED">Submitted</option>
+            <option value="UNDER_REVIEW">Under Review</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </div>
       </div>
 
       {!isEditing && (

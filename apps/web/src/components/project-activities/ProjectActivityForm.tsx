@@ -24,7 +24,8 @@ const activitySchema = z.object({
   startDate: z.string().optional(),
   dueDate: z.string().optional(),
   progress: z.number().min(0).max(100).optional(),
-  notes: z.string().max(5000).optional(),
+  estimatedHours: z.number().min(0).optional(),
+  tags: z.string().optional(),
 });
 
 type ActivityFormData = z.infer<typeof activitySchema>;
@@ -81,7 +82,8 @@ export default function ProjectActivityForm({
             ? new Date(initialData.dueDate).toISOString().split("T")[0]
             : "",
           progress: initialData.progress,
-          notes: initialData.notes ?? "",
+          estimatedHours: initialData.estimatedHours ?? undefined,
+          tags: initialData.tags?.join(", ") ?? "",
         }
       : {
           researchProjectId: defaultProjectId || "",
@@ -93,7 +95,8 @@ export default function ProjectActivityForm({
           startDate: "",
           dueDate: "",
           progress: 0,
-          notes: "",
+          estimatedHours: undefined,
+          tags: "",
         },
   });
 
@@ -117,7 +120,8 @@ export default function ProjectActivityForm({
       startDate: values.startDate || undefined,
       dueDate: values.dueDate || undefined,
       progress: values.progress,
-      notes: values.notes?.trim() || undefined,
+      estimatedHours: values.estimatedHours,
+      tags: values.tags ? values.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
     };
 
     if (isEditing) {
@@ -185,7 +189,7 @@ export default function ProjectActivityForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Description <span className="text-slate-400 font-normal">(Optional)</span></label>
         <textarea
           {...register("description")}
           rows={3}
@@ -198,7 +202,7 @@ export default function ProjectActivityForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Assigned Member</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Assigned Member <span className="text-slate-400 font-normal">(Optional)</span></label>
         <select
           {...register("assignedMemberId")}
           disabled={!selectedProjectId}
@@ -247,7 +251,7 @@ export default function ProjectActivityForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Start Date <span className="text-slate-400 font-normal">(Optional)</span></label>
           <input
             type="date"
             {...register("startDate")}
@@ -256,7 +260,7 @@ export default function ProjectActivityForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Due Date <span className="text-slate-400 font-normal">(Optional)</span></label>
           <input
             type="date"
             {...register("dueDate")}
@@ -278,14 +282,28 @@ export default function ProjectActivityForm({
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
-        <textarea
-          {...register("notes")}
-          rows={2}
-          placeholder="Additional notes..."
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Estimated Hours <span className="text-slate-400 font-normal">(Optional)</span></label>
+          <input
+            type="number"
+            min={0}
+            step={0.5}
+            {...register("estimatedHours", { valueAsNumber: true })}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g. 10.5"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Tags (comma-separated) <span className="text-slate-400 font-normal">(Optional)</span></label>
+          <input
+            type="text"
+            {...register("tags")}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g. Analysis, Review"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">

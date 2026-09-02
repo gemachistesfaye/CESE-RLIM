@@ -20,9 +20,10 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function EthicsApplicationForm({
-  initialData, projects, onSuccess, onCancel,
+  initialData, initialProjectId, projects, onSuccess, onCancel,
 }: {
   initialData?: EthicsApplication;
+  initialProjectId?: string;
   projects: Array<{ id: string; projectCode: string; title: string }>;
   onSuccess: () => void;
   onCancel: () => void;
@@ -43,7 +44,9 @@ export default function EthicsApplicationForm({
       benefitStatement: initialData.benefitStatement || '',
       dataProtectionPlan: initialData.dataProtectionPlan || '',
       consentProcess: initialData.consentProcess || '',
-    } : {},
+    } : {
+      researchProjectId: initialProjectId || '',
+    },
   });
 
   const onSubmit = async (data: FormValues) => {
