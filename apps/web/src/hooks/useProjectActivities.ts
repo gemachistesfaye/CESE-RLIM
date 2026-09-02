@@ -16,7 +16,8 @@ export interface ProjectActivity {
   dueDate: string | null;
   completedAt: string | null;
   progress: number;
-  notes: string | null;
+  estimatedHours: number | null;
+  tags: string[];
   createdById: string;
   createdAt: string;
   updatedAt: string;

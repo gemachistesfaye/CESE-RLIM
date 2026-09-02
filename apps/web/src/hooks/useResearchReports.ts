@@ -12,15 +12,8 @@ export interface ResearchReport {
   reportingPeriodEnd: string | null;
   submittedAt: string | null;
   status: string;
-  executiveSummary: string | null;
-  objectives: string | null;
-  methodology: string | null;
-  achievements: string | null;
-  challenges: string | null;
-  findings: string | null;
-  recommendations: string | null;
-  conclusion: string | null;
-  progressPercentage: number | null;
+  reportContent: string | null;
+  fileUrl: string | null;
   nextPeriodPlan: string | null;
   reviewerId: string | null;
   reviewComment: string | null;

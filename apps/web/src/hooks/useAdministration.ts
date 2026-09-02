@@ -30,6 +30,7 @@ export interface AdminOverview {
     createdAt: string;
     user: { id: string; firstName: string; lastName: string; email: string } | null;
   }>;
+  activityChart: Array<{ date: string; count: number }>;
 }
 
 export interface SystemSetting {

@@ -13,7 +13,7 @@ export interface ResearchMilestone {
   status: string;
   progress: number;
   responsibleMemberId: string | null;
-  notes: string | null;
+  deliverableLink: string | null;
   createdById: string;
   createdAt: string;
   updatedAt: string;
