@@ -116,9 +116,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'RESOURCES',
     items: [
       { name: 'Laboratories', href: '/laboratories', icon: FlaskConical, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Equipment', href: '/equipment', icon: Wrench, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Equipment Operations', href: '/equipment-operations', icon: ClipboardList, roles: ['COORDINATOR', 'TECHNICIAN'] },
-      { name: 'Maintenance', href: '/maintenance', icon: AlertTriangle, roles: ['COORDINATOR', 'TECHNICIAN'] },
+      { name: 'Equipment & Maintenance', href: '/equipment-maintenance', icon: Wrench, roles: ['COORDINATOR', 'TECHNICIAN'] },
     ],
   },
   {

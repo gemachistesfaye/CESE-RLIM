@@ -255,55 +255,6 @@ export default function ResearchProjectDetails() {
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Users className="text-blue-500" size={20} />
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Team</h3>
-              </div>
-              <Link
-                to="/research-projects/$projectId/team"
-                params={{ projectId: id }}
-                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                Manage Team
-                <ChevronRight size={16} />
-              </Link>
-            </div>
-            {teamSummary && teamSummary.totalMembers > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                  <div className="text-2xl font-bold text-slate-900">{teamSummary.totalMembers}</div>
-                  <div className="text-xs text-slate-500">Total Members</div>
-                </div>
-                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                  <div className="text-2xl font-bold text-emerald-600">{teamSummary.activeMembers}</div>
-                  <div className="text-xs text-slate-500">Active</div>
-                </div>
-                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                  <div className="text-2xl font-bold text-purple-600">{teamSummary.byRole.PRINCIPAL_INVESTIGATOR || 0}</div>
-                  <div className="text-xs text-slate-500">Principal Inv.</div>
-                </div>
-                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                  <div className="text-2xl font-bold text-blue-600">{teamSummary.byRole.RESEARCHER || 0}</div>
-                  <div className="text-xs text-slate-500">Researchers</div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-                <Users size={32} className="mx-auto text-slate-300 mb-2" />
-                <p className="text-sm text-slate-500">No team members yet</p>
-                <Link
-                  to="/research-projects/$projectId/team"
-                  params={{ projectId: id }}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
-                >
-                  + Add team members
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
       )}
 
