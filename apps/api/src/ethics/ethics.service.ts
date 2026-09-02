@@ -140,7 +140,12 @@ export class EthicsService {
     }
 
     if (userId && userRole === UserRole.RESEARCHER) {
-      where.applicantId = userId;
+      const researcher = await this.prisma.researcher.findUnique({ where: { userId } });
+      if (researcher) {
+        where.applicantId = researcher.id;
+      } else {
+        where.applicantId = 'NOT_FOUND';
+      }
     }
 
     if (search) {
