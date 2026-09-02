@@ -55,7 +55,7 @@ export default function EquipmentRequestsList() {
     setPage(1);
   }, [debouncedSearch, statusFilter, priorityFilter]);
 
-  const canCreate = user?.role === "RESEARCHER" || user?.role === "TECHNICIAN";
+  const canCreate = user?.role === "RESEARCHER";
   const canReview = user?.role === "ADMIN" || user?.role === "COORDINATOR" || user?.role === "TECHNICIAN";
 
   return (

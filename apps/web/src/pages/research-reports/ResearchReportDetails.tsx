@@ -256,6 +256,11 @@ export default function ResearchReportDetails() {
         <ConfirmDialog open title="Delete Report" message="Are you sure you want to delete this report? This action cannot be undone."
           confirmLabel="Delete" variant="danger" onConfirm={handleDelete} onCancel={() => setShowDeleteConfirm(false)} />
       )}
+
+      {/* Hidden printable component - positioned off-screen for react-to-print */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        <PrintableReport ref={componentRef} report={report} />
+      </div>
     </div>
   );
 }

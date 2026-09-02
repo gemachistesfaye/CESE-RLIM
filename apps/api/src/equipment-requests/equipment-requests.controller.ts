@@ -83,7 +83,7 @@ export class EquipmentRequestsController {
   }
 
   @Post()
-  @Roles(UserRole.RESEARCHER, UserRole.TECHNICIAN)
+  @Roles(UserRole.RESEARCHER)
   @ApiOperation({ summary: 'Create a new equipment request' })
   @ApiBody({ type: CreateEquipmentRequestDto })
   @ApiResponse({ status: 201, description: 'Equipment request created successfully' })

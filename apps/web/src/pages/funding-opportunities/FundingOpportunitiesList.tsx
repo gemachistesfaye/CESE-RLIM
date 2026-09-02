@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { useFundingOpportunities, useFundingOpportunitySummary, FUNDING_TYPE_LABELS, FUNDING_OPPORTUNITY_STATUS_LABELS } from '../../hooks/useFundingOpportunities';
 import { useAuth } from '../../contexts/AuthContext';
 import FundingOpportunityForm from '../../components/funding-opportunities/FundingOpportunityForm';
-import { Plus, Search, ChevronLeft, ChevronRight, Loader2, DollarSign } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight, Loader2, DollarSign, ClipboardList, Award } from 'lucide-react';
 
 const statusStyles: Record<string, string> = {
   OPEN: 'bg-emerald-100 text-emerald-700', CLOSED: 'bg-slate-100 text-slate-700',
@@ -34,6 +34,17 @@ export default function FundingOpportunitiesList() {
             <Plus size={16} /> Create Opportunity
           </button>
         )}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Link to="/grant-applications" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <ClipboardList size={16} className="text-blue-500" />
+          Applications
+        </Link>
+        <Link to="/research-grants" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <Award size={16} className="text-emerald-500" />
+          Grants
+        </Link>
       </div>
 
       {summary && (

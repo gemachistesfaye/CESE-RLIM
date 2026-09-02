@@ -152,7 +152,7 @@ export class MaintenanceController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER, UserRole.TECHNICIAN)
+  @Roles(UserRole.RESEARCHER, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Create a new maintenance record' })
   @ApiBody({ type: CreateMaintenanceRecordDto })
   @ApiResponse({ status: 201, description: 'Maintenance record created successfully' })

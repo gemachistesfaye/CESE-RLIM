@@ -69,7 +69,7 @@ export default function ResearchReportsList({ projectId }: { projectId?: string 
         </button>
       </div>
 
-      {!projectId && summary && (
+      {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total', value: summary.total, color: 'text-slate-900' },
@@ -78,7 +78,7 @@ export default function ResearchReportsList({ projectId }: { projectId?: string 
             { label: 'Approved', value: summary.approved, color: 'text-emerald-600' },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-4">
-              <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+              <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
               <div className="text-xs text-slate-500">{s.label}</div>
             </div>
           ))}

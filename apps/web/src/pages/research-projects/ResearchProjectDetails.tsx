@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link } from "@tanstack/react-router";
 import { useResearchProject, useUpdateResearchProjectStatus } from "../../hooks/useResearchProjects";
 import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
@@ -35,6 +35,8 @@ import GrantApplicationForm from "../../components/grant-applications/GrantAppli
 import EthicsApplicationForm from "../../components/ethics/EthicsApplicationForm";
 import { useFundingOpportunities } from "../../hooks/useFundingOpportunities";
 import ProjectTeamList from "../../components/research-project-members/ProjectTeamList";
+import { PrintableProjectReport } from "../../components/print/PrintableProjectReport";
+import { useReactToPrint } from "react-to-print";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-700",
@@ -64,6 +66,16 @@ export default function ResearchProjectDetails() {
   const [activeTab, setActiveTab] = useState('OVERVIEW');
 
   const canManage = user?.role === "ADMIN" || user?.role === "COORDINATOR";
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Project_${project?.projectCode || 'Draft'}`,
+    pageStyle: `
+      @page { size: A4 portrait; margin: 0; }
+      @media print { html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    `,
+  });
 
   const validTransitions: Record<string, string[]> = {
     ACTIVE: ["COMPLETED", "ON_HOLD", "CANCELLED"],
@@ -131,342 +143,158 @@ export default function ResearchProjectDetails() {
       </div>
 
       {activeTab === 'OVERVIEW' && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-slate-50">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-              <FlaskConical size={28} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{project.title}</h2>
-              <div className="flex items-center gap-3 mt-1 flex-wrap">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700 font-mono">
-                  {project.projectCode}
-                </span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[project.projectStatus]}`}>
-                  {project.projectStatus.replace("_", " ")}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 w-full md:w-auto">
-            {canManage && (
-              <button
-                onClick={() => setIsEditModalOpen(true)}
-                className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
-              >
-                <Edit size={16} />
-                Edit
-              </button>
-            )}
-            {canManage && nextStatuses.length > 0 && (
-              <>
-                {nextStatuses.includes("ACTIVE") && (
-                  <button
-                    onClick={() => setStatusDialog({ status: "ACTIVE" })}
-                    className="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors"
-                  >
-                    Resume
-                  </button>
-                )}
-                {nextStatuses.includes("COMPLETED") && (
-                  <button
-                    onClick={() => setStatusDialog({ status: "COMPLETED" })}
-                    className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-                  >
-                    Complete
-                  </button>
-                )}
-                {nextStatuses.includes("ON_HOLD") && (
-                  <button
-                    onClick={() => setStatusDialog({ status: "ON_HOLD" })}
-                    className="flex items-center justify-center gap-2 bg-amber-50 text-amber-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors"
-                  >
-                    Put On Hold
-                  </button>
-                )}
-                {nextStatuses.includes("CANCELLED") && (
-                  <button
-                    onClick={() => setStatusDialog({ status: "CANCELLED" })}
-                    className="flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
-                  >
-                    Cancel Project
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Overview</h3>
-            <div className="space-y-4">
-              {project.description && (
-                <div className="flex items-start gap-3">
-                  <FlaskConical className="text-slate-400 mt-0.5" size={18} />
-                  <div>
-                    <div className="text-sm font-medium text-slate-900">Description</div>
-                    <div className="text-sm text-slate-500 mt-1">{project.description}</div>
-                  </div>
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <FlaskConical size={28} />
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Timeline</h3>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Calendar className="text-slate-400 mt-0.5" size={18} />
                 <div>
-                  <div className="text-sm font-medium text-slate-900">Start Date</div>
-                  <div className="text-sm text-slate-500">
-                    {project.startDate ? new Date(project.startDate).toLocaleDateString() : "Not set"}
+                  <h2 className="text-xl font-bold text-slate-900">{project.title}</h2>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700 font-mono">
+                      {project.projectCode}
+                    </span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[project.projectStatus]}`}>
+                      {project.projectStatus.replace("_", " ")}
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <Calendar className="text-slate-400 mt-0.5" size={18} />
-                <div>
-                  <div className="text-sm font-medium text-slate-900">End Date</div>
-                  <div className="text-sm text-slate-500">
-                    {project.endDate ? new Date(project.endDate).toLocaleDateString() : "Not set"}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Clock className="text-slate-400 mt-0.5" size={18} />
-                <div>
-                  <div className="text-sm font-medium text-slate-900">Created</div>
-                  <div className="text-sm text-slate-500">{new Date(project.createdAt).toLocaleDateString()}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Team</h3>
-            <Link
-              to="/research-projects/$projectId/team"
-              params={{ projectId: id }}
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              Manage Team
-              <ChevronRight size={16} />
-            </Link>
-          </div>
-          {teamSummary && teamSummary.totalMembers > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-slate-900">{teamSummary.totalMembers}</div>
-                <div className="text-xs text-slate-500">Total Members</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-emerald-600">{teamSummary.activeMembers}</div>
-                <div className="text-xs text-slate-500">Active</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-purple-600">{teamSummary.byRole.PRINCIPAL_INVESTIGATOR || 0}</div>
-                <div className="text-xs text-slate-500">Principal Inv.</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-blue-600">{teamSummary.byRole.RESEARCHER || 0}</div>
-                <div className="text-xs text-slate-500">Researchers</div>
+              <div className="flex gap-3 w-full md:w-auto">
+                <button onClick={handlePrint} className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print PDF
+                </button>
+                {canManage && (
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
+                  >
+                    <Edit size={16} />
+                    Edit
+                  </button>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <Users size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No team members yet</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Users className="text-blue-500" size={20} />
+                <span className="text-sm font-medium text-slate-600">Team</span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{teamSummary?.totalMembers || 0}</div>
+              <div className="text-xs text-slate-500">members</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <BookOpen className="text-amber-500" size={20} />
+                <span className="text-sm font-medium text-slate-600">Publications</span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{pubSummary?.total || 0}</div>
+              <div className="text-xs text-slate-500">total</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Award className="text-emerald-500" size={20} />
+                <span className="text-sm font-medium text-slate-600">Grants</span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{projectGrants?.length || 0}</div>
+              <div className="text-xs text-slate-500">active</div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Shield className="text-violet-500" size={20} />
+                <span className="text-sm font-medium text-slate-600">Ethics</span>
+              </div>
+              <div className="text-2xl font-bold text-slate-900">{projectEthicsApps?.length || 0}</div>
+              <div className="text-xs text-slate-500">applications</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FlaskConical className="text-blue-500" size={20} />
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Description</h3>
+              </div>
+              <p className="text-sm text-slate-600">{project.description || 'No description provided.'}</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="text-blue-500" size={20} />
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Timeline</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Start Date</span>
+                  <span className="text-sm font-medium text-slate-900">{project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Not set'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">End Date</span>
+                  <span className="text-sm font-medium text-slate-900">{project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Not set'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Created</span>
+                  <span className="text-sm font-medium text-slate-900">{new Date(project.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="text-blue-500" size={20} />
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Research Team</h3>
+              </div>
               <Link
                 to="/research-projects/$projectId/team"
                 params={{ projectId: id }}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
-                + Add team members
+                Manage Team
+                <ChevronRight size={16} />
               </Link>
             </div>
-          )}
-        </div>
-
-
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Publications</h3>
-            <Link
-              to="/research-publications"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View Publications
-              <ChevronRight size={16} />
-            </Link>
-          </div>
-          {pubSummary && pubSummary.total > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-slate-900">{pubSummary.total}</div>
-                <div className="text-xs text-slate-500">Total</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-amber-600">{(pubSummary.byStatus?.UNDER_REVIEW || 0) + (pubSummary.byStatus?.SUBMITTED || 0)}</div>
-                <div className="text-xs text-slate-500">Under Review</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-emerald-600">{pubSummary.byStatus?.PUBLISHED || 0}</div>
-                <div className="text-xs text-slate-500">Published</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="text-2xl font-bold text-purple-600">{pubSummary.byStatus?.ACCEPTED || 0}</div>
-                <div className="text-xs text-slate-500">Accepted</div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <BookOpen size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No publications yet</p>
-              <button
-                onClick={() => setIsPubModalOpen(true)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
-              >
-                + Create first publication
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Funding & Grants</h3>
-            <Link
-              to="/grant-applications"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View Applications
-              <ChevronRight size={16} />
-            </Link>
-          </div>
-          {((projectApps && projectApps.length > 0) || (projectGrants && projectGrants.length > 0)) ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <FileText className="text-blue-500" size={20} />
-                  <div className="text-sm font-medium text-slate-900">Applications</div>
+            {teamSummary && teamSummary.totalMembers > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                  <div className="text-2xl font-bold text-slate-900">{teamSummary.totalMembers}</div>
+                  <div className="text-xs text-slate-500">Total Members</div>
                 </div>
-                <div className="text-2xl font-bold text-blue-600">{projectApps?.length || 0}</div>
-                <div className="text-xs text-slate-500">Grant applications</div>
-              </div>
-              <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Award className="text-emerald-500" size={20} />
-                  <div className="text-sm font-medium text-slate-900">Active Grants</div>
+                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                  <div className="text-2xl font-bold text-emerald-600">{teamSummary.activeMembers}</div>
+                  <div className="text-xs text-slate-500">Active</div>
                 </div>
-                <div className="text-2xl font-bold text-emerald-600">{projectGrants?.filter((g: { status: string }) => g.status === 'ACTIVE').length || 0}</div>
-                <div className="text-xs text-slate-500">Research grants</div>
+                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                  <div className="text-2xl font-bold text-purple-600">{teamSummary.byRole.PRINCIPAL_INVESTIGATOR || 0}</div>
+                  <div className="text-xs text-slate-500">Principal Inv.</div>
+                </div>
+                <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+                  <div className="text-2xl font-bold text-blue-600">{teamSummary.byRole.RESEARCHER || 0}</div>
+                  <div className="text-xs text-slate-500">Researchers</div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <Award size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No funding yet</p>
-              <button
-                onClick={() => setIsGrantModalOpen(true)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
-              >
-                + Create grant application
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Ethics Applications</h3>
-            <Link
-              to="/ethics/applications"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View Applications
-              <ChevronRight size={16} />
-            </Link>
-          </div>
-          {projectEthicsApps && projectEthicsApps.length > 0 ? (
-            <div className="space-y-2">
-              {projectEthicsApps.map((ethApp) => (
+            ) : (
+              <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
+                <Users size={32} className="mx-auto text-slate-300 mb-2" />
+                <p className="text-sm text-slate-500">No team members yet</p>
                 <Link
-                  key={ethApp.id}
-                  to="/ethics/applications/$id"
-                  params={{ id: ethApp.id }}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                  to="/research-projects/$projectId/team"
+                  params={{ projectId: id }}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Shield size={16} className="text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">{ethApp.title}</div>
-                      <div className="text-xs text-slate-500">{ethApp.applicationCode}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      ethApp.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                      ethApp.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
-                      ethApp.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                      'bg-slate-100 text-slate-700'
-                    }`}>
-                      {ETHICS_APPLICATION_STATUS_LABELS[ethApp.status]}
-                    </span>
-                    <ChevronRight size={14} className="text-slate-400" />
-                  </div>
+                  + Add team members
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-slate-50 rounded-lg border border-slate-200">
-              <Shield size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">No ethics applications yet</p>
-              <button
-                onClick={() => setIsEthicsModalOpen(true)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 inline-block"
-              >
-                + Create ethics application
-              </button>
-            </div>
-          )}
-        </div>
-
-
-        <div className="p-6 border-t border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Linked Resources</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <Wrench className="text-blue-500" size={20} />
-              <div>
-                <div className="text-sm font-medium text-slate-900">Equipment Requests</div>
-                <div className="text-xs text-slate-500">{project.equipmentRequests?.length || 0} requests</div>
               </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <Wrench className="text-emerald-500" size={20} />
-              <div>
-                <div className="text-sm font-medium text-slate-900">Equipment Assignments</div>
-                <div className="text-xs text-slate-500">{project.equipmentAssignments?.length || 0} assignments</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <Microscope className="text-purple-500" size={20} />
-              <div>
-                <div className="text-sm font-medium text-slate-900">Innovations</div>
-                <div className="text-xs text-slate-500">{project.innovations?.length || 0} innovations</div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
-      </div>
       )}
 
       {activeTab === 'TEAM' && (
@@ -552,6 +380,11 @@ export default function ResearchProjectDetails() {
           </div>
         </div>
       )}
+
+      {/* Hidden printable component - positioned off-screen for react-to-print */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        <PrintableProjectReport ref={componentRef} project={project} teamSummary={teamSummary} />
+      </div>
     </div>
   );
 }
