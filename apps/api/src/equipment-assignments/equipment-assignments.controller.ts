@@ -83,7 +83,7 @@ export class EquipmentAssignmentsController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Create a new equipment assignment' })
   @ApiBody({ type: CreateEquipmentAssignmentDto })
   @ApiResponse({ status: 201, description: 'Equipment assignment created successfully' })
@@ -95,7 +95,7 @@ export class EquipmentAssignmentsController {
   }
 
   @Patch(':id/return')
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Return assigned equipment' })
   @ApiBody({ type: ReturnEquipmentAssignmentDto })
   @ApiResponse({ status: 200, description: 'Equipment returned successfully' })

@@ -94,7 +94,7 @@ export class EquipmentRequestsController {
   }
 
   @Patch(':id/review')
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Review (approve/reject) an equipment request' })
   @ApiBody({ type: ReviewEquipmentRequestDto })
   @ApiResponse({ status: 200, description: 'Request reviewed successfully' })

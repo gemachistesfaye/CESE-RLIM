@@ -108,7 +108,7 @@ export class EquipmentController {
   }
 
   @Patch(':id/status')
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Change equipment status' })
   @ApiResponse({ status: 200, description: 'Status updated successfully' })
   @ApiResponse({ status: 404, description: 'Equipment not found' })
