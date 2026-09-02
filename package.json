@@ -19,12 +19,10 @@
     "test": "npm run test --workspaces",
     "db:migrate": "npm run db:migrate --workspace=apps/api",
     "db:seed": "npm run db:seed --workspace=apps/api",
-    "db:reset": "npm run db:reset --workspace=apps/api",
-    "prepare": "husky install"
+    "db:reset": "npm run db:reset --workspace=apps/api"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "husky": "^9.0.11",
     "lint-staged": "^15.2.7",
     "prettier": "^3.3.3",
     "typescript": "^5.5.4"
