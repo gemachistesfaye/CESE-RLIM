@@ -146,7 +146,7 @@ export class GrantApplicationsController {
   }
 
   @Post()
-  @Roles(UserRole.RESEARCHER)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new grant application' })
   @ApiResponse({ status: 201, description: 'Grant application created successfully' })
@@ -166,7 +166,7 @@ export class GrantApplicationsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.RESEARCHER)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
   @ApiOperation({ summary: 'Update a grant application' })
   @ApiParam({ name: 'id', description: 'Grant application UUID' })
   @ApiResponse({ status: 200, description: 'Grant application updated successfully' })
@@ -187,7 +187,7 @@ export class GrantApplicationsController {
   }
 
   @Patch(':id/submit')
-  @Roles(UserRole.RESEARCHER)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
   @ApiOperation({ summary: 'Submit a grant application' })
   @ApiParam({ name: 'id', description: 'Grant application UUID' })
   @ApiResponse({ status: 200, description: 'Grant application submitted successfully' })
@@ -228,7 +228,7 @@ export class GrantApplicationsController {
   }
 
   @Patch(':id/withdraw')
-  @Roles(UserRole.RESEARCHER)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
   @ApiOperation({ summary: 'Withdraw a grant application' })
   @ApiParam({ name: 'id', description: 'Grant application UUID' })
   @ApiResponse({ status: 200, description: 'Grant application withdrawn successfully' })

@@ -322,13 +322,34 @@ export class GrantApplicationsService {
       throw new NotFoundException('Funding opportunity not found');
     }
 
-    const researcher = await this.prisma.researcher.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
+    let applicantId: string;
 
-    if (!researcher) {
-      throw new ForbiddenException('Researcher profile not found');
+    if (userRole === UserRole.RESEARCHER) {
+      const researcher = await this.prisma.researcher.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (!researcher) {
+        throw new ForbiddenException('Researcher profile not found');
+      }
+      applicantId = researcher.id;
+    } else {
+      const researcher = await this.prisma.researcher.findFirst({
+        select: { id: true },
+      });
+      if (!researcher) {
+        const firstUser = await this.prisma.user.findFirst({
+          where: { role: UserRole.RESEARCHER },
+          select: { id: true },
+        });
+        if (!firstUser) throw new ForbiddenException('No researcher found to assign application to');
+        const newResearcher = await this.prisma.researcher.create({
+          data: { userId: firstUser.id, department: 'General', employeeOrStudentId: 'ADMIN-' + Date.now() },
+        });
+        applicantId = newResearcher.id;
+      } else {
+        applicantId = researcher.id;
+      }
     }
 
     if (dto.researchProjectId) {
@@ -344,7 +365,7 @@ export class GrantApplicationsService {
       data: {
         opportunityId: dto.opportunityId,
         researchProjectId: dto.researchProjectId || null,
-        applicantId: researcher.id,
+        applicantId,
         title: dto.title.trim(),
         requestedAmount: dto.requestedAmount,
         proposalSummary: dto.proposalSummary.trim(),
