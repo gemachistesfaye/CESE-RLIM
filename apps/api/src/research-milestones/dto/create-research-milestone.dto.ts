@@ -38,8 +38,13 @@ export class CreateResearchMilestoneDto {
   @IsUUID()
   responsibleMemberId?: string;
 
-  @ApiPropertyOptional({ description: 'Notes' })
+  @ApiPropertyOptional({ description: 'Actual completion date' })
+  @IsOptional()
+  @IsDateString()
+  actualCompletionDate?: string;
+
+  @ApiPropertyOptional({ description: 'Deliverable link' })
   @IsOptional()
   @IsString()
-  notes?: string;
+  deliverableLink?: string;
 }

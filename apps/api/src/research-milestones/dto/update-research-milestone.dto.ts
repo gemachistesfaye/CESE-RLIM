@@ -38,8 +38,9 @@ export class UpdateResearchMilestoneDto {
   @IsUUID()
   responsibleMemberId?: string;
 
-  @ApiPropertyOptional({ description: 'Notes' })
+
+  @ApiPropertyOptional({ description: 'Deliverable link' })
   @IsOptional()
   @IsString()
-  notes?: string;
+  deliverableLink?: string;
 }
