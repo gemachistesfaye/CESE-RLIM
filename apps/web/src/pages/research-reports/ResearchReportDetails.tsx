@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
 import { useResearchReport, useUpdateResearchReport, useSubmitReport, useSubmitReportForReview, useDeleteResearchReport } from '../../hooks/useResearchReports';
 import { useResearchers } from '../../hooks/useResearchers';
@@ -8,6 +8,8 @@ import { ArrowLeft, Edit, Loader2, FileText, User, Send, CircleCheck } from 'luc
 import { useAuth } from '../../contexts/AuthContext';
 import { ResearchReportForm } from '../../components/research-reports/ResearchReportForm';
 import { ReportStatusWorkflow } from '../../components/research-reports/ReportStatusWorkflow';
+import { PrintableReport } from '../../components/print/PrintableReport';
+import { useReactToPrint } from 'react-to-print';
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: 'Draft', SUBMITTED: 'Submitted', UNDER_REVIEW: 'Under Review', APPROVED: 'Approved',
@@ -42,6 +44,16 @@ export default function ResearchReportDetails() {
   const submitForReview = useSubmitReportForReview();
   const deleteReport = useDeleteResearchReport();
   const { data: researchers } = useResearchers({ page: 1, limit: 100 });
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Research_Report_${report?.reportCode || 'Draft'}`,
+    pageStyle: `
+      @page { size: A4 portrait; margin: 0; }
+      @media print { html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    `,
+  });
 
   const handleUpdate = async (formData: any) => {
     await updateReport.mutateAsync({ id, payload: formData });
@@ -107,6 +119,9 @@ export default function ResearchReportDetails() {
             </div>
           </div>
           <div className="flex gap-2">
+            <button onClick={handlePrint} className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print PDF
+            </button>
             {canEdit && !isEditing && (
               <button onClick={() => setIsEditing(true)} className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
                 <Edit size={16} /> Edit

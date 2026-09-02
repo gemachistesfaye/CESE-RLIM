@@ -57,7 +57,7 @@ export default function EquipmentDetails() {
   const [statusDialog, setStatusDialog] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
 
-  const isAdmin = user?.role === "ADMIN" || user?.role === "COORDINATOR";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "COORDINATOR" || user?.role === "TECHNICIAN";
 
   const handleStatusChange = (newStatus: string) => {
     setSelectedStatus(newStatus);

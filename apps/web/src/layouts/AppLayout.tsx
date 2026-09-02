@@ -116,9 +116,9 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'RESOURCES',
     items: [
       { name: 'Laboratories', href: '/laboratories', icon: FlaskConical, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Equipment Management', href: '/equipment', icon: Wrench, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Equipment Requests', href: '/equipment-requests', icon: ClipboardList, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Equipment Assignments', href: '/equipment-assignments', icon: CheckCircle, roles: ['COORDINATOR', 'TECHNICIAN'] },
+      { name: 'Equipment', href: '/equipment', icon: Wrench, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
+      { name: 'Requests', href: '/equipment-requests', icon: ClipboardList, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
+      { name: 'Assignments', href: '/equipment-assignments', icon: CircleCheck, roles: ['COORDINATOR', 'TECHNICIAN'] },
       { name: 'Maintenance', href: '/maintenance', icon: AlertTriangle, roles: ['COORDINATOR', 'TECHNICIAN'] },
     ],
   },

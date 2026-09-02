@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useResearchProjects, useProjectSummary } from "../../hooks/useResearchProjects";
-import { Search, Plus, Loader2, FlaskConical } from "lucide-react";
+import { Search, Plus, Loader2, FlaskConical, CheckSquare, Target, FileText, ClipboardList, Shield } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
 import { useAuth } from "../../contexts/AuthContext";
@@ -61,6 +61,29 @@ export default function ResearchProjectsList() {
             New Project
           </button>
         )}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Link to="/project-activities" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <CheckSquare size={16} className="text-blue-500" />
+          Activities
+        </Link>
+        <Link to="/research-milestones" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <Target size={16} className="text-amber-500" />
+          Milestones
+        </Link>
+        <Link to="/research-documents" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <FileText size={16} className="text-emerald-500" />
+          Documents
+        </Link>
+        <Link to="/research-reports" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <ClipboardList size={16} className="text-violet-500" />
+          Reports
+        </Link>
+        <Link to="/ethics/applications" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors">
+          <Shield size={16} className="text-red-500" />
+          Ethics
+        </Link>
       </div>
 
       {summary && (

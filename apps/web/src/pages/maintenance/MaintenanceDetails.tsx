@@ -46,7 +46,7 @@ export default function MaintenanceDetails() {
   const [completeDialog, setCompleteDialog] = useState(false);
   const [completeData, setCompleteData] = useState({ actionTaken: "", cost: "", notes: "", conditionAfter: "GOOD" });
 
-  const canManage = user?.role === "ADMIN" || user?.role === "COORDINATOR";
+  const canManage = user?.role === "ADMIN" || user?.role === "COORDINATOR" || user?.role === "TECHNICIAN";
   const isTechnician = user?.role === "TECHNICIAN";
   const canUpdateStatus = canManage || (isTechnician && record?.assignedTechnicianId === user?.id);
 

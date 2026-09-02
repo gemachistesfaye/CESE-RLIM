@@ -53,7 +53,7 @@ export default function MaintenanceList() {
     setPage(1);
   }, [debouncedSearch, statusFilter, priorityFilter]);
 
-  const canCreate = user?.role === "ADMIN" || user?.role === "COORDINATOR";
+  const canCreate = user?.role === "ADMIN" || user?.role === "COORDINATOR" || user?.role === "TECHNICIAN";
 
   return (
     <div className="space-y-6">

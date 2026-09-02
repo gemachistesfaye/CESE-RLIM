@@ -23,7 +23,7 @@ export default function EquipmentAssignmentDetails() {
   const [returnCondition, setReturnCondition] = useState("GOOD");
   const [returnNotes, setReturnNotes] = useState("");
 
-  const canReturn = (user?.role === "ADMIN" || user?.role === "COORDINATOR") && !assignment?.returnedAt;
+  const canReturn = (user?.role === "ADMIN" || user?.role === "COORDINATOR" || user?.role === "TECHNICIAN") && !assignment?.returnedAt;
 
   const handleReturn = () => {
     returnEquipment.mutate(

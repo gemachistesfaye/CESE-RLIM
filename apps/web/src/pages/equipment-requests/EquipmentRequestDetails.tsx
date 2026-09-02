@@ -47,7 +47,7 @@ export default function EquipmentRequestDetails() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [assignNotes, setAssignNotes] = useState("");
 
-  const canReview = user?.role === "ADMIN" || user?.role === "COORDINATOR";
+  const canReview = user?.role === "ADMIN" || user?.role === "COORDINATOR" || user?.role === "TECHNICIAN";
   const canCancel = user?.role === "RESEARCHER" && request?.status === "SUBMITTED";
   const canAssign = canReview && request?.status === "APPROVED";
 
