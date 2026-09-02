@@ -9,7 +9,7 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import { DocumentType } from '@prisma/client';
+import { DocumentType, DocumentStatus } from '@prisma/client';
 
 export class CreateResearchDocumentDto {
   @ApiPropertyOptional({ description: 'Research project ID' })
@@ -58,4 +58,14 @@ export class CreateResearchDocumentDto {
   @IsOptional()
   @IsString()
   storageKey?: string;
+
+  @ApiPropertyOptional({ description: 'Document version', example: 1 })
+  @IsOptional()
+  @IsInt()
+  version?: number;
+
+  @ApiPropertyOptional({ enum: DocumentStatus, description: 'Document status' })
+  @IsOptional()
+  @IsEnum(DocumentStatus)
+  status?: DocumentStatus;
 }
