@@ -117,8 +117,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
     items: [
       { name: 'Laboratories', href: '/laboratories', icon: FlaskConical, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
       { name: 'Equipment', href: '/equipment', icon: Wrench, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Requests', href: '/equipment-requests', icon: ClipboardList, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
-      { name: 'Assignments', href: '/equipment-assignments', icon: CircleCheck, roles: ['COORDINATOR', 'TECHNICIAN'] },
+      { name: 'Equipment Operations', href: '/equipment-operations', icon: ClipboardList, roles: ['COORDINATOR', 'TECHNICIAN'] },
       { name: 'Maintenance', href: '/maintenance', icon: AlertTriangle, roles: ['COORDINATOR', 'TECHNICIAN'] },
     ],
   },
@@ -221,7 +220,7 @@ function Sidebar({ isMobileOpen, onCloseMobile, onSignOut }: SidebarProps) {
 
         <nav className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3">
           {visibleNav.flatMap((group) => group.items).map((item) => {
-            const isActive = location.pathname === item.href;
+            const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
             const label = user?.role === 'RESEARCHER'
               ? researcherNavigationLabels[item.name] || item.name
               : item.name;

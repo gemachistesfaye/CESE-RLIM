@@ -20,6 +20,7 @@ import EquipmentRequestsList from './pages/equipment-requests/EquipmentRequestsL
 import EquipmentRequestDetails from './pages/equipment-requests/EquipmentRequestDetails';
 import EquipmentAssignmentsList from './pages/equipment-assignments/EquipmentAssignmentsList';
 import EquipmentAssignmentDetails from './pages/equipment-assignments/EquipmentAssignmentDetails';
+import EquipmentOperations from './pages/equipment/EquipmentOperations';
 import MaintenanceList from './pages/maintenance/MaintenanceList';
 import MaintenanceDetails from './pages/maintenance/MaintenanceDetails';
 import MyMaintenance from './pages/maintenance/MyMaintenance';
@@ -181,6 +182,12 @@ const equipmentRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/equipment',
   component: EquipmentList,
+});
+
+const equipmentOperationsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/equipment-operations',
+  component: EquipmentOperations,
 });
 
 const equipmentDetailsRoute = createRoute({
@@ -503,6 +510,7 @@ const routeTree = rootRoute.addChildren([
     laboratoriesRoute,
     laboratoryDetailsRoute,
     equipmentRoute,
+    equipmentOperationsRoute,
     equipmentDetailsRoute,
     equipmentRequestsRoute,
     equipmentRequestDetailsRoute,

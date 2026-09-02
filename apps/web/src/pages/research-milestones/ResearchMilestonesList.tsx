@@ -67,7 +67,7 @@ export default function ResearchMilestonesList({ projectId }: { projectId?: stri
         )}
       </div>
 
-      {summary && (
+      {!projectId && summary && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
             { label: 'Total', value: summary.total, color: 'text-slate-900' },

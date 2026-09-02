@@ -110,7 +110,7 @@ export default function ResearchDocumentsList({ projectId }: { projectId?: strin
         )}
       </div>
 
-      {summary && (
+      {!projectId && summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="text-2xl font-bold text-slate-900">{summary.total}</div>

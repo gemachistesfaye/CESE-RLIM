@@ -23,6 +23,8 @@ import {
   BookOpen,
   Award,
   Shield,
+  ClipboardList,
+  Target,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import ResearchProjectForm from "../../components/research-projects/ResearchProjectForm";
@@ -127,17 +129,25 @@ export default function ResearchProjectDetails() {
       </div>
 
       <div className="flex overflow-x-auto border-b border-slate-200 bg-white shadow-sm rounded-lg">
-        {['OVERVIEW', 'TEAM', 'ACTIVITIES', 'MILESTONES', 'REPORTS', 'DOCUMENTS'].map((tab) => (
+        {[
+          { id: 'OVERVIEW', label: 'Overview', icon: FlaskConical },
+          { id: 'TEAM', label: 'Team', icon: Users },
+          { id: 'ACTIVITIES', label: 'Activities', icon: ClipboardList },
+          { id: 'MILESTONES', label: 'Milestones', icon: Target },
+          { id: 'REPORTS', label: 'Reports', icon: FileText },
+          { id: 'DOCUMENTS', label: 'Documents', icon: BookOpen },
+        ].map((tab) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === tab
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === tab.id
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`}
           >
-            {tab}
+            <tab.icon size={16} />
+            {tab.label}
           </button>
         ))}
       </div>

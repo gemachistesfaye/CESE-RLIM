@@ -69,7 +69,7 @@ export default function ResearchReportsList({ projectId }: { projectId?: string 
         </button>
       </div>
 
-      {summary && (
+      {!projectId && summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total', value: summary.total, color: 'text-slate-900' },
