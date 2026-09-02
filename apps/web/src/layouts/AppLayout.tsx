@@ -9,14 +9,12 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  ClipboardList,
   BookOpen,
   Target,
-  Award,
   Shield,
   Calendar,
   DollarSign,
-  CheckCircle,
+  CircleCheck,
   AlertTriangle,
   Clock,
   Info,
@@ -24,6 +22,7 @@ import {
   Menu,
   X,
   User as UserIcon,
+  ClipboardList,
 } from 'lucide-react';
 import { Link, useLocation, Outlet, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +34,7 @@ import {
 import { useState, useRef, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import HeaderSearch from '../components/global-search/HeaderSearch';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 interface NavItem {
   name: string;
@@ -56,37 +56,31 @@ const navigation: { section: string; items: NavItem[] }[] = [
         name: 'Researchers',
         href: '/researchers',
         icon: Users,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR'],
       },
       {
-        name: 'Projects',
+        name: 'Projects & Ethics',
         href: '/research-projects',
         icon: FlaskConical,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR', 'RESEARCHER'],
       },
       {
         name: 'Publications',
         href: '/research-publications',
         icon: BookOpen,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR', 'RESEARCHER'],
       },
       {
         name: 'Innovations',
         href: '/innovations',
         icon: Microscope,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR', 'RESEARCHER'],
       },
       {
         name: 'Events',
         href: '/research-events',
         icon: Calendar,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
-      },
-      {
-        name: 'Ethics & Approvals',
-        href: '/ethics/applications',
-        icon: Shield,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR', 'RESEARCHER'],
       },
     ],
   },
@@ -94,95 +88,82 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'FUNDING',
     items: [
       {
-        name: 'Opportunities',
+        name: 'Grants & Funding',
         href: '/funding-opportunities',
         icon: Target,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
-      },
-      {
-        name: 'Applications',
-        href: '/grant-applications',
-        icon: ClipboardList,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
-      },
-      {
-        name: 'Grants',
-        href: '/research-grants',
-        icon: Award,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR', 'RESEARCHER'],
       },
     ],
   },
   {
     section: 'FINANCE',
     items: [
-      { name: 'Dashboard', href: '/finance', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
       {
-        name: 'Expenses',
-        href: '/research-expenses',
+        name: 'Expenses & Budgets',
+        href: '/finance',
         icon: DollarSign,
-        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+        roles: ['COORDINATOR'],
       },
       {
-        name: 'Budgets',
-        href: '/budget-management',
+        name: 'All Expenses',
+        href: '/research-expenses',
         icon: DollarSign,
-        roles: ['ADMIN', 'COORDINATOR'],
+        roles: ['COORDINATOR', 'RESEARCHER'],
       },
     ],
   },
   {
     section: 'RESOURCES',
     items: [
-      { name: 'Laboratories', href: '/laboratories', icon: FlaskConical },
-      { name: 'Equipment', href: '/equipment', icon: Wrench },
-      { name: 'Requests', href: '/equipment-requests', icon: ClipboardList },
-      {
-        name: 'Assignments',
-        href: '/equipment-assignments',
-        icon: CheckCircle,
-        roles: ['ADMIN', 'COORDINATOR', 'TECHNICIAN'],
-      },
-      {
-        name: 'Maintenance',
-        href: '/maintenance',
-        icon: AlertTriangle,
-        roles: ['ADMIN', 'COORDINATOR', 'TECHNICIAN'],
-      },
+      { name: 'Laboratories', href: '/laboratories', icon: FlaskConical, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
+      { name: 'Equipment Management', href: '/equipment', icon: Wrench, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
+      { name: 'Equipment Requests', href: '/equipment-requests', icon: ClipboardList, roles: ['COORDINATOR', 'RESEARCHER', 'TECHNICIAN'] },
+      { name: 'Equipment Assignments', href: '/equipment-assignments', icon: CheckCircle, roles: ['COORDINATOR', 'TECHNICIAN'] },
+      { name: 'Maintenance', href: '/maintenance', icon: AlertTriangle, roles: ['COORDINATOR', 'TECHNICIAN'] },
     ],
   },
   {
     section: 'ADMINISTRATION',
     items: [
-      { name: 'Users', href: '/users', icon: Users, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Users', href: '/users', icon: Users, roles: ['ADMIN'] },
+      { name: 'Roles & Permissions', href: '/administration/permissions', icon: Shield, roles: ['ADMIN'] },
       { name: 'Settings', href: '/administration/settings', icon: Settings, roles: ['ADMIN'] },
       { name: 'Security', href: '/administration/security', icon: Shield, roles: ['ADMIN'] },
-      { name: 'Audit Logs', href: '/audit-logs', icon: Activity, roles: ['ADMIN', 'COORDINATOR'] },
+      { name: 'Audit Logs', href: '/audit-logs', icon: Activity, roles: ['ADMIN'] },
       {
         name: 'System Info',
         href: '/administration/system',
         icon: Info,
-        roles: ['ADMIN', 'COORDINATOR'],
+        roles: ['ADMIN'],
       },
     ],
   },
+  {
+    section: 'MY ACCOUNT',
+    items: [{ name: 'My Profile', href: '/profile', icon: UserIcon, roles: ['RESEARCHER'] }],
+  },
 ];
+
+const researcherNavigationLabels: Record<string, string> = {
+  'Projects & Ethics': 'My Projects & Ethics',
+  Publications: 'My Publications',
+  Innovations: 'My Innovations',
+  Events: 'My Events',
+  'Grants & Funding': 'Funding Opportunities',
+  'Expenses & Budgets': 'My Expenses & Budgets',
+  Laboratories: 'Laboratory Directory',
+  'Equipment Management': 'Equipment Management',
+};
 
 interface SidebarProps {
   isMobileOpen: boolean;
   onCloseMobile: () => void;
+  onSignOut: () => void;
 }
 
-function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
+function Sidebar({ isMobileOpen, onCloseMobile, onSignOut }: SidebarProps) {
   const location = useLocation();
-  const { logout, user } = useAuth();
-
-  const currentSection = navigation.find(
-    (group) =>
-      group.section !== 'OVERVIEW' && group.items.some((item) => item.href === location.pathname),
-  )?.section;
-
-  const [openSection, setOpenSection] = useState<string | null>(currentSection || null);
+  const { user } = useAuth();
 
   const visibleNav = navigation
     .map((group) => ({
@@ -197,15 +178,8 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
     }))
     .filter((group) => group.items.length > 0);
 
-  // When path changes, auto-open the section and close mobile drawer
+  // Close the mobile drawer when navigation changes.
   useEffect(() => {
-    const newSection = navigation.find(
-      (group) =>
-        group.section !== 'OVERVIEW' && group.items.some((item) => item.href === location.pathname),
-    )?.section;
-    if (newSection && newSection !== openSection) {
-      setOpenSection(newSection);
-    }
     onCloseMobile();
   }, [location.pathname]);
 
@@ -221,7 +195,7 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
       )}
 
       <aside
-        className={`w-64 bg-slate-900 text-white flex flex-col min-h-screen fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out shadow-xl lg:shadow-none ${
+        className={`fixed left-0 top-0 z-50 flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl transition-transform duration-300 ease-in-out lg:shadow-none ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -245,77 +219,33 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
-          {visibleNav.map((group) => {
-            if (group.section === 'OVERVIEW') {
-              return (
-                <div key={group.section} className="mb-3">
-                  {group.items.map((item) => {
-                    const isActive = location.pathname === item.href;
-                    return (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          isActive
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                        }`}
-                      >
-                        <item.icon size={18} />
-                        <span>{item.name}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            }
+        <nav className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3">
+          {visibleNav.flatMap((group) => group.items).map((item) => {
+            const isActive = location.pathname === item.href;
+            const label = user?.role === 'RESEARCHER'
+              ? researcherNavigationLabels[item.name] || item.name
+              : item.name;
 
-            const isOpen = openSection === group.section;
             return (
-              <div key={group.section} className="mb-1">
-                <button
-                  onClick={() => setOpenSection(isOpen ? null : group.section)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:text-white transition-colors rounded-lg hover:bg-slate-800/50"
-                >
-                  <span>{group.section}</span>
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-400' : ''}`}
-                  />
-                </button>
-
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}
-                >
-                  <div className="space-y-0.5 pl-1">
-                    {group.items.map((item) => {
-                      const isActive = location.pathname === item.href;
-                      return (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                            isActive
-                              ? 'bg-blue-600/25 text-blue-400 font-medium'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                          }`}
-                        >
-                          <item.icon size={17} />
-                          <span>{item.name}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                }`}
+              >
+                <item.icon size={18} />
+                <span>{label}</span>
+              </Link>
             );
           })}
         </nav>
 
         <div className="p-3 border-t border-slate-800 bg-slate-900/60">
           <button
-            onClick={logout}
+            onClick={onSignOut}
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
           >
             <LogOut size={18} />
@@ -330,11 +260,11 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
 const NOTIFICATION_TYPE_STYLES: Record<string, { icon: typeof Bell; color: string }> = {
   INFO: { icon: Info, color: 'text-blue-500' },
   WARNING: { icon: AlertTriangle, color: 'text-amber-500' },
-  SUCCESS: { icon: CheckCircle, color: 'text-emerald-500' },
+  SUCCESS: { icon: CircleCheck, color: 'text-emerald-500' },
   ERROR: { icon: AlertTriangle, color: 'text-red-500' },
   ACTION_REQUIRED: { icon: AlertTriangle, color: 'text-red-500' },
   ASSIGNMENT: { icon: Users, color: 'text-violet-500' },
-  STATUS_CHANGE: { icon: CheckCircle, color: 'text-blue-500' },
+  STATUS_CHANGE: { icon: CircleCheck, color: 'text-blue-500' },
   DEADLINE: { icon: Clock, color: 'text-amber-500' },
   REQUEST: { icon: FileText, color: 'text-blue-500' },
   MAINTENANCE: { icon: Wrench, color: 'text-orange-500' },
@@ -356,10 +286,11 @@ function getRelativeTime(dateStr: string): string {
 
 interface TopbarProps {
   onOpenMobile: () => void;
+  onSignOut: () => void;
 }
 
-function Topbar({ onOpenMobile }: TopbarProps) {
-  const { user, logout } = useAuth();
+function Topbar({ onOpenMobile, onSignOut }: TopbarProps) {
+  const { user } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -590,7 +521,7 @@ function Topbar({ onOpenMobile }: TopbarProps) {
                 <button
                   onClick={() => {
                     setShowUserMenu(false);
-                    logout();
+                    onSignOut();
                   }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
@@ -608,14 +539,39 @@ function Topbar({ onOpenMobile }: TopbarProps) {
 
 export default function AppLayout({ children }: { children?: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSignOutDialogOpen, setIsSignOutDialogOpen] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    setIsSignOutDialogOpen(false);
+    logout();
+    navigate({ to: '/login' });
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Sidebar isMobileOpen={isMobileOpen} onCloseMobile={() => setIsMobileOpen(false)} />
+      <Sidebar
+        isMobileOpen={isMobileOpen}
+        onCloseMobile={() => setIsMobileOpen(false)}
+        onSignOut={() => setIsSignOutDialogOpen(true)}
+      />
       <div className="lg:ml-64 ml-0 flex-1 flex flex-col">
-        <Topbar onOpenMobile={() => setIsMobileOpen(true)} />
-        <main className="flex-1 px-4 sm:px-6 pb-6 pt-20 sm:pt-24">{children || <Outlet />}</main>
+        <Topbar
+          onOpenMobile={() => setIsMobileOpen(true)}
+          onSignOut={() => setIsSignOutDialogOpen(true)}
+        />
+        <main className="flex-1 px-4 py-6 sm:px-6">{children || <Outlet />}</main>
       </div>
+      <ConfirmDialog
+        open={isSignOutDialogOpen}
+        title="Sign out?"
+        message="You will need to sign in again to access CESE-RLIM."
+        confirmLabel="Sign out"
+        cancelLabel="Stay signed in"
+        onConfirm={handleSignOut}
+        onCancel={() => setIsSignOutDialogOpen(false)}
+      />
     </div>
   );
 }

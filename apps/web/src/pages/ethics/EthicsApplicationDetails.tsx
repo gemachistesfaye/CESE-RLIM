@@ -5,7 +5,7 @@ import { useResearchers } from "../../hooks/useResearchers";
 import { useResearchProjects } from "../../hooks/useResearchProjects";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { ArrowLeft, Edit, Loader2, Send, X, CheckCircle, XCircle, RefreshCw, Shield, UserPlus, Clock, Check } from "lucide-react";
+import { ArrowLeft, Edit, Loader2, Send, X, CircleCheck, XCircle, RefreshCw, Shield, UserPlus, Clock, Check } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import EthicsApplicationForm from "../../components/ethics/EthicsApplicationForm";
 import { PrintableEthicsReport } from "../../components/print/PrintableEthicsReport";
@@ -139,7 +139,7 @@ export default function EthicsApplicationDetails() {
             {canManage && ['SUBMITTED', 'UNDER_REVIEW', 'RESUBMITTED'].includes(app.status) && (
               <>
                 <button onClick={() => setAssignDialog(true)} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"><UserPlus size={14} /> Assign Reviewer</button>
-                <button onClick={() => setReviewDialog('APPROVE')} className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100"><CheckCircle size={14} /> Approve</button>
+                <button onClick={() => setReviewDialog('APPROVE')} className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100"><CircleCheck size={14} /> Approve</button>
                 <button onClick={() => setReviewDialog('REQUEST_REVISION')} className="flex items-center gap-2 bg-amber-50 text-amber-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-amber-100"><RefreshCw size={14} /> Revision</button>
                 <button onClick={() => setReviewDialog('REJECT')} className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-100"><XCircle size={14} /> Reject</button>
               </>

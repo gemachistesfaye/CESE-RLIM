@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { FlaskConical, Users, Wrench, Shield, Clock, ArrowRight, BookOpen, Target } from 'lucide-react';
+import { FlaskConical, Users, Shield, ArrowRight, BookOpen, Target } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardOverview } from '../../hooks/useDashboard';
 import { Skeleton, SkeletonCard } from '../ui/Skeleton';
@@ -20,25 +20,25 @@ export default function CoordinatorDashboard() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-800 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-950 via-indigo-950 to-violet-950 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold tracking-wide uppercase mb-3">
             <Target size={13} />
             <span>Research Coordination</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Welcome, {user?.firstName} {user?.lastName}</h1>
-          <p className="text-sm text-indigo-100 max-w-xl mt-1">Oversee research projects, manage teams, coordinate ethics reviews, and track funding opportunities.</p>
+          <p className="text-sm text-slate-300 max-w-xl mt-1">Oversee research projects, manage teams, coordinate ethics reviews, and track funding opportunities.</p>
           <div className="flex items-center gap-2.5 mt-5 flex-wrap">
             <Link to="/research-projects" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white text-indigo-700 text-xs font-semibold hover:bg-indigo-50 transition-colors shadow-xs">
               <FlaskConical size={14} /><span>Projects</span>
             </Link>
-            <Link to="/researchers" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/60 hover:bg-indigo-600 text-white text-xs font-semibold transition-colors border border-white/20">
+            <Link to="/researchers" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/20">
               <Users size={14} /><span>Researchers</span>
             </Link>
-            <Link to="/ethics/applications" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/60 hover:bg-indigo-600 text-white text-xs font-semibold transition-colors border border-white/20">
+            <Link to="/ethics/applications" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/20">
               <Shield size={14} /><span>Ethics Reviews</span>
             </Link>
-            <Link to="/funding-opportunities" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/60 hover:bg-indigo-600 text-white text-xs font-semibold transition-colors border border-white/20">
+            <Link to="/funding-opportunities" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors border border-white/20">
               <Target size={14} /><span>Funding</span>
             </Link>
           </div>
@@ -61,7 +61,7 @@ export default function CoordinatorDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Researchers</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{data.users?.researchers || 0}</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{data.users?.byRole?.RESEARCHER || 0}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100"><Users size={20} /></div>
           </div>
@@ -71,7 +71,7 @@ export default function CoordinatorDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Ethics Pending</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{data.attentionRequired?.pendingEthics || 0}</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{data.attentionRequired?.pendingEthicsReviews || 0}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100"><Shield size={20} /></div>
           </div>
@@ -139,10 +139,10 @@ export default function CoordinatorDashboard() {
               <p className="text-xs text-slate-500">Items needing coordination</p>
             </div>
             <div className="p-4 space-y-3">
-              {data.attentionRequired?.pendingEthics > 0 && (
+              {data.attentionRequired?.pendingEthicsReviews > 0 && (
                 <Link to="/ethics/applications" className="flex items-center justify-between p-2.5 rounded-lg bg-red-50 border border-red-100 text-xs">
                   <span className="font-medium text-red-700">Pending Ethics Reviews</span>
-                  <span className="font-bold text-red-800">{data.attentionRequired.pendingEthics}</span>
+                  <span className="font-bold text-red-800">{data.attentionRequired.pendingEthicsReviews}</span>
                 </Link>
               )}
               {data.attentionRequired?.overdueMilestones > 0 && (
@@ -151,7 +151,7 @@ export default function CoordinatorDashboard() {
                   <span className="font-bold text-amber-800">{data.attentionRequired.overdueMilestones}</span>
                 </Link>
               )}
-              {(!data.attentionRequired?.pendingEthics && !data.attentionRequired?.overdueMilestones) && (
+              {(!data.attentionRequired?.pendingEthicsReviews && !data.attentionRequired?.overdueMilestones) && (
                 <div className="text-center py-4 text-slate-400 text-xs">All caught up!</div>
               )}
             </div>

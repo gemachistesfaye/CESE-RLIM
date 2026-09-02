@@ -5,7 +5,7 @@ import { useResearchExpense, useSubmitExpense, useReviewExpense, BUDGET_CATEGORY
 import { useAuth } from '../../contexts/AuthContext';
 import ResearchExpenseForm from '../../components/research-finance/ResearchExpenseForm';
 import { PrintableExpenseReport } from '../../components/print/PrintableExpenseReport';
-import { ArrowLeft, Loader2, Edit, Send, CheckCircle, XCircle, DollarSign, Printer } from 'lucide-react';
+import { ArrowLeft, Loader2, Edit, Send, CircleCheck, XCircle, DollarSign, Printer } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 
 const statusStyles: Record<string, string> = {
@@ -95,7 +95,7 @@ export default function ResearchExpenseDetails() {
             {canManage && (expense.status === 'SUBMITTED' || expense.status === 'UNDER_REVIEW') && (
               <>
                 <button onClick={() => reviewExpense.mutate({ id, status: 'APPROVED' })} disabled={reviewExpense.isPending} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-50">
-                  <CheckCircle size={16} /> Approve
+                  <CircleCheck size={16} /> Approve
                 </button>
                 <button onClick={() => { if (rejectReason) reviewExpense.mutate({ id, status: 'REJECTED', rejectionReason: rejectReason }); }} disabled={reviewExpense.isPending || !rejectReason} className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50">
                   <XCircle size={16} /> Reject

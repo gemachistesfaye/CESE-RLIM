@@ -1,4 +1,4 @@
-import { RefreshCw, Loader2, CheckCircle, AlertTriangle, Clock, Server, Database, Globe } from 'lucide-react';
+import { RefreshCw, Loader2, CircleCheck, AlertTriangle, Clock, Server, Database, Globe } from 'lucide-react';
 import { useSystemInfo, useSystemHealth } from '../../hooks/useAdministration';
 
 export default function SystemInformation() {
@@ -25,7 +25,7 @@ export default function SystemInformation() {
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${health?.status === 'healthy' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-              {health?.status === 'healthy' ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
+              {health?.status === 'healthy' ? <CircleCheck size={20} /> : <AlertTriangle size={20} />}
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-900">
@@ -148,7 +148,7 @@ export default function SystemInformation() {
                   <span className={`inline-flex items-center gap-1 text-sm font-medium ${
                     health.status === 'healthy' ? 'text-emerald-600' : 'text-amber-600'
                   }`}>
-                    {health.status === 'healthy' ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
+                    {health.status === 'healthy' ? <CircleCheck size={14} /> : <AlertTriangle size={14} />}
                     {health.status}
                   </span>
                 </div>

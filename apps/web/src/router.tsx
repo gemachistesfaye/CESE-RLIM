@@ -4,68 +4,69 @@ import {
   createRouter,
   redirect,
   Outlet,
-} from "@tanstack/react-router";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import AppLayout from "./layouts/AppLayout";
-import UsersList from "./pages/users/UsersList";
-import UserDetails from "./pages/users/UserDetails";
-import ResearchersList from "./pages/researchers/ResearchersList";
-import ResearcherProfile from "./pages/researchers/ResearcherProfile";
-import LaboratoriesList from "./pages/laboratories/LaboratoriesList";
-import LaboratoryDetails from "./pages/laboratories/LaboratoryDetails";
-import EquipmentList from "./pages/equipment/EquipmentList";
-import EquipmentDetails from "./pages/equipment/EquipmentDetails";
-import EquipmentRequestsList from "./pages/equipment-requests/EquipmentRequestsList";
-import EquipmentRequestDetails from "./pages/equipment-requests/EquipmentRequestDetails";
-import EquipmentAssignmentsList from "./pages/equipment-assignments/EquipmentAssignmentsList";
-import EquipmentAssignmentDetails from "./pages/equipment-assignments/EquipmentAssignmentDetails";
-import MaintenanceList from "./pages/maintenance/MaintenanceList";
-import MaintenanceDetails from "./pages/maintenance/MaintenanceDetails";
-import MyMaintenance from "./pages/maintenance/MyMaintenance";
-import ResearchProjectsList from "./pages/research-projects/ResearchProjectsList";
-import ResearchProjectDetails from "./pages/research-projects/ResearchProjectDetails";
-import ProjectTeamPage from "./pages/research-projects/ProjectTeamPage";
-import InnovationsList from "./pages/innovations/InnovationsList";
-import InnovationDetails from "./pages/innovations/InnovationDetails";
-import ProjectActivitiesList from "./pages/project-activities/ProjectActivitiesList";
-import ProjectActivityDetails from "./pages/project-activities/ProjectActivityDetails";
-import ResearchDocumentsList from "./pages/research-documents/ResearchDocumentsList";
-import ResearchDocumentDetails from "./pages/research-documents/ResearchDocumentDetails";
-import ResearchPublicationsList from "./pages/research-publications/ResearchPublicationsList";
-import ResearchPublicationDetails from "./pages/research-publications/ResearchPublicationDetails";
-import FundingOpportunitiesList from "./pages/funding-opportunities/FundingOpportunitiesList";
-import FundingOpportunityDetails from "./pages/funding-opportunities/FundingOpportunityDetails";
-import GrantApplicationsList from "./pages/grant-applications/GrantApplicationsList";
-import GrantApplicationDetails from "./pages/grant-applications/GrantApplicationDetails";
-import ResearchGrantsList from "./pages/research-grants/ResearchGrantsList";
-import ResearchGrantDetails from "./pages/research-grants/ResearchGrantDetails";
-import EthicsApplicationsList from "./pages/ethics/EthicsApplicationsList";
-import EthicsApplicationDetails from "./pages/ethics/EthicsApplicationDetails";
-import ResearchEventsList from "./pages/research-events/ResearchEventsList";
-import ResearchEventDetails from "./pages/research-events/ResearchEventDetails";
-import MyEvents from "./pages/research-events/MyEvents";
-import ResearchFinanceDashboard from "./pages/research-finance/ResearchFinanceDashboard";
-import ResearchExpensesList from "./pages/research-finance/ResearchExpensesList";
-import ResearchExpenseDetails from "./pages/research-finance/ResearchExpenseDetails";
-import BudgetManagement from "./pages/research-finance/BudgetManagement";
-import ResearchMilestonesList from "./pages/research-milestones/ResearchMilestonesList";
-import ResearchMilestoneDetails from "./pages/research-milestones/ResearchMilestoneDetails";
-import MyMilestones from "./pages/research-milestones/MyMilestones";
-import ResearchReportsList from "./pages/research-reports/ResearchReportsList";
-import ResearchReportDetails from "./pages/research-reports/ResearchReportDetails";
-import MyReports from "./pages/research-reports/MyReports";
-import NotificationsList from "./pages/notifications/NotificationsList";
-import GlobalSearchPage from "./pages/search/GlobalSearchPage";
-import AuditLogsList from "./pages/audit-logs/AuditLogsList";
-import AuditLogDetails from "./pages/audit-logs/AuditLogDetails";
-import AdministrationDashboard from "./pages/administration/AdministrationDashboard";
-import SystemSettings from "./pages/administration/SystemSettings";
-import RolePermissions from "./pages/administration/RolePermissions";
-import SystemInformation from "./pages/administration/SystemInformation";
-import SecurityDashboard from "./pages/user-management/SecurityDashboard";
-import NotFoundPage from "./pages/NotFoundPage";
-import GlobalErrorPage from "./pages/GlobalErrorPage";
+} from '@tanstack/react-router';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import AppLayout from './layouts/AppLayout';
+import UsersList from './pages/users/UsersList';
+import UserDetails from './pages/users/UserDetails';
+import ResearchersList from './pages/researchers/ResearchersList';
+import ResearcherProfile from './pages/researchers/ResearcherProfile';
+import LaboratoriesList from './pages/laboratories/LaboratoriesList';
+import LaboratoryDetails from './pages/laboratories/LaboratoryDetails';
+import EquipmentList from './pages/equipment/EquipmentList';
+import EquipmentDetails from './pages/equipment/EquipmentDetails';
+import EquipmentRequestsList from './pages/equipment-requests/EquipmentRequestsList';
+import EquipmentRequestDetails from './pages/equipment-requests/EquipmentRequestDetails';
+import EquipmentAssignmentsList from './pages/equipment-assignments/EquipmentAssignmentsList';
+import EquipmentAssignmentDetails from './pages/equipment-assignments/EquipmentAssignmentDetails';
+import MaintenanceList from './pages/maintenance/MaintenanceList';
+import MaintenanceDetails from './pages/maintenance/MaintenanceDetails';
+import MyMaintenance from './pages/maintenance/MyMaintenance';
+import ResearchProjectsList from './pages/research-projects/ResearchProjectsList';
+import ResearchProjectDetails from './pages/research-projects/ResearchProjectDetails';
+import ProjectTeamPage from './pages/research-projects/ProjectTeamPage';
+import InnovationsList from './pages/innovations/InnovationsList';
+import InnovationDetails from './pages/innovations/InnovationDetails';
+import ProjectActivitiesList from './pages/project-activities/ProjectActivitiesList';
+import ProjectActivityDetails from './pages/project-activities/ProjectActivityDetails';
+import ResearchDocumentsList from './pages/research-documents/ResearchDocumentsList';
+import ResearchDocumentDetails from './pages/research-documents/ResearchDocumentDetails';
+import ResearchPublicationsList from './pages/research-publications/ResearchPublicationsList';
+import ResearchPublicationDetails from './pages/research-publications/ResearchPublicationDetails';
+import FundingOpportunitiesList from './pages/funding-opportunities/FundingOpportunitiesList';
+import FundingOpportunityDetails from './pages/funding-opportunities/FundingOpportunityDetails';
+import GrantApplicationsList from './pages/grant-applications/GrantApplicationsList';
+import GrantApplicationDetails from './pages/grant-applications/GrantApplicationDetails';
+import ResearchGrantsList from './pages/research-grants/ResearchGrantsList';
+import ResearchGrantDetails from './pages/research-grants/ResearchGrantDetails';
+import EthicsApplicationsList from './pages/ethics/EthicsApplicationsList';
+import EthicsApplicationDetails from './pages/ethics/EthicsApplicationDetails';
+import ResearchEventsList from './pages/research-events/ResearchEventsList';
+import ResearchEventDetails from './pages/research-events/ResearchEventDetails';
+import MyEvents from './pages/research-events/MyEvents';
+import ResearchFinanceDashboard from './pages/research-finance/ResearchFinanceDashboard';
+import ResearchExpensesList from './pages/research-finance/ResearchExpensesList';
+import ResearchExpenseDetails from './pages/research-finance/ResearchExpenseDetails';
+import BudgetManagement from './pages/research-finance/BudgetManagement';
+import ResearchMilestonesList from './pages/research-milestones/ResearchMilestonesList';
+import ResearchMilestoneDetails from './pages/research-milestones/ResearchMilestoneDetails';
+import MyMilestones from './pages/research-milestones/MyMilestones';
+import ResearchReportsList from './pages/research-reports/ResearchReportsList';
+import ResearchReportDetails from './pages/research-reports/ResearchReportDetails';
+import MyReports from './pages/research-reports/MyReports';
+import NotificationsList from './pages/notifications/NotificationsList';
+import GlobalSearchPage from './pages/search/GlobalSearchPage';
+import AuditLogsList from './pages/audit-logs/AuditLogsList';
+import AuditLogDetails from './pages/audit-logs/AuditLogDetails';
+import AdministrationDashboard from './pages/administration/AdministrationDashboard';
+import SystemSettings from './pages/administration/SystemSettings';
+import RolePermissions from './pages/administration/RolePermissions';
+import SystemInformation from './pages/administration/SystemInformation';
+import SecurityDashboard from './pages/user-management/SecurityDashboard';
+import NotFoundPage from './pages/NotFoundPage';
+import GlobalErrorPage from './pages/GlobalErrorPage';
+import ProfilePage from './pages/profile/ProfilePage';
 
 function RootComponent() {
   return <Outlet />;
@@ -78,22 +79,22 @@ const rootRoute = createRootRoute({
 });
 
 function requireAuth() {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
   if (!token) {
-    throw redirect({ to: "/login" });
+    throw redirect({ to: '/login' });
   }
 }
 
 function requireGuest() {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
   if (token) {
-    throw redirect({ to: "/" });
+    throw redirect({ to: '/' });
   }
 }
 
 function getUserRole(): string | null {
   try {
-    const stored = localStorage.getItem("user");
+    const stored = localStorage.getItem('user');
     if (stored) {
       const user = JSON.parse(stored);
       return user.role || null;
@@ -105,384 +106,390 @@ function getUserRole(): string | null {
 function requireAdmin() {
   requireAuth();
   const role = getUserRole();
-  if (role !== "ADMIN") {
-    throw redirect({ to: "/" });
+  if (role !== 'ADMIN') {
+    throw redirect({ to: '/' });
   }
 }
 
 function requireAdminOrCoordinator() {
   requireAuth();
   const role = getUserRole();
-  if (role !== "ADMIN" && role !== "COORDINATOR") {
-    throw redirect({ to: "/" });
+  if (role !== 'ADMIN' && role !== 'COORDINATOR') {
+    throw redirect({ to: '/' });
   }
 }
 
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/login",
+  path: '/login',
   beforeLoad: requireGuest,
   component: Login,
 });
 
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: "app",
+  id: 'app',
   beforeLoad: requireAuth,
   component: AppLayout,
 });
 
 const dashboardRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/",
+  path: '/',
   component: Dashboard,
 });
 
 const usersRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/users",
+  path: '/users',
   beforeLoad: requireAdminOrCoordinator,
   component: UsersList,
 });
 
 const userDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/users/$id",
+  path: '/users/$id',
   beforeLoad: requireAdminOrCoordinator,
   component: UserDetails,
 });
 
 const researchersRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/researchers",
+  path: '/researchers',
   component: ResearchersList,
 });
 
 const researcherProfileRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/researchers/$id",
+  path: '/researchers/$id',
   component: ResearcherProfile,
 });
 
 const laboratoriesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/laboratories",
+  path: '/laboratories',
   component: LaboratoriesList,
 });
 
 const laboratoryDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/laboratories/$id",
+  path: '/laboratories/$id',
   component: LaboratoryDetails,
 });
 
 const equipmentRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/equipment",
+  path: '/equipment',
   component: EquipmentList,
 });
 
 const equipmentDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/equipment/$id",
+  path: '/equipment/$id',
   component: EquipmentDetails,
 });
 
 const equipmentRequestsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/equipment-requests",
+  path: '/equipment-requests',
   component: EquipmentRequestsList,
 });
 
 const equipmentRequestDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/equipment-requests/$id",
+  path: '/equipment-requests/$id',
   component: EquipmentRequestDetails,
 });
 
 const equipmentAssignmentsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/equipment-assignments",
+  path: '/equipment-assignments',
   component: EquipmentAssignmentsList,
 });
 
 const equipmentAssignmentDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/equipment-assignments/$id",
+  path: '/equipment-assignments/$id',
   component: EquipmentAssignmentDetails,
 });
 
 const maintenanceRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/maintenance",
+  path: '/maintenance',
   component: MaintenanceList,
 });
 
 const maintenanceDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/maintenance/$id",
+  path: '/maintenance/$id',
   component: MaintenanceDetails,
 });
 
 const myMaintenanceRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/my-maintenance",
+  path: '/my-maintenance',
   component: MyMaintenance,
 });
 
 const researchProjectsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-projects",
+  path: '/research-projects',
   component: ResearchProjectsList,
 });
 
 const researchProjectDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-projects/$id",
+  path: '/research-projects/$id',
   component: ResearchProjectDetails,
 });
 
 const projectTeamRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-projects/$projectId/team",
+  path: '/research-projects/$projectId/team',
   component: ProjectTeamPage,
 });
 
 const innovationsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/innovations",
+  path: '/innovations',
   component: InnovationsList,
 });
 
 const innovationDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/innovations/$id",
+  path: '/innovations/$id',
   component: InnovationDetails,
 });
 
 const projectActivitiesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/project-activities",
+  path: '/project-activities',
   component: ProjectActivitiesList,
 });
 
 const projectActivityDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/project-activities/$id",
+  path: '/project-activities/$id',
   component: ProjectActivityDetails,
 });
 
 const researchDocumentsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-documents",
+  path: '/research-documents',
   component: ResearchDocumentsList,
 });
 
 const researchDocumentDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-documents/$id",
+  path: '/research-documents/$id',
   component: ResearchDocumentDetails,
 });
 
 const researchPublicationsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-publications",
+  path: '/research-publications',
   component: ResearchPublicationsList,
 });
 
 const researchPublicationDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-publications/$id",
+  path: '/research-publications/$id',
   component: ResearchPublicationDetails,
 });
 
 const fundingOpportunitiesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/funding-opportunities",
+  path: '/funding-opportunities',
   component: FundingOpportunitiesList,
 });
 
 const fundingOpportunityDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/funding-opportunities/$id",
+  path: '/funding-opportunities/$id',
   component: FundingOpportunityDetails,
 });
 
 const grantApplicationsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/grant-applications",
+  path: '/grant-applications',
   component: GrantApplicationsList,
 });
 
 const grantApplicationDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/grant-applications/$id",
+  path: '/grant-applications/$id',
   component: GrantApplicationDetails,
 });
 
 const researchGrantsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-grants",
+  path: '/research-grants',
   component: ResearchGrantsList,
 });
 
 const researchGrantDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-grants/$id",
+  path: '/research-grants/$id',
   component: ResearchGrantDetails,
 });
 
 const ethicsApplicationsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/ethics/applications",
+  path: '/ethics/applications',
   component: EthicsApplicationsList,
 });
 
 const ethicsApplicationDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/ethics/applications/$id",
+  path: '/ethics/applications/$id',
   component: EthicsApplicationDetails,
 });
 
 const researchEventsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-events",
+  path: '/research-events',
   component: ResearchEventsList,
 });
 
 const researchEventDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-events/$id",
+  path: '/research-events/$id',
   component: ResearchEventDetails,
 });
 
 const myEventsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/my-events",
+  path: '/my-events',
   component: MyEvents,
 });
 
 const financeDashboardRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/finance",
+  path: '/finance',
   beforeLoad: requireAdminOrCoordinator,
   component: ResearchFinanceDashboard,
 });
 
 const researchExpensesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-expenses",
+  path: '/research-expenses',
   component: ResearchExpensesList,
 });
 
 const researchExpenseDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-expenses/$id",
+  path: '/research-expenses/$id',
   component: ResearchExpenseDetails,
 });
 
 const budgetManagementRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/budget-management",
+  path: '/budget-management',
   beforeLoad: requireAdminOrCoordinator,
   component: BudgetManagement,
 });
 
 const researchMilestonesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-milestones",
+  path: '/research-milestones',
   component: ResearchMilestonesList,
 });
 
 const researchMilestoneDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-milestones/$id",
+  path: '/research-milestones/$id',
   component: ResearchMilestoneDetails,
 });
 
 const myMilestonesRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/my-milestones",
+  path: '/my-milestones',
   component: MyMilestones,
 });
 
 const researchReportsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-reports",
+  path: '/research-reports',
   component: ResearchReportsList,
 });
 
 const researchReportDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/research-reports/$id",
+  path: '/research-reports/$id',
   component: ResearchReportDetails,
 });
 
 const myReportsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/my-reports",
+  path: '/my-reports',
   component: MyReports,
 });
 
 const notificationsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/notifications",
+  path: '/notifications',
   component: NotificationsList,
 });
 
 const searchRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/search",
+  path: '/search',
   component: GlobalSearchPage,
 });
 
 const auditLogsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/audit-logs",
+  path: '/audit-logs',
   beforeLoad: requireAdminOrCoordinator,
   component: AuditLogsList,
 });
 
 const auditLogDetailsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/audit-logs/$id",
+  path: '/audit-logs/$id',
   beforeLoad: requireAdminOrCoordinator,
   component: AuditLogDetails,
 });
 
 const administrationRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/administration",
+  path: '/administration',
   beforeLoad: requireAdminOrCoordinator,
   component: AdministrationDashboard,
 });
 
 const systemSettingsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/administration/settings",
+  path: '/administration/settings',
   beforeLoad: requireAdminOrCoordinator,
   component: SystemSettings,
 });
 
 const rolePermissionsRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/administration/permissions",
+  path: '/administration/permissions',
   beforeLoad: requireAdminOrCoordinator,
   component: RolePermissions,
 });
 
 const systemInformationRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/administration/system",
+  path: '/administration/system',
   beforeLoad: requireAdminOrCoordinator,
   component: SystemInformation,
 });
 
 const securityDashboardRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: "/administration/security",
+  path: '/administration/security',
   beforeLoad: requireAdmin,
   component: SecurityDashboard,
+});
+
+const profileRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/profile',
+  component: ProfilePage,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -545,6 +552,7 @@ const routeTree = rootRoute.addChildren([
     rolePermissionsRoute,
     systemInformationRoute,
     securityDashboardRoute,
+    profileRoute,
   ]),
 ]);
 
@@ -554,7 +562,7 @@ const router = createRouter({
   defaultErrorComponent: GlobalErrorPage,
 });
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
   }

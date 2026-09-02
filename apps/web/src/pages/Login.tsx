@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { Mail, Lock, AlertCircle, Eye, EyeOff, Shield, Users, Wrench } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { loginSchema, type LoginFormData } from '../lib/validations';
+import { useToast } from '../components/ui/Toast';
 
 const DEMO_ACCOUNTS = [
   { label: 'Admin', email: 'admin@cese-rlim.local', pass: 'admin123', icon: Shield, color: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' },
@@ -16,6 +17,7 @@ const DEMO_ACCOUNTS = [
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -34,6 +36,8 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
+      toast('success', 'Signed in successfully');
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 900));
       navigate({ to: '/' });
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { message?: string } } };
@@ -50,19 +54,24 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 px-4 py-12">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-blue-100/70 to-transparent" />
+      <div className="pointer-events-none absolute -top-28 right-[-5rem] h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
+
+      <div className="relative mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-md items-center">
+        <div className="w-full">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4 shadow-lg shadow-blue-500/30">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4 shadow-lg shadow-blue-500/25 ring-4 ring-white">
             <span className="text-white text-2xl font-bold tracking-tight">CE</span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">CESE-RLIM</h1>
-          <p className="mt-2 text-slate-400 text-sm">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">ASTU · CESE</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">CESE-RLIM</h1>
+          <p className="mt-2 text-slate-600 text-sm">
             Research, Laboratory & Innovation Management
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-100">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/70">
           <h2 className="text-xl font-bold text-slate-900 mb-2">Sign in to your account</h2>
           <p className="text-xs text-slate-500 mb-6">Enter your academic or staff credentials below.</p>
 
@@ -163,6 +172,7 @@ export default function Login() {
           <br />
           Center of Excellence for Electrical Systems and Electronics
         </p>
+        </div>
       </div>
     </div>
   );

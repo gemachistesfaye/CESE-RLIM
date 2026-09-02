@@ -4,7 +4,7 @@ import { useGrantApplication, useSubmitGrantApplication, useReviewGrantApplicati
 import { useFundingOpportunities } from "../../hooks/useFundingOpportunities";
 import { useResearchProjects } from "../../hooks/useResearchProjects";
 import { useToast } from "../../components/ui/Toast";
-import { ArrowLeft, Edit, Loader2, Send, CheckCircle, XCircle, X, FileText } from "lucide-react";
+import { ArrowLeft, Edit, Loader2, Send, CircleCheck, XCircle, X, FileText } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import GrantApplicationForm from "../../components/grant-applications/GrantApplicationForm";
 import { PrintableGrantApplicationReport } from "../../components/print/PrintableGrantApplicationReport";
@@ -90,7 +90,7 @@ export default function GrantApplicationDetails() {
             )}
             {app.status === 'SUBMITTED' && canManage && (
               <>
-                <button onClick={() => setReviewDialog('APPROVE')} className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100"><CheckCircle size={16} /> Approve</button>
+                <button onClick={() => setReviewDialog('APPROVE')} className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100"><CircleCheck size={16} /> Approve</button>
                 <button onClick={() => setReviewDialog('REJECT')} className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100"><XCircle size={16} /> Reject</button>
               </>
             )}

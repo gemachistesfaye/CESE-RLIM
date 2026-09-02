@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle, AlertCircle, X, Info } from 'lucide-react';
+import { CircleCheck, AlertCircle, X, Info } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   };
 
   const icons = {
-    success: <CheckCircle size={18} className="text-emerald-500" />,
+    success: <CircleCheck size={18} className="text-emerald-500" />,
     error: <AlertCircle size={18} className="text-red-500" />,
     info: <Info size={18} className="text-blue-500" />,
   };

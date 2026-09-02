@@ -8,7 +8,7 @@ import {
   ChevronRight,
   AlertTriangle,
   Info,
-  CheckCircle,
+  CircleCheck,
   XCircle,
   Clock,
   FileText,
@@ -61,13 +61,13 @@ const NOTIFICATION_TYPE_CONFIG: Record<
 > = {
   INFO: { icon: Info, color: 'text-blue-500', bgColor: 'bg-blue-50', label: 'Info' },
   WARNING: { icon: AlertTriangle, color: 'text-amber-500', bgColor: 'bg-amber-50', label: 'Warning' },
-  SUCCESS: { icon: CheckCircle, color: 'text-emerald-500', bgColor: 'bg-emerald-50', label: 'Success' },
+  SUCCESS: { icon: CircleCheck, color: 'text-emerald-500', bgColor: 'bg-emerald-50', label: 'Success' },
   ERROR: { icon: XCircle, color: 'text-red-500', bgColor: 'bg-red-50', label: 'Error' },
   REQUEST: { icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-50', label: 'Request' },
   MAINTENANCE: { icon: Wrench, color: 'text-orange-500', bgColor: 'bg-orange-50', label: 'Maintenance' },
   ACTION_REQUIRED: { icon: AlertTriangle, color: 'text-red-500', bgColor: 'bg-red-50', label: 'Action Required' },
   ASSIGNMENT: { icon: Users, color: 'text-violet-500', bgColor: 'bg-violet-50', label: 'Assignment' },
-  STATUS_CHANGE: { icon: CheckCircle, color: 'text-blue-500', bgColor: 'bg-blue-50', label: 'Status Change' },
+  STATUS_CHANGE: { icon: CircleCheck, color: 'text-blue-500', bgColor: 'bg-blue-50', label: 'Status Change' },
   DEADLINE: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-50', label: 'Deadline' },
 };
 

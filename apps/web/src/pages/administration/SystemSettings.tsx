@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Building2, Mail, Database, FlaskConical,
-  Wrench, DollarSign, BookOpen, Loader2, Save, CheckCircle,
+  Wrench, DollarSign, BookOpen, Loader2, Save, CircleCheck,
 } from 'lucide-react';
 import {
   useSystemSettings, useUpdateSystemSetting, useCreateSystemSetting,
@@ -267,7 +267,7 @@ export default function SystemSettings() {
         <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between rounded-b-xl">
           <div className="flex items-center gap-2 text-sm">
             {saved ? (
-              <span className="flex items-center gap-1 text-emerald-600 font-medium"><CheckCircle size={14} /> Saved</span>
+              <span className="flex items-center gap-1 text-emerald-600 font-medium"><CircleCheck size={14} /> Saved</span>
             ) : dirtyCount > 0 ? (
               <span className="text-amber-600 font-medium">{dirtyCount} unsaved change{dirtyCount > 1 ? 's' : ''}</span>
             ) : (

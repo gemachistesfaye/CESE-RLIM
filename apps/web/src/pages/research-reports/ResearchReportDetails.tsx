@@ -4,7 +4,7 @@ import { useResearchReport, useUpdateResearchReport, useSubmitReport, useSubmitR
 import { useResearchers } from '../../hooks/useResearchers';
 import { useToast } from '../../components/ui/Toast';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { ArrowLeft, Edit, Loader2, FileText, User, Send, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, FileText, User, Send, CircleCheck } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ResearchReportForm } from '../../components/research-reports/ResearchReportForm';
 import { ReportStatusWorkflow } from '../../components/research-reports/ReportStatusWorkflow';
@@ -119,7 +119,7 @@ export default function ResearchReportDetails() {
             )}
             {isDraft && canManage && (
               <button onClick={() => setShowAssignReviewer(true)} className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                <CheckCircle size={16} /> Assign Reviewer
+                <CircleCheck size={16} /> Assign Reviewer
               </button>
             )}
             {canManage && (
@@ -165,71 +165,10 @@ export default function ResearchReportDetails() {
               <ReportStatusWorkflow reportId={id} currentStatus={report.status} onStatusChange={refetch} />
             </div>
 
-            {report.progressPercentage !== null && report.progressPercentage !== undefined && (
+            {report.reportContent && (
               <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Progress</h3>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-slate-200 rounded-full h-3">
-                    <div className="bg-blue-600 h-3 rounded-full transition-all" style={{ width: `${Math.min(100, Math.max(0, report.progressPercentage))}%` }} />
-                  </div>
-                  <span className="text-sm font-medium w-12 text-right">{report.progressPercentage}%</span>
-                </div>
-              </div>
-            )}
-
-            {report.executiveSummary && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Executive Summary</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.executiveSummary}</div>
-              </div>
-            )}
-
-            {report.objectives && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Objectives</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.objectives}</div>
-              </div>
-            )}
-
-            {report.methodology && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Methodology</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.methodology}</div>
-              </div>
-            )}
-
-            {report.achievements && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Achievements</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.achievements}</div>
-              </div>
-            )}
-
-            {report.challenges && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Challenges</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.challenges}</div>
-              </div>
-            )}
-
-            {report.findings && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Findings</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.findings}</div>
-              </div>
-            )}
-
-            {report.recommendations && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Recommendations</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.recommendations}</div>
-              </div>
-            )}
-
-            {report.conclusion && (
-              <div className="p-6 border-t border-slate-200">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Conclusion</h3>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.conclusion}</div>
+                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">Report Content</h3>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap">{report.reportContent}</div>
               </div>
             )}
 

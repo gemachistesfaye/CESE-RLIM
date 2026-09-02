@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Users, FlaskConical, Wrench, Shield, Activity, ArrowRight, Settings, BarChart3 } from 'lucide-react';
+import { Users, Shield, Activity, ArrowRight, Settings, BarChart3, UserCheck } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardOverview } from '../../hooks/useDashboard';
 import { Skeleton, SkeletonCard } from '../ui/Skeleton';
@@ -20,17 +20,20 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-950 via-indigo-900 to-violet-950 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 text-xs font-semibold tracking-wide uppercase mb-3">
             <Shield size={13} />
             <span>System Administration</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Welcome, {user?.firstName} {user?.lastName}</h1>
-          <p className="text-sm text-slate-300 max-w-xl mt-1">Platform overview, user management, system health, and administrative controls.</p>
+          <p className="text-sm text-indigo-100 max-w-xl mt-1">Govern users, security, permissions, and system health while monitoring platform activity.</p>
           <div className="flex items-center gap-2.5 mt-5 flex-wrap">
             <Link to="/users" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors shadow-xs">
               <Users size={14} /><span>Manage Users</span>
+            </Link>
+            <Link to="/administration/permissions" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors border border-white/20">
+              <Shield size={14} /><span>Roles &amp; Permissions</span>
             </Link>
             <Link to="/administration/settings" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors border border-white/20">
               <Settings size={14} /><span>System Settings</span>
@@ -60,32 +63,32 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Projects</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{data.projects?.byStatus?.ACTIVE || 0}</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Users</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{data.users?.active || 0}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><FlaskConical size={20} /></div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><UserCheck size={20} /></div>
           </div>
-          <Link to="/research-projects" className="text-xs text-emerald-600 font-medium hover:underline inline-flex items-center gap-0.5 mt-3">Projects <ArrowRight size={11} /></Link>
+          <Link to="/users" className="text-xs text-emerald-600 font-medium hover:underline inline-flex items-center gap-0.5 mt-3">User directory <ArrowRight size={11} /></Link>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Equipment Items</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{data.equipment?.total || 0}</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Audit Activity</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{data.recentActivity?.length || 0}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100"><Wrench size={20} /></div>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100"><Activity size={20} /></div>
           </div>
-          <Link to="/equipment" className="text-xs text-amber-600 font-medium hover:underline inline-flex items-center gap-0.5 mt-3">Inventory <ArrowRight size={11} /></Link>
+          <Link to="/audit-logs" className="text-xs text-amber-600 font-medium hover:underline inline-flex items-center gap-0.5 mt-3">View audit logs <ArrowRight size={11} /></Link>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Ethics Pending</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{data.attentionRequired?.pendingEthics || 0}</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Administrators</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{data.users?.byRole?.ADMIN || 0}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100"><Shield size={20} /></div>
+            <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100"><Shield size={20} /></div>
           </div>
-          <Link to="/ethics/applications" className="text-xs text-purple-600 font-medium hover:underline inline-flex items-center gap-0.5 mt-3">Review <ArrowRight size={11} /></Link>
+          <Link to="/administration/security" className="text-xs text-violet-600 font-medium hover:underline inline-flex items-center gap-0.5 mt-3">Security controls <ArrowRight size={11} /></Link>
         </div>
       </div>
 
@@ -96,13 +99,13 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Research Projects</h2>
-                <p className="text-xs text-slate-500">Status distribution across all projects</p>
+                <h2 className="text-sm font-semibold text-slate-900">Role Distribution</h2>
+                <p className="text-xs text-slate-500">Current user accounts by role</p>
               </div>
-              <Link to="/research-projects" className="text-xs text-blue-600 font-medium hover:underline inline-flex items-center gap-1">View all <ArrowRight size={12} /></Link>
+              <Link to="/users" className="text-xs text-blue-600 font-medium hover:underline inline-flex items-center gap-1">Manage users <ArrowRight size={12} /></Link>
             </div>
             <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Object.entries(data.projects?.byStatus || {}).map(([status, count]) => (
+              {Object.entries(data.users?.byRole || {}).map(([status, count]) => (
                 <div key={status} className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 text-center">
                   <p className="text-lg font-bold text-slate-900">{count as number}</p>
                   <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mt-0.5">{status.replace(/_/g, ' ')}</p>
@@ -115,16 +118,19 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Equipment Overview</h2>
-                <p className="text-xs text-slate-500">Current inventory status</p>
+                <h2 className="text-sm font-semibold text-slate-900">Platform Activity</h2>
+                <p className="text-xs text-slate-500">Recent system and user events</p>
               </div>
-              <Link to="/equipment" className="text-xs text-blue-600 font-medium hover:underline inline-flex items-center gap-1">Catalog <ArrowRight size={12} /></Link>
+              <Link to="/audit-logs" className="text-xs text-blue-600 font-medium hover:underline inline-flex items-center gap-1">Audit logs <ArrowRight size={12} /></Link>
             </div>
-            <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Object.entries(data.equipment?.byStatus || {}).map(([status, count]) => (
-                <div key={status} className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 text-center">
-                  <p className="text-lg font-bold text-slate-900">{count as number}</p>
-                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mt-0.5">{status.replace(/_/g, ' ')}</p>
+            <div className="divide-y divide-slate-100">
+              {(data.recentActivity || []).slice(0, 5).map((activity) => (
+                <div key={activity.id} className="flex items-center justify-between gap-3 px-4 py-3 text-xs">
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-800 truncate">{activity.description || `${activity.action} ${activity.entityType}`}</p>
+                    <p className="mt-0.5 text-slate-500">{activity.userName}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 font-medium text-blue-700">{activity.action}</span>
                 </div>
               ))}
             </div>
@@ -135,23 +141,23 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs">
             <div className="p-4 border-b border-slate-100">
-              <h2 className="text-sm font-semibold text-slate-900">Attention Required</h2>
-              <p className="text-xs text-slate-500">Items needing admin action</p>
+              <h2 className="text-sm font-semibold text-slate-900">Coordination Queue</h2>
+              <p className="text-xs text-slate-500">Read-only overview of work awaiting Coordinator review</p>
             </div>
             <div className="p-4 space-y-3">
-              {data.attentionRequired?.pendingEthics > 0 && (
-                <Link to="/ethics/applications" className="flex items-center justify-between p-2.5 rounded-lg bg-red-50 border border-red-100 text-xs">
+              {data.attentionRequired?.pendingEthicsReviews > 0 && (
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-red-50 border border-red-100 text-xs">
                   <span className="font-medium text-red-700">Pending Ethics Reviews</span>
-                  <span className="font-bold text-red-800">{data.attentionRequired.pendingEthics}</span>
-                </Link>
+                  <span className="font-bold text-red-800">{data.attentionRequired.pendingEthicsReviews}</span>
+                </div>
               )}
               {data.attentionRequired?.pendingEquipmentRequests > 0 && (
-                <Link to="/equipment-requests" className="flex items-center justify-between p-2.5 rounded-lg bg-amber-50 border border-amber-100 text-xs">
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-amber-50 border border-amber-100 text-xs">
                   <span className="font-medium text-amber-700">Pending Equipment Requests</span>
                   <span className="font-bold text-amber-800">{data.attentionRequired.pendingEquipmentRequests}</span>
-                </Link>
+                </div>
               )}
-              {(!data.attentionRequired?.pendingEthics && !data.attentionRequired?.pendingEquipmentRequests) && (
+              {(!data.attentionRequired?.pendingEthicsReviews && !data.attentionRequired?.pendingEquipmentRequests) && (
                 <div className="text-center py-4 text-slate-400 text-xs">All caught up!</div>
               )}
             </div>

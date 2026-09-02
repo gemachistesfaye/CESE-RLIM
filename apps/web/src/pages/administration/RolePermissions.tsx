@@ -17,6 +17,7 @@ const ACCESS_COLORS: Record<string, string> = {
   'Create/Update': 'bg-teal-100 text-teal-700',
   'Create/View Own': 'bg-teal-100 text-teal-700',
   'Own/Project': 'bg-sky-100 text-sky-700',
+  Oversight: 'bg-violet-100 text-violet-700',
   'Own/Assigned': 'bg-sky-100 text-sky-700',
   'Own Expenses': 'bg-sky-100 text-sky-700',
   'View Own': 'bg-sky-100 text-sky-700',
@@ -43,7 +44,7 @@ export default function RolePermissions() {
             <h2 className="text-sm font-semibold text-slate-900">Permission Matrix</h2>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            This matrix reflects the actual authorization logic implemented in the backend. Read-only display.
+            This matrix describes the platform's role model. Read-only display.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -85,19 +86,19 @@ export default function RolePermissions() {
             <div className="flex items-center gap-2 mb-2">
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ROLE_COLORS.admin}`}>ADMIN</span>
             </div>
-            <p className="text-xs text-slate-600">Full system access. Can manage users, roles, settings, and all platform resources. Can view audit logs and system configuration.</p>
+            <p className="text-xs text-slate-600">Governs the platform: manages users, roles, settings, security, audit logs, and system configuration. Operational records are available for oversight, not routine creation or approval.</p>
           </div>
           <div className="p-4 rounded-lg border border-slate-200">
             <div className="flex items-center gap-2 mb-2">
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ROLE_COLORS.coordinator}`}>COORDINATOR</span>
             </div>
-            <p className="text-xs text-slate-600">Can manage most platform resources. Can review applications, approve expenses, and view audit logs. Cannot manage users or system settings.</p>
+            <p className="text-xs text-slate-600">Runs daily operations: manages research, laboratories, equipment, funding, and workflows. Reviews and approves researcher submissions. Cannot manage users, roles, security, or system settings.</p>
           </div>
           <div className="p-4 rounded-lg border border-slate-200">
             <div className="flex items-center gap-2 mb-2">
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ROLE_COLORS.researcher}`}>RESEARCHER</span>
             </div>
-            <p className="text-xs text-slate-600">Can create and manage own research outputs. Can submit applications, documents, publications, and expenses. Can view shared resources.</p>
+            <p className="text-xs text-slate-600">Creates and submits personal research work. Submissions are reviewed by a Coordinator before approval or publication. Can view shared resources.</p>
           </div>
           <div className="p-4 rounded-lg border border-slate-200">
             <div className="flex items-center gap-2 mb-2">

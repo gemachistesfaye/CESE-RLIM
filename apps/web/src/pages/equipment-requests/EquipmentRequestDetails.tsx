@@ -8,7 +8,7 @@ import {
   ArrowLeft,
   Loader2,
   FileText,
-  CheckCircle,
+  CircleCheck,
   XCircle,
   Ban,
   Package,
@@ -179,7 +179,7 @@ export default function EquipmentRequestDetails() {
                   onClick={() => setActionDialog({ type: "approve" })}
                   className="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors"
                 >
-                  <CheckCircle size={16} />
+                  <CircleCheck size={16} />
                   Approve
                 </button>
               </>

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, X, FileText, CircleCheck, AlertCircle } from "lucide-react";
 
 const ALLOWED_EXTENSIONS = [
   ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv",
@@ -177,7 +177,7 @@ export default function FileUpload({
               )}
               {!isUploading && uploadProgress === 100 && (
                 <div className="mt-2 flex items-center gap-2 text-sm text-emerald-600">
-                  <CheckCircle size={14} />
+                  <CircleCheck size={14} />
                   Upload complete
                 </div>
               )}
