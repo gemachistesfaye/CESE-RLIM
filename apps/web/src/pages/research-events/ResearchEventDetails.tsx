@@ -6,6 +6,9 @@ import { useRegisterForEvent, useCancelEventRegistration, PARTICIPATION_STATUS_L
 import { useAuth } from '../../contexts/AuthContext';
 import ResearchEventForm from '../../components/research-events/ResearchEventForm';
 import { ArrowLeft, Calendar, MapPin, Monitor, Users, Clock, Edit, Loader2 } from 'lucide-react';
+import { PrintableEventReport } from '../../components/print/PrintableEventReport';
+import { useReactToPrint } from 'react-to-print';
+import { useRef } from 'react';
 
 const statusStyles: Record<string, string> = {
   DRAFT: 'bg-slate-100 text-slate-700', PUBLISHED: 'bg-blue-100 text-blue-700',
@@ -39,7 +42,17 @@ export default function ResearchEventDetails() {
   const cancelRegistration = useCancelEventRegistration();
 
   const canManage = user?.role === 'ADMIN' || user?.role === 'COORDINATOR';
-  const isRegistered = event?.participations?.some(p => p.researcher.userId === user?.id && p.status !== 'CANCELLED');
+  const isRegistered = event?.participations?.some((p: any) => p.researcher.userId === user?.id && p.status !== 'CANCELLED');
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Research_Event_${event?.eventCode || 'Draft'}`,
+    pageStyle: `
+      @page { size: A4 portrait; margin: 0; }
+      @media print { html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    `,
+  });
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-12"><Loader2 size={20} className="animate-spin mr-2" /> Loading...</div>;
@@ -70,11 +83,16 @@ export default function ResearchEventDetails() {
             </div>
             <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
           </div>
-          {canManage && (
-            <button onClick={() => setShowEdit(true)} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <Edit size={16} /> Edit
+          <div className="flex gap-2">
+            <button onClick={handlePrint} className="flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print PDF
             </button>
-          )}
+            {canManage && (
+              <button onClick={() => setShowEdit(true)} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <Edit size={16} /> Edit
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -153,6 +171,11 @@ export default function ResearchEventDetails() {
           </div>
         </div>
       )}
+
+      {/* Hidden printable component - positioned off-screen for react-to-print */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        <PrintableEventReport ref={componentRef} event={event} />
+      </div>
     </div>
   );
 }

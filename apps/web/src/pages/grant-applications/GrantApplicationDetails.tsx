@@ -7,6 +7,9 @@ import { useToast } from "../../components/ui/Toast";
 import { ArrowLeft, Edit, Loader2, Send, CheckCircle, XCircle, X, FileText } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import GrantApplicationForm from "../../components/grant-applications/GrantApplicationForm";
+import { PrintableGrantApplicationReport } from "../../components/print/PrintableGrantApplicationReport";
+import { useReactToPrint } from "react-to-print";
+import { useRef } from "react";
 
 const statusStyles: Record<string, string> = {
   DRAFT: "bg-slate-100 text-slate-700", SUBMITTED: "bg-blue-100 text-blue-700",
@@ -32,6 +35,16 @@ export default function GrantApplicationDetails() {
   const canManage = user?.role === 'ADMIN' || user?.role === 'COORDINATOR';
   const isOwner = app?.applicant?.userId === user?.id;
   const formatAmount = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Grant_Application_${app?.id?.substring(0, 8) || 'Draft'}`,
+    pageStyle: `
+      @page { size: A4 portrait; margin: 0; }
+      @media print { html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    `,
+  });
 
   if (isLoading) return <div className="p-6 flex items-center gap-2 text-slate-500"><Loader2 size={20} className="animate-spin" /> Loading...</div>;
   if (error || !app) return <div className="p-6"><p className="text-red-500">Unable to load application.</p></div>;
@@ -62,7 +75,10 @@ export default function GrantApplicationDetails() {
               <span className="text-sm text-slate-500">by {app.applicant?.user?.firstName} {app.applicant?.user?.lastName}</span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={handlePrint} className="flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print PDF
+            </button>
             {app.status === 'DRAFT' && isOwner && (
               <>
                 <button onClick={() => setIsEditOpen(true)} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50"><Edit size={16} /> Edit</button>
@@ -130,6 +146,11 @@ export default function GrantApplicationDetails() {
           </div>
         </div>
       )}
+
+      {/* Hidden printable component - positioned off-screen for react-to-print */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        <PrintableGrantApplicationReport ref={componentRef} application={app} />
+      </div>
     </div>
   );
 }

@@ -5,6 +5,9 @@ import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { ArrowLeft, Loader2, DollarSign, Calendar, FileText } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { PrintableGrantReport } from "../../components/print/PrintableGrantReport";
+import { useReactToPrint } from "react-to-print";
+import { useRef } from "react";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-700", ON_HOLD: "bg-amber-100 text-amber-700",
@@ -33,6 +36,16 @@ export default function ResearchGrantDetails() {
 
   const canManage = user?.role === 'ADMIN' || user?.role === 'COORDINATOR';
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Research_Grant_${grant?.grantNumber || 'Draft'}`,
+    pageStyle: `
+      @page { size: A4 portrait; margin: 0; }
+      @media print { html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    `,
+  });
 
   if (isLoading) return <div className="p-6 flex items-center gap-2 text-slate-500"><Loader2 size={20} className="animate-spin" /> Loading...</div>;
   if (error || !grant) return <div className="p-6"><p className="text-red-500">Unable to load grant.</p></div>;
@@ -70,6 +83,9 @@ export default function ResearchGrantDetails() {
           </div>
           {canManage && (
             <div className="flex gap-2">
+              <button onClick={handlePrint} className="flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print PDF
+              </button>
               {nextStatuses.length > 0 && (
                 <select value="" onChange={e => { if (e.target.value) setStatusDialog(e.target.value); }} className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
                   <option value="">Change Status...</option>
@@ -136,6 +152,11 @@ export default function ResearchGrantDetails() {
           </div>
         </div>
       )}
+
+      {/* Hidden printable component - positioned off-screen for react-to-print */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        <PrintableGrantReport ref={componentRef} grant={grant} />
+      </div>
     </div>
   );
 }

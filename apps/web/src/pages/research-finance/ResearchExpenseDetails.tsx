@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
 import { useResearchExpense, useSubmitExpense, useReviewExpense, BUDGET_CATEGORY_LABELS, EXPENSE_STATUS_LABELS } from '../../hooks/useResearchFinance';
 import { useAuth } from '../../contexts/AuthContext';
 import ResearchExpenseForm from '../../components/research-finance/ResearchExpenseForm';
-import { ArrowLeft, Loader2, Edit, Send, CheckCircle, XCircle, DollarSign } from 'lucide-react';
+import { PrintableExpenseReport } from '../../components/print/PrintableExpenseReport';
+import { ArrowLeft, Loader2, Edit, Send, CheckCircle, XCircle, DollarSign, Printer } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
 
 const statusStyles: Record<string, string> = {
   DRAFT: 'bg-slate-100 text-slate-700', SUBMITTED: 'bg-blue-100 text-blue-700',
@@ -24,6 +26,27 @@ export default function ResearchExpenseDetails() {
   const { data: expense, isLoading } = useResearchExpense(id);
   const submitExpense = useSubmitExpense();
   const reviewExpense = useReviewExpense();
+  
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Expense_Report_${expense?.expenseCode || 'Draft'}`,
+    pageStyle: `
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      @media print {
+        html, body {
+          margin: 0;
+          padding: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    `,
+  });
 
   const canManage = user?.role === 'ADMIN' || user?.role === 'COORDINATOR';
   const isOwner = expense?.submittedBy?.userId === user?.id;
@@ -56,6 +79,9 @@ export default function ResearchExpenseDetails() {
             <p className="text-sm text-slate-600 mt-1">{expense.description}</p>
           </div>
           <div className="flex gap-2">
+            <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
+              <Printer size={16} /> Print PDF
+            </button>
             {expense.status === 'DRAFT' && (canManage || isOwner) && (
               <button onClick={() => setShowEdit(true)} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
                 <Edit size={16} /> Edit
@@ -147,6 +173,11 @@ export default function ResearchExpenseDetails() {
           </div>
         </div>
       )}
+
+      {/* Hidden printable component - positioned off-screen for react-to-print */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+        <PrintableExpenseReport ref={componentRef} expense={expense} />
+      </div>
     </div>
   );
 }
