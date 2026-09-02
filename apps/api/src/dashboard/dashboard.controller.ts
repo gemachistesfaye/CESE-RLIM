@@ -14,7 +14,7 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('overview')
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Get aggregated dashboard overview statistics' })
   async getOverview() {
     return this.dashboardService.getOverview();
