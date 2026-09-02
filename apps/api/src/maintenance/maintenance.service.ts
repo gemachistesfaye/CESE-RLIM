@@ -108,9 +108,8 @@ export class MaintenanceService {
 
     const where: Prisma.MaintenanceRecordWhereInput = {};
 
-    if (userRole === 'TECHNICIAN' && userId) {
-      where.assignedTechnicianId = userId;
-    }
+    // Technicians see ALL maintenance (can pick up unassigned tasks)
+    // Use /maintenance/my endpoint to see only assigned tasks
 
     if (search) {
       where.OR = [
@@ -629,5 +628,40 @@ export class MaintenanceService {
     }
 
     return result;
+  }
+
+  async selfAssign(id: string, technicianId: string) {
+    const existing = await this.findById(id);
+
+    if (existing.assignedTechnicianId) {
+      throw new BadRequestException('This maintenance record is already assigned to a technician');
+    }
+
+    if (existing.status !== 'REPORTED') {
+      throw new BadRequestException('Can only self-assign maintenance with REPORTED status');
+    }
+
+    const record = await this.prisma.maintenanceRecord.update({
+      where: { id },
+      data: {
+        assignedTechnicianId: technicianId,
+        status: 'DIAGNOSING',
+      },
+      include: {
+        equipment: { select: { id: true, name: true, assetId: true } },
+        assignedTechnician: { select: { id: true, firstName: true, lastName: true, email: true } },
+      },
+    });
+
+    await this.auditService.log({
+      userId: technicianId,
+      action: AuditAction.UPDATE,
+      entityType: 'MaintenanceRecord',
+      entityId: id,
+      description: `Self-assigned maintenance for ${existing.equipment.name}`,
+      metadata: { action: 'self_assign' },
+    });
+
+    return record;
   }
 }

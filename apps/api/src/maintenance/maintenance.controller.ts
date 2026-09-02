@@ -152,7 +152,7 @@ export class MaintenanceController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.RESEARCHER, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Create a new maintenance record' })
   @ApiBody({ type: CreateMaintenanceRecordDto })
   @ApiResponse({ status: 201, description: 'Maintenance record created successfully' })
@@ -163,7 +163,7 @@ export class MaintenanceController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.COORDINATOR)
+  @Roles(UserRole.ADMIN, UserRole.COORDINATOR, UserRole.TECHNICIAN)
   @ApiOperation({ summary: 'Update maintenance record' })
   @ApiBody({ type: UpdateMaintenanceRecordDto })
   @ApiResponse({ status: 200, description: 'Maintenance record updated successfully' })
@@ -204,5 +204,17 @@ export class MaintenanceController {
     @Request() req: any,
   ) {
     return this.maintenanceService.complete(id, dto, req.user.id);
+  }
+
+  @Patch(':id/assign-self')
+  @Roles(UserRole.TECHNICIAN)
+  @ApiOperation({ summary: 'Technician self-assigns an unassigned maintenance record' })
+  @ApiResponse({ status: 200, description: 'Maintenance self-assigned successfully' })
+  @ApiResponse({ status: 400, description: 'Already assigned or invalid status' })
+  async assignSelf(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: any,
+  ) {
+    return this.maintenanceService.selfAssign(id, req.user.id);
   }
 }
