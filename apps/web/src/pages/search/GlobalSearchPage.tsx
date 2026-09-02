@@ -86,7 +86,7 @@ export default function GlobalSearchPage() {
         <div className="text-center py-12">
           <SearchX size={48} className="mx-auto text-slate-300 mb-3" />
           <h3 className="text-lg font-medium text-slate-900 mb-1">Search Error</h3>
-          <p className="text-sm text-slate-500">Something went wrong. Please try again.</p>
+          <p className="text-sm text-slate-500">{error?.message || 'Something went wrong. Please try again.'}</p>
         </div>
       )}
 
