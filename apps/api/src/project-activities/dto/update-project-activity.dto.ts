@@ -42,8 +42,15 @@ export class UpdateProjectActivityDto {
   @IsDateString()
   dueDate?: string;
 
-  @ApiPropertyOptional({ description: 'Activity notes' })
+  @ApiPropertyOptional({ description: 'Activity progress' })
   @IsOptional()
-  @IsString()
-  notes?: string;
+  progress?: number;
+
+  @ApiPropertyOptional({ description: 'Estimated hours to complete' })
+  @IsOptional()
+  estimatedHours?: number;
+
+  @ApiPropertyOptional({ description: 'Tags for the activity', type: [String] })
+  @IsOptional()
+  tags?: string[];
 }

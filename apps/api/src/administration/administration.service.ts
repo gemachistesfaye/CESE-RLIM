@@ -49,7 +49,7 @@ export class AdministrationService {
       this.prisma.grantApplication.count({ where: { status: 'SUBMITTED' } }),
       this.prisma.researchGrant.count({ where: { status: 'ACTIVE' } }),
       this.prisma.auditLog.findMany({
-        take: 10,
+        take: 12,
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -64,6 +64,28 @@ export class AdministrationService {
         },
       }),
     ]);
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const activityByDay = await this.prisma.auditLog.groupBy({
+      by: ['action'],
+      where: { createdAt: { gte: sevenDaysAgo } },
+      _count: { action: true },
+    });
+
+    const dailyActivity = await this.prisma.$queryRaw<{ date: string; count: bigint }[]>`
+      SELECT DATE(created_at) as date, COUNT(*) as count
+      FROM audit_logs
+      WHERE created_at >= ${sevenDaysAgo}
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `;
+
+    const activityChart = dailyActivity.map((row) => ({
+      date: row.date,
+      count: Number(row.count),
+    }));
 
     const roleDistribution = usersByRole.reduce((acc, item) => {
       acc[item.role] = item._count.role;
@@ -86,6 +108,7 @@ export class AdministrationService {
       },
       activeGrants,
       recentActivity,
+      activityChart,
     };
   }
 

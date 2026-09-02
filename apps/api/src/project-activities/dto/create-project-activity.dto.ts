@@ -60,8 +60,11 @@ export class CreateProjectActivityDto {
   @Max(100)
   progress?: number;
 
-  @ApiPropertyOptional({ description: 'Activity notes' })
+  @ApiPropertyOptional({ description: 'Estimated hours to complete' })
   @IsOptional()
-  @IsString()
-  notes?: string;
+  estimatedHours?: number;
+
+  @ApiPropertyOptional({ description: 'Tags for the activity', type: [String] })
+  @IsOptional()
+  tags?: string[];
 }

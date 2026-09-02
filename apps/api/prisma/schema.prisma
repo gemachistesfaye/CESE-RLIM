@@ -649,7 +649,8 @@ model ProjectActivity {
   dueDate           DateTime?       @map("due_date")
   completedAt       DateTime?       @map("completed_at")
   progress          Int             @default(0)
-  notes             String?
+  estimatedHours    Float?          @map("estimated_hours")
+  tags              String[]
   createdById       String          @map("created_by_id")
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
@@ -1131,7 +1132,7 @@ model ResearchMilestone {
   status               MilestoneStatus @default(PLANNED)
   progress             Int             @default(0)
   responsibleMemberId  String?         @map("responsible_member_id")
-  notes                String?
+  deliverableLink      String?         @map("deliverable_link")
   createdById          String          @map("created_by_id")
   createdAt            DateTime        @default(now()) @map("created_at")
   updatedAt            DateTime        @updatedAt @map("updated_at")
@@ -1160,15 +1161,8 @@ model ResearchReport {
   reportingPeriodEnd   DateTime?            @map("reporting_period_end")
   submittedAt          DateTime?            @map("submitted_at")
   status               ResearchReportStatus @default(DRAFT)
-  executiveSummary     String?              @map("executive_summary")
-  objectives           String?
-  methodology          String?
-  achievements         String?
-  challenges           String?
-  findings             String?
-  recommendations      String?
-  conclusion           String?
-  progressPercentage   Int?                 @map("progress_percentage")
+  reportContent        String?              @db.Text @map("report_content")
+  fileUrl              String?              @map("file_url")
   nextPeriodPlan       String?              @map("next_period_plan")
   reviewerId           String?              @map("reviewer_id")
   reviewComment        String?              @map("review_comment")

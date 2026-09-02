@@ -28,52 +28,16 @@ export class CreateResearchReportDto {
   @IsDateString()
   reportingPeriodEnd?: string;
 
-  @ApiPropertyOptional({ description: 'Executive summary' })
+  @ApiPropertyOptional({ description: 'Report content' })
   @IsOptional()
   @IsString()
-  executiveSummary?: string;
+  reportContent?: string;
 
-  @ApiPropertyOptional({ description: 'Objectives' })
+  @ApiPropertyOptional({ description: 'File URL' })
   @IsOptional()
   @IsString()
-  objectives?: string;
+  fileUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Methodology' })
-  @IsOptional()
-  @IsString()
-  methodology?: string;
-
-  @ApiPropertyOptional({ description: 'Achievements' })
-  @IsOptional()
-  @IsString()
-  achievements?: string;
-
-  @ApiPropertyOptional({ description: 'Challenges' })
-  @IsOptional()
-  @IsString()
-  challenges?: string;
-
-  @ApiPropertyOptional({ description: 'Findings' })
-  @IsOptional()
-  @IsString()
-  findings?: string;
-
-  @ApiPropertyOptional({ description: 'Recommendations' })
-  @IsOptional()
-  @IsString()
-  recommendations?: string;
-
-  @ApiPropertyOptional({ description: 'Conclusion' })
-  @IsOptional()
-  @IsString()
-  conclusion?: string;
-
-  @ApiPropertyOptional({ description: 'Progress percentage' })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(100)
-  progressPercentage?: number;
 
   @ApiPropertyOptional({ description: 'Next period plan' })
   @IsOptional()
