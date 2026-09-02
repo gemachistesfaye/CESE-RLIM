@@ -1,7 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { type EthicsApplication } from '../../hooks/useEthics';
+import { apiClient } from '../../lib/api';
+import { type EthicsApplication, useCreateEthicsApplication } from '../../hooks/useEthics';
 import { useToast } from '../ui/Toast';
 
 const schema = z.object({
@@ -28,6 +29,7 @@ export default function EthicsApplicationForm({
 }) {
   const { toast } = useToast();
   const isEdit = !!initialData;
+  const createEthics = useCreateEthicsApplication();
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -46,16 +48,18 @@ export default function EthicsApplicationForm({
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const { apiClient } = await import('../../lib/api');
       if (isEdit && initialData) {
         await apiClient.patch(`/ethics/applications/${initialData.id}`, data);
         toast('success', 'Application updated');
       } else {
-        await apiClient.post('/ethics/applications', data);
+        await createEthics.mutateAsync(data);
         toast('success', 'Application created');
       }
       onSuccess();
-    } catch { toast('error', 'Something went wrong'); }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Something went wrong';
+      toast('error', msg);
+    }
   };
 
   return (

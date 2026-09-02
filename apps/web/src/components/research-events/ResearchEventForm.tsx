@@ -81,7 +81,10 @@ export default function ResearchEventForm({
         toast('success', 'Event created');
       }
       onSuccess();
-    } catch { toast('error', 'Something went wrong'); }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Something went wrong';
+      toast('error', msg);
+    }
   };
 
   return (
