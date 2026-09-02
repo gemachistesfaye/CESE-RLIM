@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { type GrantApplication } from '../../hooks/useGrantApplications';
+import { type GrantApplication, useCreateGrantApplication, useUpdateGrantApplication } from '../../hooks/useGrantApplications';
 import { useToast } from '../ui/Toast';
 
 const schema = z.object({
@@ -25,6 +25,8 @@ export default function GrantApplicationForm({
 }) {
   const { toast } = useToast();
   const isEdit = !!initialData;
+  const createApp = useCreateGrantApplication();
+  const updateApp = useUpdateGrantApplication();
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<GrantApplicationFormData>({
     resolver: zodResolver(schema),
@@ -39,16 +41,19 @@ export default function GrantApplicationForm({
 
   const onSubmit = async (data: GrantApplicationFormData) => {
     try {
-      const { apiClient } = await import('../../lib/api');
+      const payload = { ...data, researchProjectId: data.researchProjectId || undefined };
       if (isEdit && initialData) {
-        await apiClient.patch(`/grant-applications/${initialData.id}`, { ...data, researchProjectId: data.researchProjectId || undefined });
+        await updateApp.mutateAsync({ id: initialData.id, payload });
         toast('success', 'Application updated');
       } else {
-        await apiClient.post('/grant-applications', { ...data, researchProjectId: data.researchProjectId || undefined });
+        await createApp.mutateAsync(payload);
         toast('success', 'Application created');
       }
       onSuccess();
-    } catch { toast('error', 'Something went wrong'); }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Something went wrong';
+      toast('error', msg);
+    }
   };
 
   return (

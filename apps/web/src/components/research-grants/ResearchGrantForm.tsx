@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { type ResearchGrant, GRANT_STATUS_LABELS } from '../../hooks/useResearchGrants';
+import { type ResearchGrant, GRANT_STATUS_LABELS, useCreateResearchGrant, useUpdateResearchGrant } from '../../hooks/useResearchGrants';
 import { useToast } from '../ui/Toast';
 
 const schema = z.object({
@@ -30,6 +30,8 @@ export default function ResearchGrantForm({
 }) {
   const { toast } = useToast();
   const isEdit = !!initialData;
+  const createGrant = useCreateResearchGrant();
+  const updateGrant = useUpdateResearchGrant();
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -48,17 +50,19 @@ export default function ResearchGrantForm({
 
   const onSubmit = async (data: FormData) => {
     try {
-      const { apiClient } = await import('../../lib/api');
       const payload = { ...data, researchProjectId: data.researchProjectId || undefined, principalInvestigatorId: data.principalInvestigatorId || undefined, notes: data.notes || undefined };
       if (isEdit && initialData) {
-        await apiClient.patch(`/research-grants/${initialData.id}`, payload);
+        await updateGrant.mutateAsync({ id: initialData.id, payload });
         toast('success', 'Grant updated');
       } else {
-        await apiClient.post('/research-grants', payload);
+        await createGrant.mutateAsync(payload);
         toast('success', 'Grant created');
       }
       onSuccess();
-    } catch { toast('error', 'Something went wrong'); }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Something went wrong';
+      toast('error', msg);
+    }
   };
 
   return (
