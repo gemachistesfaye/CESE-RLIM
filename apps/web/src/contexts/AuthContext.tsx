@@ -31,12 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await apiClient.post<LoginResponse>('/auth/login', {
+    const response = await apiClient.post<{ success: boolean; data: LoginResponse }>('/auth/login', {
       email,
       password,
     });
 
-    const { accessToken, user: userData } = response.data;
+    const { accessToken, user: userData } = response.data.data;
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
