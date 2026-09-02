@@ -27,7 +27,11 @@ import {
 } from 'lucide-react';
 import { Link, useLocation, Outlet, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
-import { useUnreadNotificationCount, useNotifications, useMarkNotificationRead } from '../hooks/useNotifications';
+import {
+  useUnreadNotificationCount,
+  useNotifications,
+  useMarkNotificationRead,
+} from '../hooks/useNotifications';
 import { useState, useRef, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import HeaderSearch from '../components/global-search/HeaderSearch';
@@ -43,35 +47,88 @@ interface NavItem {
 const navigation: { section: string; items: NavItem[] }[] = [
   {
     section: 'OVERVIEW',
-    items: [
-      { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    ],
+    items: [{ name: 'Dashboard', href: '/', icon: LayoutDashboard }],
   },
   {
     section: 'RESEARCH',
     items: [
-      { name: 'Researchers', href: '/researchers', icon: Users, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Projects', href: '/research-projects', icon: FlaskConical, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Publications', href: '/research-publications', icon: BookOpen, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Innovations', href: '/innovations', icon: Microscope, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Events', href: '/research-events', icon: Calendar, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Ethics & Approvals', href: '/ethics/applications', icon: Shield, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
+      {
+        name: 'Researchers',
+        href: '/researchers',
+        icon: Users,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Projects',
+        href: '/research-projects',
+        icon: FlaskConical,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Publications',
+        href: '/research-publications',
+        icon: BookOpen,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Innovations',
+        href: '/innovations',
+        icon: Microscope,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Events',
+        href: '/research-events',
+        icon: Calendar,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Ethics & Approvals',
+        href: '/ethics/applications',
+        icon: Shield,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
     ],
   },
   {
     section: 'FUNDING',
     items: [
-      { name: 'Opportunities', href: '/funding-opportunities', icon: Target, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Applications', href: '/grant-applications', icon: ClipboardList, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Grants', href: '/research-grants', icon: Award, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
+      {
+        name: 'Opportunities',
+        href: '/funding-opportunities',
+        icon: Target,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Applications',
+        href: '/grant-applications',
+        icon: ClipboardList,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Grants',
+        href: '/research-grants',
+        icon: Award,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
     ],
   },
   {
     section: 'FINANCE',
     items: [
       { name: 'Dashboard', href: '/finance', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
-      { name: 'Expenses', href: '/research-expenses', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'] },
-      { name: 'Budgets', href: '/budget-management', icon: DollarSign, roles: ['ADMIN', 'COORDINATOR'] },
+      {
+        name: 'Expenses',
+        href: '/research-expenses',
+        icon: DollarSign,
+        roles: ['ADMIN', 'COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Budgets',
+        href: '/budget-management',
+        icon: DollarSign,
+        roles: ['ADMIN', 'COORDINATOR'],
+      },
     ],
   },
   {
@@ -80,8 +137,18 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Laboratories', href: '/laboratories', icon: FlaskConical },
       { name: 'Equipment', href: '/equipment', icon: Wrench },
       { name: 'Requests', href: '/equipment-requests', icon: ClipboardList },
-      { name: 'Assignments', href: '/equipment-assignments', icon: CheckCircle, roles: ['ADMIN', 'COORDINATOR', 'TECHNICIAN'] },
-      { name: 'Maintenance', href: '/maintenance', icon: AlertTriangle, roles: ['ADMIN', 'COORDINATOR', 'TECHNICIAN'] },
+      {
+        name: 'Assignments',
+        href: '/equipment-assignments',
+        icon: CheckCircle,
+        roles: ['ADMIN', 'COORDINATOR', 'TECHNICIAN'],
+      },
+      {
+        name: 'Maintenance',
+        href: '/maintenance',
+        icon: AlertTriangle,
+        roles: ['ADMIN', 'COORDINATOR', 'TECHNICIAN'],
+      },
     ],
   },
   {
@@ -91,8 +158,12 @@ const navigation: { section: string; items: NavItem[] }[] = [
       { name: 'Settings', href: '/administration/settings', icon: Settings, roles: ['ADMIN'] },
       { name: 'Security', href: '/administration/security', icon: Shield, roles: ['ADMIN'] },
       { name: 'Audit Logs', href: '/audit-logs', icon: Activity, roles: ['ADMIN', 'COORDINATOR'] },
-      { name: 'System Info', href: '/administration/system', icon: Info, roles: ['ADMIN', 'COORDINATOR'] },
-      { name: 'Notifications', href: '/notifications', icon: Bell },
+      {
+        name: 'System Info',
+        href: '/administration/system',
+        icon: Info,
+        roles: ['ADMIN', 'COORDINATOR'],
+      },
     ],
   },
 ];
@@ -106,8 +177,9 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
   const location = useLocation();
   const { logout, user } = useAuth();
 
-  const currentSection = navigation.find(group => 
-    group.section !== 'OVERVIEW' && group.items.some(item => item.href === location.pathname)
+  const currentSection = navigation.find(
+    (group) =>
+      group.section !== 'OVERVIEW' && group.items.some((item) => item.href === location.pathname),
   )?.section;
 
   const [openSection, setOpenSection] = useState<string | null>(currentSection || null);
@@ -127,8 +199,9 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
 
   // When path changes, auto-open the section and close mobile drawer
   useEffect(() => {
-    const newSection = navigation.find(group => 
-      group.section !== 'OVERVIEW' && group.items.some(item => item.href === location.pathname)
+    const newSection = navigation.find(
+      (group) =>
+        group.section !== 'OVERVIEW' && group.items.some((item) => item.href === location.pathname),
     )?.section;
     if (newSection && newSection !== openSection) {
       setOpenSection(newSection);
@@ -206,10 +279,15 @@ function Sidebar({ isMobileOpen, onCloseMobile }: SidebarProps) {
                   className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider hover:text-white transition-colors rounded-lg hover:bg-slate-800/50"
                 >
                   <span>{group.section}</span>
-                  <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-400' : ''}`} />
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-400' : ''}`}
+                  />
                 </button>
-                
-                <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}
+                >
                   <div className="space-y-0.5 pl-1">
                     {group.items.map((item) => {
                       const isActive = location.pathname === item.href;
@@ -311,7 +389,11 @@ function Topbar({ onOpenMobile }: TopbarProps) {
     setShowUserMenu(false);
   };
 
-  const handleNotificationClick = async (id: string, entityType: string | null, entityId: string | null) => {
+  const handleNotificationClick = async (
+    id: string,
+    entityType: string | null,
+    entityId: string | null,
+  ) => {
     await markRead.mutateAsync(id);
     setShowDropdown(false);
     if (entityType && entityId) {
@@ -345,7 +427,7 @@ function Topbar({ onOpenMobile }: TopbarProps) {
   const notifications = notifData?.items || [];
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 fixed top-0 left-0 lg:left-64 right-0 z-30 shadow-xs">
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 shadow-xs">
       <div className="flex items-center gap-2 lg:gap-4 flex-1 min-w-0">
         <button
           onClick={onOpenMobile}
@@ -392,7 +474,9 @@ function Topbar({ onOpenMobile }: TopbarProps) {
                   <div className="p-8 text-center">
                     <Bell size={28} className="mx-auto text-slate-300 mb-2" />
                     <p className="text-sm font-medium text-slate-700">All caught up!</p>
-                    <p className="text-xs text-slate-400 mt-0.5">No unread notifications right now.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      No unread notifications right now.
+                    </p>
                   </div>
                 ) : (
                   notifications.map((notif) => {
@@ -402,16 +486,22 @@ function Topbar({ onOpenMobile }: TopbarProps) {
                     return (
                       <div
                         key={notif.id}
-                        onClick={() => handleNotificationClick(notif.id, notif.entityType, notif.entityId)}
+                        onClick={() =>
+                          handleNotificationClick(notif.id, notif.entityType, notif.entityId)
+                        }
                         className="p-3 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <TypeIcon size={14} className={typeStyle.color} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-800 truncate">{notif.title}</p>
+                          <p className="text-sm font-medium text-slate-800 truncate">
+                            {notif.title}
+                          </p>
                           <p className="text-xs text-slate-500 truncate mt-0.5">{notif.message}</p>
-                          <p className="text-xs text-slate-400 mt-1">{getRelativeTime(notif.createdAt)}</p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            {getRelativeTime(notif.createdAt)}
+                          </p>
                         </div>
                         <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
                       </div>
@@ -443,13 +533,16 @@ function Topbar({ onOpenMobile }: TopbarProps) {
             aria-label="User menu"
           >
             <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-semibold shadow-xs flex-shrink-0">
-              {user?.firstName?.[0] || 'U'}{user?.lastName?.[0] || ''}
+              {user?.firstName?.[0] || 'U'}
+              {user?.lastName?.[0] || ''}
             </div>
             <div className="hidden sm:block">
               <p className="text-xs font-semibold text-slate-800 truncate leading-tight">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{user?.role}</p>
+              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
+                {user?.role}
+              </p>
             </div>
             <ChevronDown
               size={14}
@@ -473,22 +566,24 @@ function Topbar({ onOpenMobile }: TopbarProps) {
 
               <div className="p-1.5">
                 <Link
-                  to={user?.role === 'RESEARCHER' ? '/researchers' : '/users'}
+                  to="/profile"
                   onClick={() => setShowUserMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                 >
                   <UserIcon size={15} className="text-slate-400" />
-                  <span>Profile & Directory</span>
+                  <span>My Profile</span>
                 </Link>
 
-                <Link
-                  to="/notifications"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                >
-                  <Bell size={15} className="text-slate-400" />
-                  <span>Notification Center</span>
-                </Link>
+                {user?.role === 'ADMIN' && (
+                  <Link
+                    to="/administration/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                  >
+                    <Settings size={15} className="text-slate-400" />
+                    <span>System Settings</span>
+                  </Link>
+                )}
               </div>
 
               <div className="p-1.5 border-t border-slate-100">
@@ -519,9 +614,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
       <Sidebar isMobileOpen={isMobileOpen} onCloseMobile={() => setIsMobileOpen(false)} />
       <div className="lg:ml-64 ml-0 flex-1 flex flex-col">
         <Topbar onOpenMobile={() => setIsMobileOpen(true)} />
-        <main className="flex-1 p-4 sm:p-6 pt-20">
-          {children || <Outlet />}
-        </main>
+        <main className="flex-1 px-4 sm:px-6 pb-6 pt-20 sm:pt-24">{children || <Outlet />}</main>
       </div>
     </div>
   );
