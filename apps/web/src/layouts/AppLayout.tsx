@@ -59,9 +59,15 @@ const navigation: { section: string; items: NavItem[] }[] = [
         roles: ['COORDINATOR'],
       },
       {
-        name: 'Projects & Ethics',
+        name: 'Projects',
         href: '/research-projects',
         icon: FlaskConical,
+        roles: ['COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Ethics',
+        href: '/ethics/applications',
+        icon: Shield,
         roles: ['COORDINATOR', 'RESEARCHER'],
       },
       {
@@ -142,7 +148,8 @@ const navigation: { section: string; items: NavItem[] }[] = [
 ];
 
 const researcherNavigationLabels: Record<string, string> = {
-  'Projects & Ethics': 'My Projects & Ethics',
+  Projects: 'My Projects',
+  Ethics: 'My Ethics Applications',
   Publications: 'My Publications',
   Innovations: 'My Innovations',
   Events: 'My Events',

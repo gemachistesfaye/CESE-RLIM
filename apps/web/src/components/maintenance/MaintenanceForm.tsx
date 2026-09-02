@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateMaintenanceRecord, useUpdateMaintenanceRecord } from "../../hooks/useMaintenance";
 import { useEquipment } from "../../hooks/useEquipment";
+import { useUsers } from "../../hooks/useUsers";
 import { useToast } from "../ui/Toast";
 import { Loader2 } from "lucide-react";
 import type { MaintenanceRecord } from "../../hooks/useMaintenance";
@@ -31,7 +32,10 @@ export default function MaintenanceForm({ initialData, onSuccess, onCancel }: Ma
   const createRecord = useCreateMaintenanceRecord();
   const updateRecord = useUpdateMaintenanceRecord();
   const { data: equipmentData } = useEquipment({ page: 1, limit: 100 });
+  const { data: usersData } = useUsers({ page: 1, limit: 100 });
   const isEditing = !!initialData;
+
+  const technicians = usersData?.items?.filter((u: any) => u.role === 'TECHNICIAN') || [];
 
   const {
     register,
@@ -150,6 +154,23 @@ export default function MaintenanceForm({ initialData, onSuccess, onCancel }: Ma
           </select>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Assign Technician</label>
+          <select
+            {...register("assignedTechnicianId")}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Unassigned</option>
+            {technicians.map((tech: any) => (
+              <option key={tech.id} value={tech.id}>
+                {tech.firstName} {tech.lastName}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Cost</label>
           <input
