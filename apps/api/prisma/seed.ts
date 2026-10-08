@@ -17,7 +17,10 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@cese-rlim.local' },
-    update: {},
+    update: {
+      passwordHash: adminPassword,
+      isActive: true,
+    },
     create: {
       email: 'admin@cese-rlim.local',
       passwordHash: adminPassword,
@@ -31,7 +34,10 @@ async function main() {
 
   const coordinator = await prisma.user.upsert({
     where: { email: 'coordinator@cese-rlim.local' },
-    update: {},
+    update: {
+      passwordHash: coordinatorPassword,
+      isActive: true,
+    },
     create: {
       email: 'coordinator@cese-rlim.local',
       passwordHash: coordinatorPassword,
@@ -45,7 +51,10 @@ async function main() {
 
   const researcher1 = await prisma.user.upsert({
     where: { email: 'daniel.tesfaye@astu.edu.et' },
-    update: {},
+    update: {
+      passwordHash: researcherPassword,
+      isActive: true,
+    },
     create: {
       email: 'daniel.tesfaye@astu.edu.et',
       passwordHash: researcherPassword,
@@ -59,7 +68,10 @@ async function main() {
 
   const researcher2 = await prisma.user.upsert({
     where: { email: 'hanna.bekele@astu.edu.et' },
-    update: {},
+    update: {
+      passwordHash: researcherPassword,
+      isActive: true,
+    },
     create: {
       email: 'hanna.bekele@astu.edu.et',
       passwordHash: researcherPassword,
@@ -73,7 +85,10 @@ async function main() {
 
   const technician = await prisma.user.upsert({
     where: { email: 'technician@cese-rlim.local' },
-    update: {},
+    update: {
+      passwordHash: technicianPassword,
+      isActive: true,
+    },
     create: {
       email: 'technician@cese-rlim.local',
       passwordHash: technicianPassword,
