@@ -3,9 +3,8 @@ import { useParams, Link } from "@tanstack/react-router";
 import { useResearchProject, useUpdateResearchProjectStatus } from "../../hooks/useResearchProjects";
 import { useProjectTeamSummary } from "../../hooks/useResearchProjectMembers";
 import { useResearchPublicationSummary } from "../../hooks/useResearchPublications";
-import { useGrantApplicationsByProject } from "../../hooks/useGrantApplications";
 import { useResearchGrantsByProject } from "../../hooks/useResearchGrants";
-import { useEthicsApplicationsByProject, ETHICS_APPLICATION_STATUS_LABELS } from "../../hooks/useEthics";
+import { useEthicsApplicationsByProject } from "../../hooks/useEthics";
 import { useToast } from "../../components/ui/Toast";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
@@ -14,11 +13,7 @@ import {
   Loader2,
   FlaskConical,
   Calendar,
-  Wrench,
-  Microscope,
-  Clock,
   Users,
-  ChevronRight,
   FileText,
   BookOpen,
   Award,
@@ -52,7 +47,6 @@ export default function ResearchProjectDetails() {
   const { data: project, isLoading, error } = useResearchProject(id);
   const { data: teamSummary } = useProjectTeamSummary(id);
   const { data: pubSummary } = useResearchPublicationSummary(id);
-  const { data: projectApps } = useGrantApplicationsByProject(id);
   const { data: projectGrants } = useResearchGrantsByProject(id);
   const { data: projectEthicsApps } = useEthicsApplicationsByProject(id);
   const { data: opportunitiesData } = useFundingOpportunities({ page: 1, limit: 100 });
@@ -78,13 +72,6 @@ export default function ResearchProjectDetails() {
       @media print { html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     `,
   });
-
-  const validTransitions: Record<string, string[]> = {
-    ACTIVE: ["COMPLETED", "ON_HOLD", "CANCELLED"],
-    ON_HOLD: ["ACTIVE", "CANCELLED"],
-  };
-
-  const nextStatuses = validTransitions[project?.projectStatus || ""] || [];
 
   const handleStatusChange = (newStatus: string) => {
     updateStatus.mutate(

@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ClipboardList, CheckCircle, Wrench, AlertTriangle, ArrowRight, Filter } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { ClipboardList, CheckCircle, ArrowRight } from 'lucide-react';
 import { useEquipmentRequests } from '../../hooks/useEquipmentRequests';
 import { useEquipmentAssignments } from '../../hooks/useEquipmentAssignments';
-import { Skeleton, SkeletonCard } from '../../components/ui/Skeleton';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 
 type Tab = 'requests' | 'assignments';
 
 export default function EquipmentOperations() {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('requests');
 
   const tabs = [
@@ -53,7 +51,6 @@ export default function EquipmentOperations() {
 }
 
 function RequestsTab() {
-  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
@@ -65,14 +62,12 @@ function RequestsTab() {
     search: search || undefined,
   });
 
-  const canReview = user?.role === 'ADMIN' || user?.role === 'COORDINATOR' || user?.role === 'TECHNICIAN';
-
   if (isLoading) {
     return <div className="space-y-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>;
   }
 
   const requests = data?.items || [];
-  const total = data?.total || 0;
+  const total = data?.pagination?.total || 0;
 
   return (
     <div className="space-y-4">
@@ -113,7 +108,8 @@ function RequestsTab() {
             {requests.map((req: any) => (
               <Link
                 key={req.id}
-                to={`/equipment-requests/${req.id}`}
+                to="/equipment-requests/$id"
+                params={{ id: req.id }}
                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0 flex-1">
@@ -169,7 +165,6 @@ function RequestsTab() {
 }
 
 function AssignmentsTab() {
-  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
@@ -186,7 +181,7 @@ function AssignmentsTab() {
   }
 
   const assignments = data?.items || [];
-  const total = data?.total || 0;
+  const total = data?.pagination?.total || 0;
 
   return (
     <div className="space-y-4">
@@ -225,7 +220,8 @@ function AssignmentsTab() {
             {assignments.map((assign: any) => (
               <Link
                 key={assign.id}
-                to={`/equipment-assignments/${assign.id}`}
+                to="/equipment-assignments/$id"
+                params={{ id: assign.id }}
                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0 flex-1">

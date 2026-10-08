@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Wrench, ClipboardList, CheckCircle, AlertTriangle, ArrowRight, Plus } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { Wrench, ClipboardList, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useEquipment } from '../../hooks/useEquipment';
 import { useEquipmentRequests } from '../../hooks/useEquipmentRequests';
 import { useEquipmentAssignments } from '../../hooks/useEquipmentAssignments';
 import { useMaintenanceRecords } from '../../hooks/useMaintenance';
-import { Skeleton, SkeletonCard } from '../../components/ui/Skeleton';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 
 type Tab = 'equipment' | 'requests' | 'assignments' | 'maintenance';
 
 export default function EquipmentMaintenance() {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('equipment');
 
   const tabs = [
@@ -70,7 +68,7 @@ function EquipmentTab() {
   if (isLoading) return <div className="space-y-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>;
 
   const items = data?.items || [];
-  const total = data?.total || 0;
+  const total = data?.pagination?.total || 0;
 
   return (
     <div className="space-y-4">
@@ -105,7 +103,8 @@ function EquipmentTab() {
             {items.map((item: any) => (
               <Link
                 key={item.id}
-                to={`/equipment/${item.id}`}
+                to="/equipment/$id"
+                params={{ id: item.id }}
                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0 flex-1">
@@ -144,7 +143,6 @@ function EquipmentTab() {
 }
 
 function RequestsTab() {
-  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -157,7 +155,6 @@ function RequestsTab() {
   if (isLoading) return <div className="space-y-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>;
 
   const items = data?.items || [];
-  const total = data?.total || 0;
 
   return (
     <div className="space-y-4">
@@ -185,7 +182,8 @@ function RequestsTab() {
             {items.map((req: any) => (
               <Link
                 key={req.id}
-                to={`/equipment-requests/${req.id}`}
+                to="/equipment-requests/$id"
+                params={{ id: req.id }}
                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0 flex-1">
@@ -225,7 +223,6 @@ function AssignmentsTab() {
   if (isLoading) return <div className="space-y-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>;
 
   const items = data?.items || [];
-  const total = data?.total || 0;
 
   return (
     <div className="space-y-4">
@@ -252,7 +249,8 @@ function AssignmentsTab() {
             {items.map((assign: any) => (
               <Link
                 key={assign.id}
-                to={`/equipment-assignments/${assign.id}`}
+                to="/equipment-assignments/$id"
+                params={{ id: assign.id }}
                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0 flex-1">
@@ -278,7 +276,6 @@ function AssignmentsTab() {
 }
 
 function MaintenanceTab() {
-  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -291,7 +288,6 @@ function MaintenanceTab() {
   if (isLoading) return <div className="space-y-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>;
 
   const items = data?.items || [];
-  const total = data?.total || 0;
 
   return (
     <div className="space-y-4">
@@ -320,7 +316,8 @@ function MaintenanceTab() {
             {items.map((item: any) => (
               <Link
                 key={item.id}
-                to={`/maintenance/${item.id}`}
+                to="/maintenance/$id"
+                params={{ id: item.id }}
                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0 flex-1">

@@ -23,6 +23,7 @@ import {
   X,
   User as UserIcon,
   ClipboardList,
+  Award,
 } from 'lucide-react';
 import { Link, useLocation, Outlet, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -94,10 +95,22 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'FUNDING',
     items: [
       {
-        name: 'Grants & Funding',
+        name: 'Opportunities',
         href: '/funding-opportunities',
         icon: Target,
         roles: ['COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Applications',
+        href: '/grant-applications',
+        icon: ClipboardList,
+        roles: ['COORDINATOR', 'RESEARCHER'],
+      },
+      {
+        name: 'Grants',
+        href: '/research-grants',
+        icon: Award,
+        roles: ['COORDINATOR'],
       },
     ],
   },
@@ -105,13 +118,13 @@ const navigation: { section: string; items: NavItem[] }[] = [
     section: 'FINANCE',
     items: [
       {
-        name: 'Expenses & Budgets',
+        name: 'Budgets & Finance',
         href: '/finance',
         icon: DollarSign,
         roles: ['COORDINATOR'],
       },
       {
-        name: 'All Expenses',
+        name: 'Research Expenses',
         href: '/research-expenses',
         icon: DollarSign,
         roles: ['COORDINATOR', 'RESEARCHER'],
@@ -143,7 +156,7 @@ const navigation: { section: string; items: NavItem[] }[] = [
   },
   {
     section: 'MY ACCOUNT',
-    items: [{ name: 'My Profile', href: '/profile', icon: UserIcon, roles: ['RESEARCHER'] }],
+    items: [{ name: 'My Profile', href: '/profile', icon: UserIcon }],
   },
 ];
 
@@ -153,10 +166,10 @@ const researcherNavigationLabels: Record<string, string> = {
   Publications: 'My Publications',
   Innovations: 'My Innovations',
   Events: 'My Events',
-  'Grants & Funding': 'Funding Opportunities',
-  'Expenses & Budgets': 'My Expenses & Budgets',
+  Opportunities: 'Funding Opportunities',
+  Applications: 'My Grant Applications',
+  'Research Expenses': 'My Expenses',
   Laboratories: 'Laboratory Directory',
-  'Equipment Management': 'Equipment Management',
 };
 
 interface SidebarProps {
