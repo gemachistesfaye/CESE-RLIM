@@ -10,64 +10,52 @@ import { useToast } from '../components/ui/Toast';
 interface DemoAccount {
   label: string;
   name: string;
-  role: string;
   email: string;
   pass: string;
   icon: typeof Shield;
   color: string;
-  badgeColor: string;
 }
 
 const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     label: 'Admin',
-    name: 'Abebe Kebede',
-    role: 'ADMIN',
+    name: 'Abebe',
     email: 'admin@cese-rlim.local',
     pass: 'admin123',
     icon: Shield,
-    color: 'border-red-200 bg-red-50/70 text-red-800 hover:bg-red-100 hover:border-red-300',
-    badgeColor: 'bg-red-100 text-red-700',
+    color: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
   },
   {
     label: 'Coordinator',
-    name: 'Fatima Ahmed',
-    role: 'COORDINATOR',
+    name: 'Fatima',
     email: 'coordinator@cese-rlim.local',
     pass: 'coord123',
     icon: Shield,
-    color: 'border-purple-200 bg-purple-50/70 text-purple-800 hover:bg-purple-100 hover:border-purple-300',
-    badgeColor: 'bg-purple-100 text-purple-700',
+    color: 'border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100',
   },
   {
     label: 'Researcher 1',
-    name: 'Daniel Tesfaye',
-    role: 'RESEARCHER',
+    name: 'Daniel',
     email: 'daniel.tesfaye@astu.edu.et',
     pass: 'researcher123',
     icon: FlaskConical,
-    color: 'border-blue-200 bg-blue-50/70 text-blue-800 hover:bg-blue-100 hover:border-blue-300',
-    badgeColor: 'bg-blue-100 text-blue-700',
+    color: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
   },
   {
     label: 'Researcher 2',
-    name: 'Hanna Bekele',
-    role: 'RESEARCHER',
+    name: 'Hanna',
     email: 'hanna.bekele@astu.edu.et',
     pass: 'researcher123',
     icon: FlaskConical,
-    color: 'border-cyan-200 bg-cyan-50/70 text-cyan-800 hover:bg-cyan-100 hover:border-cyan-300',
-    badgeColor: 'bg-cyan-100 text-cyan-700',
+    color: 'border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100',
   },
   {
     label: 'Technician',
-    name: 'Yonas Girma',
-    role: 'TECHNICIAN',
+    name: 'Yonas',
     email: 'technician@cese-rlim.local',
     pass: 'technician123',
     icon: Wrench,
-    color: 'border-emerald-200 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300',
-    badgeColor: 'bg-emerald-100 text-emerald-700',
+    color: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
   },
 ];
 
@@ -112,7 +100,7 @@ export default function Login() {
     clearErrors();
     setError(null);
     setSelectedDemo(acc.label);
-    toast('info', `Filled credentials for ${acc.name} (${acc.label})`);
+    toast('info', `Filled credentials for ${acc.label} (${acc.name})`);
   };
 
   return (
@@ -120,7 +108,7 @@ export default function Login() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-blue-100/70 to-transparent" />
       <div className="pointer-events-none absolute -top-28 right-[-5rem] h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-lg items-center">
+      <div className="relative mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-md items-center">
         <div className="w-full">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4 shadow-lg shadow-blue-500/25 ring-4 ring-white">
@@ -135,7 +123,7 @@ export default function Login() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/70">
             <h2 className="text-xl font-bold text-slate-900 mb-1">Sign in to your account</h2>
-            <p className="text-xs text-slate-500 mb-5">Enter your academic or staff credentials below, or click any demo profile.</p>
+            <p className="text-xs text-slate-500 mb-5">Enter your credentials or click a demo account below.</p>
 
             {error && (
               <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2.5 text-red-700 text-sm animate-in fade-in">
@@ -204,39 +192,24 @@ export default function Login() {
 
             {/* Quick Demo Role Selector */}
             <div className="mt-6 pt-5 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <UserCheck size={14} className="text-blue-600" />
-                  Quick Demo Accounts (Click to Fill)
-                </p>
-                <span className="text-[10px] text-slate-400">from credinatl.txt</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {DEMO_ACCOUNTS.map((acc) => {
-                  const isCurrent = selectedDemo === acc.label;
-                  return (
-                    <button
-                      key={acc.label}
-                      type="button"
-                      onClick={() => handleFillDemo(acc)}
-                      className={`text-left p-2.5 rounded-lg border text-xs transition-all flex flex-col justify-between ${acc.color} ${
-                        isCurrent ? 'ring-2 ring-blue-500 ring-offset-1 font-semibold shadow-sm' : ''
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full mb-1">
-                        <span className="flex items-center gap-1.5 font-semibold">
-                          <acc.icon size={13} />
-                          {acc.label}
-                        </span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-medium ${acc.badgeColor}`}>
-                          {acc.role}
-                        </span>
-                      </div>
-                      <div className="text-[11px] font-medium text-slate-800">{acc.name}</div>
-                      <div className="text-[10px] text-slate-500 truncate mt-0.5">{acc.email}</div>
-                    </button>
-                  );
-                })}
+              <p className="text-xs font-semibold text-slate-600 mb-2.5 flex items-center gap-1.5">
+                <UserCheck size={15} className="text-blue-600" />
+                Demo Accounts (Click to Fill):
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {DEMO_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.label}
+                    type="button"
+                    onClick={() => handleFillDemo(acc)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${acc.color} ${
+                      selectedDemo === acc.label ? 'ring-2 ring-blue-500 ring-offset-1 font-semibold shadow-xs' : ''
+                    }`}
+                  >
+                    <acc.icon size={13} />
+                    <span>{acc.label} ({acc.name})</span>
+                  </button>
+                ))}
               </div>
             </div>
 
