@@ -23,7 +23,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: 'admin@cese-rlim.local',
     pass: 'admin123',
     icon: Shield,
-    color: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
+    color: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-300',
   },
   {
     label: 'Coordinator',
@@ -31,7 +31,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: 'coordinator@cese-rlim.local',
     pass: 'coord123',
     icon: Shield,
-    color: 'border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100',
+    color: 'border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-300',
   },
   {
     label: 'Researcher 1',
@@ -39,7 +39,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: 'daniel.tesfaye@astu.edu.et',
     pass: 'researcher123',
     icon: FlaskConical,
-    color: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
+    color: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300',
   },
   {
     label: 'Researcher 2',
@@ -47,7 +47,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: 'hanna.bekele@astu.edu.et',
     pass: 'researcher123',
     icon: FlaskConical,
-    color: 'border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100',
+    color: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300',
   },
   {
     label: 'Technician',
@@ -55,7 +55,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: 'technician@cese-rlim.local',
     pass: 'technician123',
     icon: Wrench,
-    color: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+    color: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300',
   },
 ];
 
@@ -191,23 +191,26 @@ export default function Login() {
             </form>
 
             {/* Quick Demo Role Selector */}
-            <div className="mt-6 pt-5 border-t border-slate-100">
-              <p className="text-xs font-semibold text-slate-600 mb-2.5 flex items-center gap-1.5">
-                <UserCheck size={15} className="text-blue-600" />
-                Demo Accounts (Click to Fill):
-              </p>
-              <div className="flex flex-wrap gap-2">
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <UserCheck size={14} className="text-blue-600" />
+                  Quick Demo Accounts
+                </p>
+                <span className="text-[10px] text-slate-400">Click to fill</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                 {DEMO_ACCOUNTS.map((acc) => (
                   <button
                     key={acc.label}
                     type="button"
                     onClick={() => handleFillDemo(acc)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${acc.color} ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all text-left justify-start ${acc.color} ${
                       selectedDemo === acc.label ? 'ring-2 ring-blue-500 ring-offset-1 font-semibold shadow-xs' : ''
                     }`}
                   >
-                    <acc.icon size={13} />
-                    <span>{acc.label} ({acc.name})</span>
+                    <acc.icon size={13} className="shrink-0" />
+                    <span className="truncate">{acc.label}</span>
                   </button>
                 ))}
               </div>
